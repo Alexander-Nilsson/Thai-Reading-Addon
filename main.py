@@ -22,26 +22,26 @@ from .addon_config import AddonConfig
 from .anki_services import LiveAnkiServices
 from .chineseHandler import ChineseHandler
 from .cssJSHandler import CSSJSHandler
-from .misettings import SettingsGui
-from .miutils import miInfo
+from .settings import SettingsGui
+from .utils import show_info
 
 anki_services = LiveAnkiServices(mw)
 config = AddonConfig.from_anki(mw)
 
 
-def updateMigakuChineseConfig():
+def updateChineseReadingConfig():
     global config
     config = AddonConfig.from_anki(mw)
-    mw.MigakuChineseConfig = config
+    mw.ChineseReadingConfig = config
 
 
-mw.miChineseSettings = False
+mw.chineseReadingSettings = False
 db = dictdb.DictDB(addonPath)
 addonPath = dirname(__file__)
 autoCssJs = CSSJSHandler(mw, anki_services, addonPath, config)
-mw.MigakuChinese = ChineseHandler(mw, anki_services, addonPath, db, autoCssJs, config)
-mw.MigakuChineseConfig = config
-mw.updateMigakuChineseConfig = updateMigakuChineseConfig
+mw.ChineseReading = ChineseHandler(mw, anki_services, addonPath, db, autoCssJs, config)
+mw.ChineseReadingConfig = config
+mw.updateChineseReadingConfig = updateChineseReadingConfig
 # addHook("profileLoaded", autoCssJs.loadWrapperDict)
 addHook("profileLoaded", autoCssJs.injectWrapperElements)
 addHook("profileLoaded", autoCssJs.updateWrapperDict)
@@ -79,7 +79,7 @@ def loadAllProfileInformation():
                     noteTypeDict[note["name"]]["fields"].append(f["name"])
             colArray[prof] = noteTypeDict
         except:
-            miInfo(
+            show_info(
                 "<b>Warning:</b><br>One of your profiles could not be loaded. This usually happens if you've just created a new profile and are opening it for the first time.The issue should be fixed after restarting Anki.If it persists, then your profile is corrupted in some way.\n\nYou can fix this corruption by exporting your collection, importing it into a new profile, and then deleting your previous profile. <b>",
                 level="wrn",
             )
@@ -89,32 +89,32 @@ AnkiQt.loadProfile = wrap(AnkiQt.loadProfile, loadCollectionArray, "before")
 
 
 def openChineseSettings():
-    if not mw.miChineseSettings:
-        mw.miChineseSettings = SettingsGui(mw, addonPath, colArray, autoCssJs, openChineseSettings, config)
-    mw.miChineseSettings.show()
-    if mw.miChineseSettings.windowState() == Qt.WindowState.WindowMinimized:
+    if not mw.chineseReadingSettings:
+        mw.chineseReadingSettings = SettingsGui(mw, addonPath, colArray, autoCssJs, openChineseSettings, config)
+    mw.chineseReadingSettings.show()
+    if mw.chineseReadingSettings.windowState() == Qt.WindowState.WindowMinimized:
         # Window is minimised. Restore it.
-        mw.miChineseSettings.setWindowState(Qt.WindowState.WindowNoState)
-    mw.miChineseSettings.setFocus()
-    mw.miChineseSettings.activateWindow()
+        mw.chineseReadingSettings.setWindowState(Qt.WindowState.WindowNoState)
+    mw.chineseReadingSettings.setFocus()
+    mw.chineseReadingSettings.activateWindow()
 
 
 def setupGuiMenu():
 
-    if not hasattr(mw, "MigakuMenuSettings"):
-        mw.MigakuMenuSettings = []
-    if not hasattr(mw, "MigakuMenuActions"):
-        mw.MigakuMenuActions = []
+    if not hasattr(mw, "ChineseReadingMenuSettings"):
+        mw.ChineseReadingMenuSettings = []
+    if not hasattr(mw, "ChineseReadingMenuActions"):
+        mw.ChineseReadingMenuActions = []
 
     # Add to Tools menu
     setting = QAction("Chinese Reading Settings", mw)
     setting.triggered.connect(openChineseSettings)
-    mw.MigakuMenuSettings.append(setting)
+    mw.ChineseReadingMenuSettings.append(setting)
 
     mw.form.menuTools.addSeparator()
-    for act in mw.MigakuMenuSettings:
+    for act in mw.ChineseReadingMenuSettings:
         mw.form.menuTools.addAction(act)
-    for act in mw.MigakuMenuActions:
+    for act in mw.ChineseReadingMenuActions:
         mw.form.menuTools.addAction(act)
 
 
@@ -124,7 +124,7 @@ setupGuiMenu()
 def setupButtons(righttopbtns, editor):
     if not checkProfile():
         return righttopbtns
-    editor._links["removeFormatting"] = lambda editor: mw.MigakuChinese.cleanField(editor)
+    editor._links["removeFormatting"] = lambda editor: mw.ChineseReading.cleanField(editor)
     if config.traditional_icons:
         duPath = os.path.join(addonPath, "icons", "tradDu.svg")
         shanPath = os.path.join(addonPath, "icons", "tradShan.svg")
@@ -133,7 +133,7 @@ def setupButtons(righttopbtns, editor):
         shanPath = os.path.join(addonPath, "icons", "simpShan.svg")
 
     righttopbtns.insert(0, editor._addButton(icon=shanPath, cmd="removeFormatting", tip="Hotkey: F10", id="删"))
-    editor._links["addCReadings"] = lambda editor: mw.MigakuChinese.addCReadings(editor)
+    editor._links["addCReadings"] = lambda editor: mw.ChineseReading.addCReadings(editor)
     righttopbtns.insert(0, editor._addButton(icon=duPath, cmd="addCReadings", tip="Hotkey: F9", id="读"))
     return righttopbtns
 
@@ -151,10 +151,10 @@ def setupShortcuts(shortcuts, editor):
     # config = getConfig()
     pitchData = []
     pitchData.append(
-        {"hotkey": "F10", "name": "extra", "function": lambda editor=editor: mw.MigakuChinese.cleanField(editor)}
+        {"hotkey": "F10", "name": "extra", "function": lambda editor=editor: mw.ChineseReading.cleanField(editor)}
     )
     pitchData.append(
-        {"hotkey": "F9", "name": "extra", "function": lambda editor=editor: mw.MigakuChinese.addCReadings(editor)}
+        {"hotkey": "F9", "name": "extra", "function": lambda editor=editor: mw.ChineseReading.addCReadings(editor)}
     )
     newKeys = shortcuts
     for pitch in pitchData:
@@ -187,7 +187,7 @@ def onRegenerate(browser):
         rtCB.addItems(["Pinyin", "Bopomofo", "Jyutping"])
         b4 = QPushButton("Add Readings")
         b4.clicked.connect(
-            lambda: mw.MigakuChinese.massGenerate(
+            lambda: mw.ChineseReading.massGenerate(
                 cb.currentText(),
                 destCB.currentText(),
                 omCB.currentText(),
@@ -197,7 +197,7 @@ def onRegenerate(browser):
             )
         )  ##add in the vars
         b5 = QPushButton("Remove Readings")
-        b5.clicked.connect(lambda: mw.MigakuChinese.massRemove(cb.currentText(), notes, generateWidget))
+        b5.clicked.connect(lambda: mw.ChineseReading.massRemove(cb.currentText(), notes, generateWidget))
         layout.addWidget(og)
         layout.addWidget(cb)
         layout.addWidget(dest)
@@ -213,7 +213,7 @@ def onRegenerate(browser):
         generateWidget.setLayout(layout)
         generateWidget.exec_()
     else:
-        miInfo("Please select some cards before attempting to mass generate.")
+        show_info("Please select some cards before attempting to mass generate.")
 
 
 def setupMenu(browser):
@@ -254,7 +254,7 @@ def supportAccept(self):
     if new_conf != self.conf:
         self.mgr.writeConfig(self.addon, new_conf)
         config = AddonConfig(_raw=new_conf)
-        mw.MigakuChineseConfig = config
+        mw.ChineseReadingConfig = config
         act = self.mgr.configUpdatedAction(self.addon)
         if act:
             act(new_conf)
@@ -287,7 +287,7 @@ def bridgeReroute(self, cmd):
             splitList = cmd.split(":||:||:")
             if self.note.id == int(splitList[3]):
                 field = getFieldName(splitList[2], self.note)
-                mw.MigakuChinese.finalizeReadings(splitList[1], field, self.note, self)
+                mw.ChineseReading.finalizeReadings(splitList[1], field, self.note, self)
             return
     if not cmd.startswith("textToCReading"):
         ogReroute(self, cmd)

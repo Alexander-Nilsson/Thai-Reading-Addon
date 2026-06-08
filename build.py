@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Build script for Migaku Chinese Anki addon.
+Build script for Chinese Reading Anki addon.
 
 Usage:
     python build.py        # clean, build, and package (default)
@@ -44,9 +44,9 @@ def get_includes():
         "chineseHandler.py",
         "cssJSHandler.py",
         "dictdb.py",
-        "misettings.py",
-        "miUpdater.py",
-        "miutils.py",
+        "settings.py",
+        "updater.py",
+        "utils.py",
         "characterManipulator.py",
         "Pyperclip.py",
         "js_registry.py",
@@ -73,7 +73,7 @@ def build_addon():
     print(f"  Version: {version}")
 
     build_dir = Path("build")
-    addon_dir = build_dir / "migaku_chinese"
+    addon_dir = build_dir / "chinese_reading"
     addon_dir.mkdir(parents=True)
 
     for item in get_includes():
@@ -91,7 +91,7 @@ def build_addon():
     # Generate fresh manifest with version
     manifest_path = addon_dir / "manifest.json"
     with open(manifest_path, "w") as f:
-        json.dump({"package": "Migaku Chinese", "name": "Migaku Chinese"}, f, indent=2)
+        json.dump({"package": "Chinese Reading", "name": "Chinese Reading"}, f, indent=2)
     print("  ✓ Generated manifest.json")
 
     return addon_dir
@@ -99,12 +99,12 @@ def build_addon():
 
 def create_package():
     version = get_version()
-    addon_dir = Path("build") / "migaku_chinese"
+    addon_dir = Path("build") / "chinese_reading"
     if not addon_dir.exists():
         print("  ❌ Build directory not found; run build first.")
         return None
 
-    package_name = f"migaku_chinese_v{version}.ankiaddon"
+    package_name = f"chinese_reading_v{version}.ankiaddon"
     package_path = Path("build") / package_name
 
     with zipfile.ZipFile(package_path, "w", zipfile.ZIP_DEFLATED) as zf:

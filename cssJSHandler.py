@@ -7,7 +7,7 @@ from aqt.qt import *
 
 sys.path.append(join(dirname(__file__), "lib"))
 from .js_registry import JsRegistry
-from .miutils import miInfo
+from .utils import show_info
 
 
 class CSSJSHandler:
@@ -18,24 +18,26 @@ class CSSJSHandler:
         self.config = config
         self.wrapperDict = False
         self.chineseParserHeader = (
-            "<!--###MIGAKU CHINESE SUPPORT JS START###\nDo Not Edit If Using Automatic CSS and JS Management-->"
+            "<!--###CHINESE READING JS START###\nDo Not Edit If Using Automatic CSS and JS Management-->"
         )
-        self.chineseParserFooter = "<!--###MIGAKU CHINESE SUPPORT JS ENDS###-->"
+        self.chineseParserFooter = "<!--###CHINESE READING JS ENDS###-->"
         self.chineseCSSHeader = (
-            "/*###MIGAKU CHINESE SUPPORT CSS STARTS###\nDo Not Edit If Using Automatic CSS and JS Management*/"
+            "/*###CHINESE READING CSS STARTS###\nDo Not Edit If Using Automatic CSS and JS Management*/"
         )
-        self.chineseCSSFooter = "/*###MIGAKU CHINESE SUPPORT CSS ENDS###*/"
+        self.chineseCSSFooter = "/*###CHINESE READING CSS ENDS###*/"
         self.chineseCSSPattern = (
-            r"\/\*###MIGAKU CHINESE SUPPORT CSS STARTS###"
+            r"\/\*###CHINESE READING CSS STARTS###"
             "\n"
             r"Do Not Edit If Using Automatic CSS and JS Management\*\/"
             r"[^*]*?"
-            r"\/\*###MIGAKU CHINESE SUPPORT CSS ENDS###\*\/"
+            r"\/\*###CHINESE READING CSS ENDS###\*\/"
         )
-        self.hanziConverterHeader = "<!--###MIGAKU CHINESE SUPPORT CONVERTER JS START###\nDo Not Edit If Using Automatic CSS and JS Management-->"
-        self.hanziConverterFooter = "<!--###MIGAKU CHINESE SUPPORT CONVERTER JS ENDS###-->"
-        self.pinBopoConverterHeader = "<!--###MIGAKU PINYIN BOPOMOFO CONVERTER JS START###\nDo Not Edit If Using Automatic CSS and JS Management-->"
-        self.pinBopoConverterFooter = "<!--###MIGAKU PINYIN BOPOMOFO CONVERTER JS ENDS###-->"
+        self.hanziConverterHeader = (
+            "<!--###CHINESE READING CONVERTER JS START###\nDo Not Edit If Using Automatic CSS and JS Management-->"
+        )
+        self.hanziConverterFooter = "<!--###CHINESE READING CONVERTER JS ENDS###-->"
+        self.pinBopoConverterHeader = "<!--###CHINESE READING PINYIN BOPOMOFO CONVERTER JS START###\nDo Not Edit If Using Automatic CSS and JS Management-->"
+        self.pinBopoConverterFooter = "<!--###CHINESE READING PINYIN BOPOMOFO CONVERTER JS ENDS###-->"
         self.js = JsRegistry(join(path, "js"))
         self.tongwen_coreJS = self.js.load("tongwen_core.js")
         self.tongwen_table_ps2tJS = self.js.load("tongwen_table_ps2t.js")
@@ -182,24 +184,24 @@ class CSSJSHandler:
                         )
 
         if syntaxErrors != "":
-            miInfo(
+            show_info(
                 'The following entries have incorrect syntax:\nPlease make sure the format is as follows:\n"displayType;profileName;noteTypeName;cardTypeName;fieldName;side(;ReadingType)".\n'
                 + syntaxErrors,
                 level="err",
             )
             return (wrapperDict, False)
         if displayTypeError != "":
-            miInfo(
+            show_info(
                 'The following entries have an incorrect display type. Valid display types are "Hover", "ColoredHover", "Hanzi", "ColoredHanzi", "HanziReading", "ColoredHanziReading", "Reading", and "ColoredReading".\n'
                 + syntaxErrors,
                 level="err",
             )
             return (wrapperDict, False)
         # if notFoundErrors != '':
-        #     miInfo('The following entries have incorrect values that are not found in your Anki collection. Please review these entries and fix any spelling mistakes.\n\n' + notFoundErrors, level="err")
+        #     show_info('The following entries have incorrect values that are not found in your Anki collection. Please review these entries and fix any spelling mistakes.\n\n' + notFoundErrors, level="err")
         #     return (wrapperDict,False);
         if fieldConflictErrors != "":
-            miInfo(
+            show_info(
                 "You have entries that point to the same field and the same side. Please make sure that a field and side combination does not conflict.\n\n"
                 + fieldConflictErrors,
                 level="err",
@@ -274,7 +276,7 @@ class CSSJSHandler:
     def checkReadingType(self):
         rType = self.config.reading_type
         if rType not in ["pinyin", "bopomofo", "jyutping"]:
-            miInfo(
+            show_info(
                 'The "'
                 + rType
                 + '" value in the "ReadingType" configuration is incorrect. The value must be "pinyin", "bopomofo", or "jyutping".',

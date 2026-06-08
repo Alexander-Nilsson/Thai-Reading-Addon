@@ -12,7 +12,7 @@ from dragonmapper import transcriptions
 
 from .characterManipulator import CharacterManipulator
 from .js_registry import JsRegistry
-from .miutils import miAsk
+from .utils import show_ask
 
 
 class ChineseHandler:
@@ -54,7 +54,9 @@ class ChineseHandler:
 
     def massGenerate(self, og, dest, om, rt, notes, generateWidget):
         self.anki.checkpoint("Chinese Reading Generation")
-        if not miAsk('Are you sure you want to generate from the "' + og + '" field into  the "' + dest + '" field?.'):
+        if not show_ask(
+            'Are you sure you want to generate from the "' + og + '" field into  the "' + dest + '" field?.'
+        ):
             return
         generateWidget.close()
         _progWid, bar = self.getProgressWidget()
@@ -92,7 +94,7 @@ class ChineseHandler:
         return dest
 
     def massRemove(self, field, notes, generateWidget):
-        if not miAsk(
+        if not show_ask(
             '####WARNING#####\nAre you sure you want to mass remove readings from the "'
             + field
             + '" field? Please make sure you have selected the correct field as this will remove all "[" and "]" and text in between from a field.'

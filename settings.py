@@ -12,12 +12,12 @@ from PyQt6.QtGui import QIcon, QKeySequence
 from PyQt6.QtSvgWidgets import QSvgWidget
 from PyQt6.QtWidgets import QAbstractItemView, QHeaderView
 
-from .miutils import miAsk, miInfo
+from .utils import show_ask, show_info
 
 versionNumber = "ver. 1.2.3"
 
 
-class MigakuSVG(QSvgWidget):
+class ClickableSVG(QSvgWidget):
     clicked = pyqtSignal()
 
     def __init__(self, parent=None):
@@ -27,7 +27,7 @@ class MigakuSVG(QSvgWidget):
         self.clicked.emit()
 
 
-class MigakuLabel(QLabel):
+class ClickableLabel(QLabel):
     clicked = pyqtSignal()
 
     def __init__(self, parent=None):
@@ -107,7 +107,7 @@ class SettingsGui(QScrollArea):
         self.allFields = self.getAllFields()
         # self.setMinimumSize(800, 550);
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.NoContextMenu)
-        # self.setWindowTitle("Migaku Chinese Settings (%s)"%versionNumber)
+        # self.setWindowTitle("Chinese Reading Settings (%s)"%versionNumber)
         self.addonPath = path
         self.setWindowIcon(QIcon(join(self.addonPath, "icons", "chinese-reading.svg")))
         self.selectedProfiles = []
@@ -158,11 +158,11 @@ class SettingsGui(QScrollArea):
         self.show()
 
     def resetDefaults(self):
-        if miAsk("Are you sure you would like to restore the default settings? This cannot be undone."):
+        if show_ask("Are you sure you would like to restore the default settings? This cannot be undone."):
             conf = self.mw.addonManager.addonConfigDefaults(dirname(__file__))
             self.mw.addonManager.writeConfig(__name__, conf)
             self.close()
-            self.mw.miChineseSettings = None
+            self.mw.chineseReadingSettings = None
             self.reboot()
 
     def loadFontSize(self):
@@ -944,7 +944,7 @@ class SettingsGui(QScrollArea):
         afList = self.afTable
         found = self.dupeRow(afList, profile, nt, ct, field, side, dt)
         if found:
-            miInfo(
+            show_info(
                 "This row cannot be added because row #"
                 + str(found)
                 + " in the Active Fields List already targets this given field and side combination. Please review that entry and try again.",
@@ -976,7 +976,7 @@ class SettingsGui(QScrollArea):
         rc = self.selectedRow
         found = self.dupeRow(afList, profile, nt, ct, field, side, dt, rc)
         if found:
-            miInfo(
+            show_info(
                 "This row cannot be edited in this manner because row #"
                 + str(found)
                 + " in the Active Fields List already targets this given field and side combination. Please review that entry and try again.",
@@ -995,7 +995,7 @@ class SettingsGui(QScrollArea):
         self.resetWindow()
 
     def removeRow(self):
-        if miAsk("Are you sure you would like to remove this entry from the active field list?"):
+        if show_ask("Are you sure you would like to remove this entry from the active field list?"):
             self.afTable.removeRow(self.afTable.selectionModel().currentIndex().row())
             self.resetWindow()
 
@@ -1325,7 +1325,7 @@ class SettingsGui(QScrollArea):
         self.mw.addonManager.writeConfig(__name__, newConf)
         self.cssJSHandler.injectWrapperElements()
         self.hide()
-        self.mw.updateMigakuChineseConfig()
+        self.mw.updateChineseReadingConfig()
 
     def openDialogColor(self, lineEd):
         color = QColorDialog.getColor(parent=self)
@@ -1333,7 +1333,7 @@ class SettingsGui(QScrollArea):
             lineEd.setText(color.name())
             lineEd.setStyleSheet("color:" + color.name() + ";")
 
-    def miQLabel(self, text, width):
+    def create_label(self, text, width):
         label = QLabel(text)
         label.setFixedHeight(30)
         label.setFixedWidth(width)
@@ -1351,7 +1351,7 @@ class SettingsGui(QScrollArea):
         self.innerWidget.setLayout(self.ml)
 
     def getSVGWidget(self, name):
-        widget = MigakuSVG(join(self.addonPath, "icons", name))
+        widget = ClickableSVG(join(self.addonPath, "icons", name))
         widget.setFixedSize(27, 27)
         return widget
 

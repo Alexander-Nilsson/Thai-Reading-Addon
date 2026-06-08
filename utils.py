@@ -9,15 +9,15 @@ from PyQt6.QtWidgets import QMessageBox
 addon_path = dirname(__file__)
 
 
-def miInfo(text, parent=False, level="msg", day=True):
+def show_info(text, parent=False, level="msg", day=True):
     if level == "wrn":
-        title = "Migaku Chinese Warning"
+        title = "Chinese Reading Warning"
     elif level == "not":
-        title = "Migaku Chinese Notice"
+        title = "Chinese Reading Notice"
     elif level == "err":
-        title = "Migaku Chinese Error"
+        title = "Chinese Reading Error"
     else:
-        title = "Migaku Chinese"
+        title = "Chinese Reading"
     if parent is False:
         parent = aqt.mw.app.activeWindow() or aqt.mw
     icon = QIcon(join(addon_path, "icons", "chinese-reading.svg"))
@@ -34,7 +34,7 @@ def miInfo(text, parent=False, level="msg", day=True):
     return mb.exec_()
 
 
-def miAsk(text, parent=None, title="Migaku"):
+def show_ask(text, parent=None, title="Chinese Reading"):
     msg = QMessageBox(parent)
     msg.setWindowTitle(title)
     msg.setText(text)
