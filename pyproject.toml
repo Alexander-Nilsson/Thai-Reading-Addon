@@ -1,9 +1,12 @@
 [project]
-name = "migaku-chinese"
+name = "chinese-reading"
 version = "0.1.0"
 description = "Anki addon for Chinese reading generation and card template injection"
 requires-python = ">=3.14"
 dependencies = []
+
+[dependency-groups]
+dev = ["ruff>=0.15.0", "ty>=0.15.0", "pytest>=8.0.0"]
 
 [tool.ruff]
 target-version = "py314"
@@ -55,3 +58,11 @@ allowed-unresolved-imports = [
     "urllib3.*",
     "requests.*",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+python_files = ["test_*.py"]
+norecursedirs = ["lib", "urllib3", "build", ".venv", ".ruff_cache"]
+filterwarnings = ["ignore::DeprecationWarning"]
+addopts = "-ra -q"
