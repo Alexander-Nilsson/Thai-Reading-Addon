@@ -10,9 +10,33 @@ from aqt.qt import *
 sys.path.append(join(dirname(__file__), "lib"))
 from dragonmapper import transcriptions
 
-from .characterManipulator import CharacterManipulator
 from .js_registry import JsRegistry
 from .utils import show_ask
+
+
+def _pinyin_re_sub():
+    inits = "zh|sh|ch|[bpmfdtnlgkhjqxrzscwy]"
+    finals = "i[ōóǒòo]ng|[ūúǔùu]ng|[āáǎàa]ng|[ēéěèe]ng|i[āɑ̄áɑ́ɑ́ǎɑ̌àɑ̀aāáǎàa]ng|[īíǐìi]ng|i[āáǎàa]n|u[āáǎàa]n|[ōóǒòo]ng|[ēéěèe]r|i[āáǎàa]|i[ēéěèe]|i[āáǎàa]o|i[ūúǔùu]|[īíǐìi]n|u[āáǎàa]|u[ōóǒòo]|u[āáǎàa]i|u[īíǐìi]|[ūúǔùu]n|u[ēéěèe]|ü[ēéěèe]|v[ēéěèe]|i[ōóǒòo]|[āáǎàa]i|[ēéěèe]i|[āáǎàa]o|[ōóǒòo]u|[āáǎàa]n|[ēéěèe]n|[āáǎàa]|[ēéěèe]|[ōóǒòo]|[īíǐìi]|[ūúǔùu]|[ǖǘǚǜüv]"
+    standalones = "'[āáǎàa]ng|'[ēéěèe]ng|'[ēéěèe]r|'[āáǎàa]i|'[ēéěèe]i|'[āáǎàa]o|'[ōóǒòo]u|'[āáǎàa]n|'[ēéěèe]n|'[āáǎàa]|'[ēéěèe]|'[ōóǒòo]"
+    return "((" + inits + ")(" + finals + ")[1-5]?|(" + standalones + ")[1-5]?)"
+
+
+_PINYIN_RE = re.compile(
+    "(?P<one>" + _pinyin_re_sub() + ")(?P<two>" + _pinyin_re_sub() + ")",
+    flags=re.I,
+)
+
+
+def _separate_pinyin(text):
+    def _clean(t):
+        if "'" == t[0]:
+            return t[1:]
+        return t
+
+    def _separate_pinyin_sub(p):
+        return _clean(p.group("one")) + " " + _clean(p.group("two"))
+
+    return _PINYIN_RE.sub(_separate_pinyin_sub, text)
 
 
 class ChineseHandler:
@@ -23,7 +47,6 @@ class ChineseHandler:
         self.path = path
         self.db = db
         self.config = config
-        self.manip = CharacterManipulator(mw)
         self.hanziRange = "[\u4e00-\u9fff\u3400-\u4dbf\U00020000-\U0002a6df\U0002a700-\U0002b73f\U0002b740-\U0002b81f\U0002b820-\U0002ceaf\U0002ceb0-\U0002ebef\uf900-\ufaff\U0002f800-\U0002fa1f]"
         self.js = JsRegistry(join(path, "js"))
         self.commonJS = self.js.load("common.js")
@@ -181,7 +204,7 @@ class ChineseHandler:
                     if rType == "jyutping":
                         results = result[0][0].split(" ")
                     else:
-                        results = self.manip.separatePinyin(result[0][0]).split(" ")
+                        results = _separate_pinyin(result[0][0]).split(" ")
                         for idx, fayin in enumerate(results):
                             if rType == "bopomofo":
                                 results[idx] = self.bopoToneToNumber(transcriptions.pinyin_to_zhuyin(fayin))

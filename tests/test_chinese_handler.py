@@ -185,8 +185,6 @@ class TestApplyOM:
 class TestSegmentAndLookup:
     def test_simple_pinyin(self, ChineseHandler, real_db):
         handler = _make_handler(ChineseHandler, db=real_db)
-        handler.manip = MagicMock()
-        handler.manip.separatePinyin.side_effect = lambda x: x
         result = handler._segment_and_lookup("你好", "pinyin")
         assert "你好" in result
         assert "[" in result
@@ -194,8 +192,6 @@ class TestSegmentAndLookup:
 
     def test_mixed_text_and_chinese(self, ChineseHandler, real_db):
         handler = _make_handler(ChineseHandler, db=real_db)
-        handler.manip = MagicMock()
-        handler.manip.separatePinyin.side_effect = lambda x: x
         result = handler._segment_and_lookup("hello 你好 world", "pinyin")
         assert result.startswith("hello ")
         assert "你好" in result
@@ -215,8 +211,6 @@ class TestSegmentAndLookup:
 
     def test_brackets_stripped_from_input(self, ChineseHandler, real_db):
         handler = _make_handler(ChineseHandler, db=real_db)
-        handler.manip = MagicMock()
-        handler.manip.separatePinyin.side_effect = lambda x: x
         result = handler._segment_and_lookup("你好[nǐhǎo]", "pinyin")
         assert "nǐhǎo" not in result
 
