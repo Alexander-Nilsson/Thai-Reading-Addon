@@ -66,7 +66,7 @@ class ChineseHandler:
             fields = self.anki.field_names(note.model())
             if og in fields and dest in fields:
                 text = note[og]
-                newText = self.finalizeReadings(text, note, og, rType=rt)
+                newText = self.finalizeReadings(text, og, note, rType=rt)
                 note[dest] = self.applyOM(om, note[dest], newText)
                 self.addVariants(self.removeBrackets(text), note)
                 self.addSimpTrad(self.removeBrackets(text), note)

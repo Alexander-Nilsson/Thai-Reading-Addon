@@ -25,7 +25,13 @@ class CSSJSHandler:
             "/*###MIGAKU CHINESE SUPPORT CSS STARTS###\nDo Not Edit If Using Automatic CSS and JS Management*/"
         )
         self.chineseCSSFooter = "/*###MIGAKU CHINESE SUPPORT CSS ENDS###*/"
-        self.chineseCSSPattern = "\/\*###MIGAKU CHINESE SUPPORT CSS STARTS###\nDo Not Edit If Using Automatic CSS and JS Management\*\/[^*]*?\/\*###MIGAKU CHINESE SUPPORT CSS ENDS###\*\/"
+        self.chineseCSSPattern = (
+            r"\/\*###MIGAKU CHINESE SUPPORT CSS STARTS###"
+            "\n"
+            r"Do Not Edit If Using Automatic CSS and JS Management\*\/"
+            r"[^*]*?"
+            r"\/\*###MIGAKU CHINESE SUPPORT CSS ENDS###\*\/"
+        )
         self.hanziConverterHeader = "<!--###MIGAKU CHINESE SUPPORT CONVERTER JS START###\nDo Not Edit If Using Automatic CSS and JS Management-->"
         self.hanziConverterFooter = "<!--###MIGAKU CHINESE SUPPORT CONVERTER JS ENDS###-->"
         self.pinBopoConverterHeader = "<!--###MIGAKU PINYIN BOPOMOFO CONVERTER JS START###\nDo Not Edit If Using Automatic CSS and JS Management-->"
