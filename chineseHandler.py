@@ -140,11 +140,7 @@ class ChineseHandler:
         return self.config.reading_type
 
     def getAltReadingType(self, mName, fName):
-        if mName in self.cssJSHandler.wrapperDict:
-            for entries in self.cssJSHandler.wrapperDict[mName]:
-                if entries[1] == fName and entries[4] != "default":
-                    return entries[4]
-        return False
+        return self.cssJSHandler.get_alt_reading_type(mName, fName)
 
     def bopoToneToNumber(self, text):
         if self.config.bopomofo_tones_to_number:

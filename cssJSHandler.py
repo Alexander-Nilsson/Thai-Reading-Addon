@@ -53,6 +53,13 @@ class CSSJSHandler:
     def updateWrapperDict(self):
         self.wrapperDict, _wrapperCheck = self.getWrapperDict()
 
+    def get_alt_reading_type(self, note_type_name, field_name):
+        if note_type_name in self.wrapperDict:
+            for entries in self.wrapperDict[note_type_name]:
+                if entries[1] == field_name and entries[4] != "default":
+                    return entries[4]
+        return False
+
     def noteCardFieldExists(self, data):
         models = self.anki.all_models()
         error = ""
