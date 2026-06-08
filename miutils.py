@@ -1,25 +1,26 @@
-# -*- coding: utf-8 -*-
-# 
+#
+
+from os.path import dirname, join
 
 import aqt
 from aqt.qt import *
-from os.path import dirname, join
 from PyQt6.QtWidgets import QMessageBox
 
 addon_path = dirname(__file__)
 
-def miInfo(text, parent=False, level = 'msg', day = True):
-    if level == 'wrn':
+
+def miInfo(text, parent=False, level="msg", day=True):
+    if level == "wrn":
         title = "Migaku Chinese Warning"
-    elif level == 'not':
+    elif level == "not":
         title = "Migaku Chinese Notice"
-    elif level == 'err':
+    elif level == "err":
         title = "Migaku Chinese Error"
     else:
         title = "Migaku Chinese"
     if parent is False:
         parent = aqt.mw.app.activeWindow() or aqt.mw
-    icon = QIcon(join(addon_path, 'icons', 'migaku.png'))
+    icon = QIcon(join(addon_path, "icons", "migaku.png"))
     mb = QMessageBox(parent)
     if not day:
         mb.setStyleSheet(" QMessageBox {background-color: #272828;}")
@@ -43,4 +44,3 @@ def miAsk(text, parent=None, title="Migaku"):
     msg.setDefaultButton(c)
     msg.exec()
     return msg.clickedButton() == b
-

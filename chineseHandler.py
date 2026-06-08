@@ -1,40 +1,21 @@
-# -*- coding: utf-8 -*-
-# 
-from os.path import dirname, join, basename, exists, join
-import sys, os, platform, re, subprocess, aqt.utils
-from anki.utils import strip_html, is_win, is_mac
-from . import Pyperclip 
+#
 import re
+import sys
+from os.path import dirname, join
 
-import unicodedata
-import urllib.parse
-from shutil import copyfile
-from anki.hooks import addHook, wrap, runHook, runFilter
-from aqt.utils import shortcut, saveGeom, saveSplitter
 import aqt.editor
-import json
-from aqt import mw
+import aqt.utils
 from aqt.qt import *
-from . import dictdb
-sys.path.append(join(dirname(__file__), 'lib'))
-from urllib.parse import urlencode
-from urllib.request import Request, urlopen
-import time
-from urllib.request import Request, urlopen
-from .misettings import SettingsGui
-from .miutils import miInfo, miAsk
-import requests
-from aqt.main import AnkiQt
+
+sys.path.append(join(dirname(__file__), "lib"))
 from dragonmapper import transcriptions
-from anki import Collection
-from .models import MIChineseModels
-from .miutils import miInfo, miAsk
+
 from .characterManipulator import CharacterManipulator
 from .js_registry import JsRegistry
+from .miutils import miAsk
 
 
-class ChineseHandler():
-
+class ChineseHandler:
     def __init__(self, mw, anki_services, path, db, cssJSHandler, config):
         self.mw = mw
         self.anki = anki_services
@@ -43,7 +24,7 @@ class ChineseHandler():
         self.db = db
         self.config = config
         self.manip = CharacterManipulator(mw)
-        self.hanziRange = u'[\u4e00-\u9fff\u3400-\u4DBF\U00020000-\U0002A6DF\U0002A700-\U0002B73F\U0002B740-\U0002B81F\U0002B820-\U0002CEAF\U0002CEB0-\U0002EBEF\uF900-\uFAFF\U0002F800-\U0002FA1F]'
+        self.hanziRange = "[\u4e00-\u9fff\u3400-\u4dbf\U00020000-\U0002a6df\U0002a700-\U0002b73f\U0002b740-\U0002b81f\U0002b820-\U0002ceaf\U0002ceb0-\U0002ebef\uf900-\ufaff\U0002f800-\U0002fa1f]"
         self.js = JsRegistry(join(path, "js"))
         self.commonJS = self.js.load("common.js")
         self.insertHTMLJS = self.js.load("insertHTML.js")
@@ -51,8 +32,7 @@ class ChineseHandler():
         self.fetchTextJS = self.js.load("fetchText.js")
         self.bracketsFromSelJS = self.js.load("bracketsFromSel.js")
         self.removeBracketsJS = self.js.load("removeBrackets.js")
-        self.toneToNumer =  {'ˊ':'2', 'ˇ':'3', 'ˋ':'4', '˙':'5'}
-     
+        self.toneToNumer = {"ˊ": "2", "ˇ": "3", "ˋ": "4", "˙": "5"}
 
     def refreshConfig(self, config=None):
         if config is not None:
@@ -60,85 +40,85 @@ class ChineseHandler():
 
     def getProgressWidget(self):
         progressWidget = QWidget(None)
-        layout = QVBoxLayout()
+        QVBoxLayout()
         progressWidget.setFixedSize(400, 70)
         progressWidget.setWindowModality(Qt.WindowModality.ApplicationModal)
-        progressWidget.setWindowIcon(QIcon(join(self.path, 'icons', 'migaku.png')))
+        progressWidget.setWindowIcon(QIcon(join(self.path, "icons", "migaku.png")))
         bar = QProgressBar(progressWidget)
         bar.setFixedSize(390, 50)
-        bar.move(10,10)
+        bar.move(10, 10)
         per = QLabel(bar)
         per.setAlignment(Qt.AlignmentFlag.AlignCenter)
         progressWidget.show()
-        return progressWidget, bar;
+        return progressWidget, bar
 
-
-    def massGenerate(self, og, dest,  om, rt, notes, generateWidget):
-        self.anki.checkpoint('Chinese Reading Generation')
-        if not miAsk('Are you sure you want to generate from the "'+ og +'" field into  the "'+ dest +'" field?.'):
+    def massGenerate(self, og, dest, om, rt, notes, generateWidget):
+        self.anki.checkpoint("Chinese Reading Generation")
+        if not miAsk('Are you sure you want to generate from the "' + og + '" field into  the "' + dest + '" field?.'):
             return
-        generateWidget.close() 
-        progWid, bar = self.getProgressWidget()   
+        generateWidget.close()
+        _progWid, bar = self.getProgressWidget()
         bar.setMinimum(0)
         bar.setMaximum(len(notes))
-        val = 0;  
+        val = 0
         for nid in notes:
             note = self.anki.get_note(nid)
             fields = self.anki.field_names(note.model())
             if og in fields and dest in fields:
-
-                text = note[og] 
-                newText = self.finalizeReadings(text,note, og, rType = rt)
+                text = note[og]
+                newText = self.finalizeReadings(text, note, og, rType=rt)
                 note[dest] = self.applyOM(om, note[dest], newText)
                 self.addVariants(self.removeBrackets(text), note)
                 self.addSimpTrad(self.removeBrackets(text), note)
                 note.flush()
-            val+=1;
+            val += 1
             bar.setValue(val)
             self.anki.process_events()
         self.anki.progress_finish()
         self.anki.reset()
 
-
-    def applyOM(self, addType, dest, text): ##overwrite mode/addtype
+    def applyOM(self, addType, dest, text):  ##overwrite mode/addtype
         if text:
-            if addType == 'If Empty':
-                if dest == '':
+            if addType == "If Empty":
+                if dest == "":
                     dest = text
-            elif addType == 'Add':
-                if dest == '':
+            elif addType == "Add":
+                if dest == "":
                     dest = text
                 else:
-                    dest += '<br>' + text
+                    dest += "<br>" + text
             else:
-                dest = text    
+                dest = text
         return dest
 
-    def massRemove(self, field,  notes, generateWidget):
-        if not miAsk('####WARNING#####\nAre you sure you want to mass remove readings from the "'+ field +'" field? Please make sure you have selected the correct field as this will remove all "[" and "]" and text in between from a field.'):
-                return
-        generateWidget.close() 
-        progWid, bar = self.getProgressWidget()   
+    def massRemove(self, field, notes, generateWidget):
+        if not miAsk(
+            '####WARNING#####\nAre you sure you want to mass remove readings from the "'
+            + field
+            + '" field? Please make sure you have selected the correct field as this will remove all "[" and "]" and text in between from a field.'
+        ):
+            return
+        generateWidget.close()
+        _progWid, bar = self.getProgressWidget()
         bar.setMinimum(0)
         bar.setMaximum(len(notes))
-        val = 0;  
+        val = 0
         for nid in notes:
             note = self.anki.get_note(nid)
             fields = self.anki.field_names(note.model())
             if field in fields:
-                text = note[field] 
-                text =  self.removeBrackets(text)
+                text = note[field]
+                text = self.removeBrackets(text)
 
                 note[field] = text
                 note.flush()
-            val+=1;
+            val += 1
             bar.setValue(val)
             self.anki.process_events()
         self.anki.progress_finish()
         self.anki.reset()
 
-
-    def editorText(self, editor):    
+    def editorText(self, editor):
         text = editor.web.selectedText()
         if not text:
             return False
@@ -158,10 +138,9 @@ class ChineseHandler():
         return self.config.reading_type
 
     def getAltReadingType(self, mName, fName):
-        foundArray = []
-        if mName in self.cssJSHandler.wrapperDict: 
+        if mName in self.cssJSHandler.wrapperDict:
             for entries in self.cssJSHandler.wrapperDict[mName]:
-                if entries[1] == fName and entries[4] != 'default':
+                if entries[1] == fName and entries[4] != "default":
                     return entries[4]
         return False
 
@@ -171,28 +150,28 @@ class ChineseHandler():
             if last in self.toneToNumer:
                 text = text[:-1] + self.toneToNumer[last]
             else:
-                text += '1'
+                text += "1"
         return text
 
     def _segment_and_lookup(self, text, rType):
         text = self.removeBrackets(text)
         finished = False
-        newStr = ''
+        newStr = ""
         count = 0
         while not finished:
-            word = ''
-            if re.search(self.hanziRange , text[count]):
+            word = ""
+            if re.search(self.hanziRange, text[count]):
                 word += text[count]
                 lookahead = 10
                 limit = count + lookahead
-                count+= 1
+                count += 1
 
-                while count < len(text) and count < limit and re.search(self.hanziRange , text[count]):
+                while count < len(text) and count < limit and re.search(self.hanziRange, text[count]):
                     word += text[count]
                     count += 1
                 result = False
                 while not result and len(word) > 0:
-                    if rType == 'jyutping':
+                    if rType == "jyutping":
                         result = self.db.getJyutping(word)
                     else:
                         result = self.db.getAltFayin(word)
@@ -201,14 +180,14 @@ class ChineseHandler():
                         word = word[:-1]
 
                 if result:
-                    if rType == 'jyutping':
+                    if rType == "jyutping":
                         results = result[0][0].split(" ")
                     else:
                         results = self.manip.separatePinyin(result[0][0]).split(" ")
                         for idx, fayin in enumerate(results):
-                            if rType == 'bopomofo':
+                            if rType == "bopomofo":
                                 results[idx] = self.bopoToneToNumber(transcriptions.pinyin_to_zhuyin(fayin))
-                    newStr +=  word + '[' + ' '.join(results).lower() + ']'
+                    newStr += word + "[" + " ".join(results).lower() + "]"
                 else:
                     newStr += text[count]
                     count += 1
@@ -219,77 +198,83 @@ class ChineseHandler():
                 finished = True
         return newStr
 
-    def finalizeReadings(self, text, field, note, editor = False, rType = False):
-        if text == '':
+    def finalizeReadings(self, text, field, note, editor=False, rType=False):
+        if text == "":
             return
         if not rType:
-            altType = self.getAltReadingType(note.model()['name'], field)
+            altType = self.getAltReadingType(note.model()["name"], field)
             if altType:
                 rType = altType
             else:
                 rType = self.getReadingType()
-            if rType not in ['pinyin','bopomofo','jyutping']:
+            if rType not in ["pinyin", "bopomofo", "jyutping"]:
                 return
         newStr = self._segment_and_lookup(text, rType)
         if editor:
-            editor.web.eval(self.commonJS +  self.insertHTMLJS % newStr.replace('"', '\\"').replace('\n', ''))
+            editor.web.eval(self.commonJS + self.insertHTMLJS % newStr.replace('"', '\\"').replace("\n", ""))
             self.addVariants(text, note, editor)
             self.addSimpTrad(text, note, editor)
         else:
             return newStr
 
-    def fetchParsed(self, text, field, note, rType = False):
-        if text == '':
-            return ''
+    def fetchParsed(self, text, field, note, rType=False):
+        if text == "":
+            return ""
         if not rType:
-            altType = self.getAltReadingType(note.model()['name'], field)
+            altType = self.getAltReadingType(note.model()["name"], field)
             if altType:
                 rType = altType
             else:
                 rType = self.getReadingType()
-        if rType not in ['pinyin','bopomofo','jyutping']:
+        if rType not in ["pinyin", "bopomofo", "jyutping"]:
             return text
         newStr = self._segment_and_lookup(text, rType)
         self.addVariants(text, note)
         self.addSimpTrad(text, note)
         return newStr
-            
-    def addVariants(self, text, note, editor = False):
+
+    def addVariants(self, text, note, editor=False):
         fields = self.anki.field_names(note.model())
-        for variant_key in ['simplified_field', 'traditional_field']:
-            varAr = getattr(self.config, variant_key).split(';')
-            selFields = varAr[0].split(',')
+        for variant_key in ["simplified_field", "traditional_field"]:
+            varAr = getattr(self.config, variant_key).split(";")
+            selFields = varAr[0].split(",")
             for selField in selFields:
-                if selField.lower() == 'none':
+                if selField.lower() == "none":
                     continue
                 if selField in fields:
                     ordinal = False
                     if editor:
                         ordinal = self.getFieldOrdinal(note, selField)
-                    if variant == 'SimplifiedField':
+                    if variant == "SimplifiedField":
                         text = self.db.get_simplified(self.removeBrackets(text))
-                    elif variant == 'TraditionalField':
+                    elif variant == "TraditionalField":
                         text = self.db.get_traditional(self.removeBrackets(text))
                     if not text:
                         return
-                    if varAr[1] == 'overwrite':
+                    if varAr[1] == "overwrite":
                         self.addToNote(editor, note, selField, ordinal, text)
-                    elif varAr[1] == 'add':
-                        separator = '<br>'
+                    elif varAr[1] == "add":
+                        separator = "<br>"
                         if len(varAr) == 3:
                             separator = varAr[2]
-                        if note[selField] == '' or editor:
-                            self.addToNote(editor, note, selField, ordinal, note[selField] + separator.replace('<br>', '', 1) + text)
+                        if note[selField] == "" or editor:
+                            self.addToNote(
+                                editor,
+                                note,
+                                selField,
+                                ordinal,
+                                note[selField] + separator.replace("<br>", "", 1) + text,
+                            )
                         else:
                             self.addToNote(editor, note, selField, ordinal, note[selField] + separator + text)
-                    elif varAr[1] == 'no':
-                        if note[selField] == '':
+                    elif varAr[1] == "no":
+                        if note[selField] == "":
                             self.addToNote(editor, note, selField, ordinal, text)
 
     def getSimpTradString(self, fText, varAr, text, simplified, traditional):
         sSame = False
         tSame = False
-        separator = '<br>'
+        separator = "<br>"
         if len(varAr) == 3:
             separator = varAr[2]
         if text == simplified:
@@ -297,36 +282,36 @@ class ChineseHandler():
         if text == traditional:
             tSame = True
         if tSame and sSame:
-            return ''
-        if varAr[1] == 'overwrite' or varAr[1] == 'no':
-            if varAr[1] == 'no' and fText != '':
+            return ""
+        if varAr[1] == "overwrite" or varAr[1] == "no":
+            if varAr[1] == "no" and fText != "":
                 return fText
             if not sSame and not tSame:
                 return simplified + separator + traditional
             elif not sSame and tSame:
                 return simplified
-            elif not tSame and sSame:  
+            elif not tSame and sSame:
                 return traditional
-        elif varAr[1] == 'add':
+        elif varAr[1] == "add":
             sep2 = separator
-            if fText == '':
-               sep2 = sep2.replace('<br>', '', 1)
-               separator = separator.replace('<br>', '', 1)
+            if fText == "":
+                sep2 = sep2.replace("<br>", "", 1)
+                separator = separator.replace("<br>", "", 1)
             if len(varAr) == 4:
                 separator = varAr[3]
             if not sSame and not tSame:
                 return fText + separator + simplified + sep2 + traditional
             elif not sSame and tSame:
                 return fText + separator + simplified
-            elif not tSame and sSame:  
-                return fText + sep2 + traditional  
+            elif not tSame and sSame:
+                return fText + sep2 + traditional
 
-    def addSimpTrad(self, text, note, editor = False):
-        varAr = self.config.simp_trad_field.split(';')
+    def addSimpTrad(self, text, note, editor=False):
+        varAr = self.config.simp_trad_field.split(";")
         fields = self.anki.field_names(note.model())
-        altFields = varAr[0].split(',')
+        altFields = varAr[0].split(",")
         for altField in altFields:
-            if altField.lower() == 'none':
+            if altField.lower() == "none":
                 return
             if altField in fields:
                 ordinal = False
@@ -334,17 +319,21 @@ class ChineseHandler():
                     ordinal = self.getFieldOrdinal(note, altField)
                 simplified = self.db.get_simplified(self.removeBrackets(text))
                 traditional = self.db.get_traditional(self.removeBrackets(text))
-                newStr = ''
-                self.addToNote(editor, note, altField, ordinal, self.getSimpTradString(note[altField], varAr, text, simplified, traditional))
+                self.addToNote(
+                    editor,
+                    note,
+                    altField,
+                    ordinal,
+                    self.getSimpTradString(note[altField], varAr, text, simplified, traditional),
+                )
 
     def getFieldOrdinal(self, note, field):
         fields = note._model["flds"]
         for f in fields:
-            if field == f['name']:
-                return f['ord']
+            if field == f["name"]:
+                return f["ord"]
         else:
             return False
-        
 
     def addToNote(self, editor, note, field, ordinal, text):
         if ordinal is not False and editor is not False:
@@ -363,12 +352,11 @@ class ChineseHandler():
         if editCurrent:
             self.mw.progress.timer(100, editCurrent.editor.loadNoteKeepingFocus, False)
 
-
     def htmlRemove(self, text):
         pattern = r"(?:<[^<]+?>)"
         finds = re.findall(pattern, text)
         text = re.sub(r"<[^<]+?>", "--=HTML=--", text)
-        return finds,text;
+        return finds, text
 
     def replaceHTML(self, text, matches):
         if matches:
@@ -377,29 +365,28 @@ class ChineseHandler():
         return text
 
     def cleanSpaces(self, text):
-        return text.replace('  ', '')
-        
-    def removeBrackets(self, text, returnSounds = False, removeAudio = False):
-        if '[' not in text and ']' not in text:
+        return text.replace("  ", "")
+
+    def removeBrackets(self, text, returnSounds=False, removeAudio=False):
+        if "[" not in text and "]" not in text:
             if returnSounds:
-                return text, [];
+                return text, []
             return text
         matches, text = self.htmlRemove(text)
         if removeAudio:
             text = self.cleanSpaces(text)
             text = self.replaceHTML(text, matches)
-            return re.sub(r'\[[^]]*?\]', '', text)
+            return re.sub(r"\[[^]]*?\]", "", text)
         else:
             pattern = r"(?:\[sound:[^\]]+?\])|(?:\[\d*\])"
             finds = re.findall(pattern, text)
 
             text = re.sub(r"(?:\[sound:[^\]]+?\])|(?:\[\d*\])", "-_-AUDIO-_-", text)
-            text  = re.sub(r'\[[^]]*?\]', '', text)
+            text = re.sub(r"\[[^]]*?\]", "", text)
             text = self.cleanSpaces(text)
             text = self.replaceHTML(text, matches)
             if returnSounds:
-                return text, finds;
+                return text, finds
             for match in finds:
                 text = text.replace("-_-AUDIO-_-", match, 1)
             return text
-

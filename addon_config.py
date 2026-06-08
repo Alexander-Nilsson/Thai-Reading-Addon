@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field
-from typing import List
 
 
 @dataclass(frozen=True)
@@ -19,7 +18,7 @@ class AddonConfig:
         return self._raw.get("addCantoNote", True)
 
     @property
-    def profiles(self) -> List[str]:
+    def profiles(self) -> list[str]:
         return self._raw.get("Profiles", ["all"])
 
     @property
@@ -63,17 +62,15 @@ class AddonConfig:
         return self._raw.get("FontSize", 75)
 
     @property
-    def cantonese_tones(self) -> List[str]:
-        return self._raw.get("CantoneseTones123456",
-                             ["#E60000", "#E68A00", "#00802B", "#005CE6", "#AC00E6", "gray"])
+    def cantonese_tones(self) -> list[str]:
+        return self._raw.get("CantoneseTones123456", ["#E60000", "#E68A00", "#00802B", "#005CE6", "#AC00E6", "gray"])
 
     @property
-    def mandarin_tones(self) -> List[str]:
-        return self._raw.get("MandarinTones12345",
-                             ["#E60000", "#E68A00", "#00802B", "#005CE6", "gray"])
+    def mandarin_tones(self) -> list[str]:
+        return self._raw.get("MandarinTones12345", ["#E60000", "#E68A00", "#00802B", "#005CE6", "gray"])
 
     @property
-    def active_fields(self) -> List[str]:
+    def active_fields(self) -> list[str]:
         return self._raw.get("ActiveFields", [])
 
     def __getitem__(self, key):

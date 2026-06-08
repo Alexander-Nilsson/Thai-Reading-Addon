@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #
-from . import main, models, miUpdater, modelChanger
+from . import main, miUpdater, modelChanger, models

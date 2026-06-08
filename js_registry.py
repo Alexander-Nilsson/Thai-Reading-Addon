@@ -9,6 +9,6 @@ class JsRegistry:
     def load(self, name):
         if name not in self._cache:
             path = os.path.join(self._js_dir, name)
-            with open(path, "r", encoding="utf-8") as f:
+            with open(path, encoding="utf-8") as f:
                 self._cache[name] = f.read()
         return self._cache[name]
