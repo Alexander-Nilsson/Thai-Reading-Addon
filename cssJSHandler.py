@@ -216,6 +216,10 @@ class CSSJSHandler:
             return (wrapperDict, False)
         return (wrapperDict, True)
 
+    def refreshConfig(self, config=None):
+        if config is not None:
+            self.config = config
+
     def checkProfile(self):
         if self.anki.profile_name in self.config.profiles or (
             "all" in self.config.profiles or "All" in self.config.profiles

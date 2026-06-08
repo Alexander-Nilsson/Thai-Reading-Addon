@@ -1323,9 +1323,11 @@ class SettingsGui(QScrollArea):
         }
 
         self.mw.addonManager.writeConfig(__name__, newConf)
-        self.cssJSHandler.injectWrapperElements()
-        self.hide()
         self.mw.updateChineseReadingConfig()
+        self.cssJSHandler.refreshConfig(self.mw.ChineseReadingConfig)
+        self.cssJSHandler.injectWrapperElements()
+        self.mw.ChineseReading.refreshConfig(self.mw.ChineseReadingConfig)
+        self.hide()
 
     def openDialogColor(self, lineEd):
         color = QColorDialog.getColor(parent=self)

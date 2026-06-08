@@ -258,6 +258,8 @@ def supportAccept(self):
         self.mgr.writeConfig(self.addon, new_conf)
         config = AddonConfig(_raw=new_conf)
         mw.ChineseReadingConfig = config
+        autoCssJs.refreshConfig(config)
+        mw.ChineseReading.refreshConfig(config)
         act = self.mgr.configUpdatedAction(self.addon)
         if act:
             act(new_conf)
