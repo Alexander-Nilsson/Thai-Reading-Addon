@@ -202,81 +202,7 @@ class ChineseHandler():
                 text += '1'
         return text
 
-    def finalizeReadings(self, text, field, note, editor = False, rType = False):
-        if text == '':
-            return
-        if note:
-            if not rType:
-                altType = self.getAltReadingType(note.model()['name'], field)
-                if altType:
-                    rType = altType
-                else:
-                    rType = self.getReadingType()
-                if rType not in ['pinyin','bopomofo','jyutping']:
-                    return
-            text = self.removeBrackets(text)
-            finished = False
-            newStr = ''
-            count = 0
-            while not finished:
-                word = ''
-                if re.search(self.hanziRange , text[count]):
-                    word += text[count]
-                    lookahead = 10
-                    limit = count + lookahead
-                    count+= 1
-
-                    while count < len(text) and count < limit and re.search(self.hanziRange , text[count]):
-                        word += text[count]
-                        
-                        count += 1
-                    result = False
-                    while not result and len(word) > 0:
-                        if rType == 'jyutping':
-                            result = self.db.getJyutping(word)
-                        else:
-                            result = self.db.getAltFayin(word)
-                        if not result:
-                            count -= 1
-                            word = word[:-1]
-            
-                    if result:
-                        if rType == 'jyutping':
-                            results = result[0][0].split(" ")
-                        else:
-                            results = self.manip.separatePinyin(result[0][0]).split(" ")
-                            for idx, fayin in enumerate(results):
-                                if rType == 'bopomofo':
-                                    results[idx] = self.bopoToneToNumber(transcriptions.pinyin_to_zhuyin(fayin))
-                        newStr +=  word + '[' + ' '.join(results).lower() + ']' 
-                    else:
-                        newStr += text[count]
-                        count += 1
-                        ###importantcheck if word not found look for char pinyin or jyutping
-                else:
-                    newStr += text[count]
-                    count += 1
-                if count == len(text):
-                    finished = True
-            if editor:
-                editor.web.eval(self.commonJS +  self.insertHTMLJS % newStr.replace('"', '\\"').replace('\n', ''))
-                # note[field] = newStr
-                self.addVariants(text, note, editor)
-                self.addSimpTrad(text, note, editor)
-            else:
-                return newStr
-
-    def fetchParsed(self, text, field, note, rType = False):
-        if text == '':
-            return ''
-        if not rType:
-            altType = self.getAltReadingType(note.model()['name'], field)
-            if altType:
-                rType = altType
-            else:
-                rType = self.getReadingType()
-        if rType not in ['pinyin','bopomofo','jyutping']:
-            return text
+    def _segment_and_lookup(self, text, rType):
         text = self.removeBrackets(text)
         finished = False
         newStr = ''
@@ -291,7 +217,6 @@ class ChineseHandler():
 
                 while count < len(text) and count < limit and re.search(self.hanziRange , text[count]):
                     word += text[count]
-                    
                     count += 1
                 result = False
                 while not result and len(word) > 0:
@@ -302,7 +227,7 @@ class ChineseHandler():
                     if not result:
                         count -= 1
                         word = word[:-1]
-        
+
                 if result:
                     if rType == 'jyutping':
                         results = result[0][0].split(" ")
@@ -311,7 +236,7 @@ class ChineseHandler():
                         for idx, fayin in enumerate(results):
                             if rType == 'bopomofo':
                                 results[idx] = self.bopoToneToNumber(transcriptions.pinyin_to_zhuyin(fayin))
-                    newStr +=  word + '[' + ' '.join(results).lower() + ']' 
+                    newStr +=  word + '[' + ' '.join(results).lower() + ']'
                 else:
                     newStr += text[count]
                     count += 1
@@ -320,6 +245,39 @@ class ChineseHandler():
                 count += 1
             if count == len(text):
                 finished = True
+        return newStr
+
+    def finalizeReadings(self, text, field, note, editor = False, rType = False):
+        if text == '':
+            return
+        if not rType:
+            altType = self.getAltReadingType(note.model()['name'], field)
+            if altType:
+                rType = altType
+            else:
+                rType = self.getReadingType()
+            if rType not in ['pinyin','bopomofo','jyutping']:
+                return
+        newStr = self._segment_and_lookup(text, rType)
+        if editor:
+            editor.web.eval(self.commonJS +  self.insertHTMLJS % newStr.replace('"', '\\"').replace('\n', ''))
+            self.addVariants(text, note, editor)
+            self.addSimpTrad(text, note, editor)
+        else:
+            return newStr
+
+    def fetchParsed(self, text, field, note, rType = False):
+        if text == '':
+            return ''
+        if not rType:
+            altType = self.getAltReadingType(note.model()['name'], field)
+            if altType:
+                rType = altType
+            else:
+                rType = self.getReadingType()
+        if rType not in ['pinyin','bopomofo','jyutping']:
+            return text
+        newStr = self._segment_and_lookup(text, rType)
         self.addVariants(text, note)
         self.addSimpTrad(text, note)
         return newStr
