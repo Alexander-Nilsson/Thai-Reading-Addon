@@ -75,13 +75,6 @@ class TestAnkiServicesIsProtocol:
             "field_names",
             "save_model",
             "get_note",
-            "new_model",
-            "new_field",
-            "add_field",
-            "new_template",
-            "add_template",
-            "add_model",
-            "media_dir",
             "checkpoint",
             "reset",
             "process_events",
@@ -121,27 +114,6 @@ class TestMockAnkiServices:
 
             def get_note(self, nid):
                 return None
-
-            def new_model(self, name):
-                return {}
-
-            def new_field(self, name):
-                return {}
-
-            def add_field(self, model, field):
-                pass
-
-            def new_template(self, name):
-                return {}
-
-            def add_template(self, model, template):
-                pass
-
-            def add_model(self, model):
-                return model
-
-            def media_dir(self):
-                return "/tmp/media"
 
             def checkpoint(self, name):
                 pass
@@ -206,27 +178,6 @@ class TestMockAnkiServices:
             def get_note(self, nid):
                 return None
 
-            def new_model(self, name):
-                return {}
-
-            def new_field(self, name):
-                return {}
-
-            def add_field(self, model, field):
-                pass
-
-            def new_template(self, name):
-                return {}
-
-            def add_template(self, model, template):
-                pass
-
-            def add_model(self, model):
-                return model
-
-            def media_dir(self):
-                return "/tmp/media"
-
             def checkpoint(self, name):
                 pass
 
@@ -263,13 +214,6 @@ class TestLiveAnkiServicesAttributes:
             "field_names",
             "save_model",
             "get_note",
-            "new_model",
-            "new_field",
-            "add_field",
-            "new_template",
-            "add_template",
-            "add_model",
-            "media_dir",
             "checkpoint",
             "reset",
             "process_events",

@@ -25,20 +25,6 @@ class AnkiServices(Protocol):
 
     def get_note(self, nid: int) -> Note: ...
 
-    def new_model(self, name: str) -> NoteType: ...
-
-    def new_field(self, name: str) -> FieldDict: ...
-
-    def add_field(self, model: NoteType, field: FieldDict) -> None: ...
-
-    def new_template(self, name: str) -> Any: ...
-
-    def add_template(self, model: NoteType, template: Any) -> None: ...
-
-    def add_model(self, model: NoteType) -> NoteType: ...
-
-    def media_dir(self) -> str: ...
-
     def checkpoint(self, name: str) -> None: ...
 
     def reset(self) -> None: ...
@@ -80,28 +66,6 @@ class LiveAnkiServices:
 
     def get_note(self, nid: int) -> Note:
         return self._mw.col.getNote(nid)
-
-    def new_model(self, name: str) -> NoteType:
-        return self._mw.col.models.new(name)
-
-    def new_field(self, name: str) -> FieldDict:
-        return self._mw.col.models.newField(name)
-
-    def add_field(self, model: NoteType, field: FieldDict) -> None:
-        self._mw.col.models.addField(model, field)
-
-    def new_template(self, name: str) -> Any:
-        return self._mw.col.models.newTemplate(name)
-
-    def add_template(self, model: NoteType, template: Any) -> None:
-        self._mw.col.models.addTemplate(model, template)
-
-    def add_model(self, model: NoteType) -> NoteType:
-        self._mw.col.models.add(model)
-        return model
-
-    def media_dir(self) -> str:
-        return self._mw.col.media.dir()
 
     def checkpoint(self, name: str) -> None:
         self._mw.checkpoint(name)
