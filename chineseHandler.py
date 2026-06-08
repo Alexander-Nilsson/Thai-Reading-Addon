@@ -30,6 +30,7 @@ from anki import Collection
 from .models import MIChineseModels
 from .miutils import miInfo, miAsk
 from .characterManipulator import CharacterManipulator
+from .js_registry import JsRegistry
 
 
 class ChineseHandler():
@@ -43,12 +44,13 @@ class ChineseHandler():
         self.config = config
         self.manip = CharacterManipulator(mw)
         self.hanziRange = u'[\u4e00-\u9fff\u3400-\u4DBF\U00020000-\U0002A6DF\U0002A700-\U0002B73F\U0002B740-\U0002B81F\U0002B820-\U0002CEAF\U0002CEB0-\U0002EBEF\uF900-\uFAFF\U0002F800-\U0002FA1F]'
-        self.commonJS = self.getCommonJS()
-        self.insertHTMLJS = self.getInsertHTMLJS()
-        self.insertToFieldJS = self.getInsertToFieldJS()
-        self.fetchTextJS = self.getFetchTextJS()
-        self.bracketsFromSelJS = self.getBracketFromSelJs()
-        self.removeBracketsJS = self.getRemoveBracketJS()
+        self.js = JsRegistry(join(path, "js"))
+        self.commonJS = self.js.load("common.js")
+        self.insertHTMLJS = self.js.load("insertHTML.js")
+        self.insertToFieldJS = self.js.load("insertHTMLToField.js")
+        self.fetchTextJS = self.js.load("fetchText.js")
+        self.bracketsFromSelJS = self.js.load("bracketsFromSel.js")
+        self.removeBracketsJS = self.js.load("removeBrackets.js")
         self.toneToNumer =  {'ˊ':'2', 'ˇ':'3', 'ˋ':'4', '˙':'5'}
      
 
@@ -149,38 +151,8 @@ class ChineseHandler():
         else:
             editor.web.eval(self.commonJS + self.removeBracketsJS)
 
-    def getBracketFromSelJs(self):
-        bracketsFromSel = join(self.path, "js", "bracketsFromSel.js")
-        with open(bracketsFromSel, "r") as bracketsFromSelFile:
-            return bracketsFromSelFile.read()
-
-    def getRemoveBracketJS(self):    
-        removeBrackets = join(self.path, "js", "removeBrackets.js")
-        with open(removeBrackets, "r") as removeBracketsFile:
-            return removeBracketsFile.read()
-
-    def getFetchTextJS(self):
-        fetchText = join(self.path, "js", "fetchText.js")
-        with open(fetchText, "r") as fetchTextFile:
-            return fetchTextFile.read()  
-
     def addCReadings(self, editor):
         editor.web.eval(self.commonJS + self.fetchTextJS)
-
-    def getCommonJS(self):
-        common_utils_path = join(self.path, "js", "common.js")
-        with open(common_utils_path, "r") as common_utils_file:
-            return common_utils_file.read()
-
-    def getInsertHTMLJS(self):
-        insertHTML = join(self.path, "js", "insertHTML.js")
-        with open(insertHTML, "r", encoding="utf-8") as insertHTMLFile:
-            return insertHTMLFile.read() 
-
-    def getInsertToFieldJS(self):
-        insertHTML = join(self.path, "js", "insertHTMLToField.js")
-        with open(insertHTML, "r", encoding="utf-8") as insertHTMLFile:
-            return insertHTMLFile.read() 
 
     def getReadingType(self):
         return self.config.reading_type

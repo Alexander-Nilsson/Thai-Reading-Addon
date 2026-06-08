@@ -29,6 +29,9 @@ from dragonmapper import transcriptions
 from anki import Collection
 
 
+from .js_registry import JsRegistry
+
+
 class CSSJSHandler():
 
     def __init__(self, mw, anki_services, path, config):
@@ -46,72 +49,20 @@ class CSSJSHandler():
         self.hanziConverterFooter = '<!--###MIGAKU CHINESE SUPPORT CONVERTER JS ENDS###-->'
         self.pinBopoConverterHeader = '<!--###MIGAKU PINYIN BOPOMOFO CONVERTER JS START###\nDo Not Edit If Using Automatic CSS and JS Management-->'
         self.pinBopoConverterFooter = '<!--###MIGAKU PINYIN BOPOMOFO CONVERTER JS ENDS###-->'
-        self.tongwen_coreJS = self.getCoreJS()
-        self.tongwen_table_ps2tJS = self.gettongwen_table_ps2tJS()
-        self.tongwen_table_pt2sJS = self.gettongwen_table_pt2sJS()
-        self.tongwen_table_s2tJS = self.gettongwen_table_s2tJS()
-        self.tongwen_table_ss2tJS = self.gettongwen_table_ss2tJS()
-        self.tongwen_table_st2sJS = self.gettongwen_table_st2sJS()
-        self.tongwen_table_t2sJS = self.gettongwen_table_t2sJS()
-        self.chineseParserJS = self.getCParser()
-        self.toPinyinJS = self.getToPinyinJS()
-        self.toBopoJS = self.getToBopoJS()
+        self.js = JsRegistry(join(path, "js"))
+        self.tongwen_coreJS = self.js.load("tongwen_core.js")
+        self.tongwen_table_ps2tJS = self.js.load("tongwen_table_ps2t.js")
+        self.tongwen_table_pt2sJS = self.js.load("tongwen_table_pt2s.js")
+        self.tongwen_table_s2tJS = self.js.load("tongwen_table_s2t.js")
+        self.tongwen_table_ss2tJS = self.js.load("tongwen_table_ss2t.js")
+        self.tongwen_table_st2sJS = self.js.load("tongwen_table_st2s.js")
+        self.tongwen_table_t2sJS = self.js.load("tongwen_table_t2s.js")
+        self.chineseParserJS = self.js.load("chineseparser.js")
+        self.toPinyinJS = self.js.load("bopoToPinyin.js")
+        self.toBopoJS = self.js.load("pinyinToBopo.js")
 
     def updateWrapperDict(self):
         self.wrapperDict, wrapperCheck = self.getWrapperDict()
-    
-    def getToPinyinJS(self):
-        toPinyin = join(self.path, "js", "bopoToPinyin.js")
-        with open(toPinyin, "r", encoding="utf-8") as toPinyinFile:
-            return toPinyinFile.read()
-
-
-    def getToBopoJS(self):
-        toBopo = join(self.path, "js", "pinyinToBopo.js")
-        with open(toBopo, "r", encoding="utf-8") as toBopoFile:
-            return toBopoFile.read()
-
-    def getCParser(self):
-        chineseParser = join(self.path, "js", "chineseparser.js")
-        with open(chineseParser, "r", encoding="utf-8") as chineseParserFile:
-            return chineseParserFile.read() 
-
-
-    def getCoreJS(self):
-        tongwen_core = join(self.path, "js", "tongwen_core.js")
-        with open(tongwen_core, "r", encoding="utf-8") as tongwen_coreFile:
-            return tongwen_coreFile.read()
-
-    def gettongwen_table_ps2tJS(self):
-        tongwen_table_ps2t = join(self.path, "js", "tongwen_table_ps2t.js")
-        with open(tongwen_table_ps2t, "r", encoding="utf-8") as tongwen_table_ps2tFile:
-            return tongwen_table_ps2tFile.read()
-
-    def gettongwen_table_pt2sJS(self):
-        tongwen_table_pt2s = join(self.path, "js", "tongwen_table_pt2s.js")
-        with open(tongwen_table_pt2s, "r", encoding="utf-8") as tongwen_table_pt2sFile:
-            return tongwen_table_pt2sFile.read()
-
-    def gettongwen_table_s2tJS(self):
-        tongwen_table_s2t = join(self.path, "js", "tongwen_table_s2t.js")
-        with open(tongwen_table_s2t, "r", encoding="utf-8") as tongwen_table_s2tFile:
-            return tongwen_table_s2tFile.read()
-
-    def gettongwen_table_ss2tJS(self):
-        tongwen_table_ss2t = join(self.path, "js", "tongwen_table_ss2t.js")
-        with open(tongwen_table_ss2t, "r", encoding="utf-8") as tongwen_table_ss2tFile:
-            return tongwen_table_ss2tFile.read()
-
-    def gettongwen_table_st2sJS(self):
-        tongwen_table_st2s = join(self.path, "js", "tongwen_table_st2s.js")
-        with open(tongwen_table_st2s, "r", encoding="utf-8") as tongwen_table_st2sFile:
-            return tongwen_table_st2sFile.read()
-
-    def gettongwen_table_t2sJS(self):
-        tongwen_table_t2s = join(self.path, "js", "tongwen_table_t2s.js")
-        with open(tongwen_table_t2s, "r", encoding="utf-8") as tongwen_table_t2sFile:
-            return tongwen_table_t2sFile.read()
-
     def noteCardFieldExists(self, data):
         models = self.anki.all_models()
         error = ''
