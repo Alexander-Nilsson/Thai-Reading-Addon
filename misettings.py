@@ -38,10 +38,9 @@ class MigakuLabel(QLabel):
 
 
 class SettingsGui(QScrollArea):
-    def __init__(self, mw, path, colArray, modeler, cssJSHandler, reboot, config):
+    def __init__(self, mw, path, colArray, cssJSHandler, reboot, config):
         super().__init__()
         self.cssJSHandler = cssJSHandler
-        self.modeler = modeler
         self.reboot = reboot
         self.readingTypes = {
             "Pinyin": "Pinyin: The reading will be generated in pinyin.",
@@ -140,7 +139,6 @@ class SettingsGui(QScrollArea):
         self.loadTradIcons()
         self.initActiveFieldsCB()
         self.loadAutoCSSJS()
-        self.loadModelAdditions()
         self.loadActiveFields()
         self.hotkeyEsc = QShortcut(QKeySequence("Esc"), self)
         self.hotkeyEsc.activated.connect(self.hide)
@@ -172,11 +170,6 @@ class SettingsGui(QScrollArea):
 
     def loadAutoCSSJS(self):
         self.autoCSSJS.setChecked(self.config.auto_css_js_generation)
-
-    def loadModelAdditions(self):
-        self.addChina.setChecked(self.config.add_simp_note)
-        self.addTaiwan.setChecked(self.config.add_trad_note)
-        self.addHK.setChecked(self.config.add_canto_note)
 
     def loadTradIcons(self):
         self.tradIcons.setChecked(self.config.traditional_icons)
@@ -650,10 +643,6 @@ class SettingsGui(QScrollArea):
         afh1.addWidget(QLabel("Auto CSS & JS Generation:"))
         afh1.addWidget(self.autoCSSJS)
         afh1.addStretch()
-        afh1.addWidget(QLabel("Add Migaku Note Types:"))
-        afh1.addWidget(self.addChina)
-        afh1.addWidget(self.addTaiwan)
-        afh1.addWidget(self.addHK)
         afl.addLayout(afh1)
 
         afh2 = QHBoxLayout()
@@ -677,9 +666,6 @@ class SettingsGui(QScrollArea):
 
     def getAFTab(self):
         self.autoCSSJS = QCheckBox()
-        self.addChina = QCheckBox("Chinese (CH)")
-        self.addTaiwan = QCheckBox("Chinese (TW)")
-        self.addHK = QCheckBox("Cantonese (HK)")
         self.profileAF = QComboBox()
         self.noteTypeAF = QComboBox()
         self.cardTypeAF = QComboBox()
@@ -773,9 +759,6 @@ class SettingsGui(QScrollArea):
         self.autoCSSJS.setToolTip(
             "Enable or disable automatic CSS and JavaScript handling.\n Disabling this option is not recommended if you are not familiar with these technologies."
         )
-        self.addChina.setToolTip("Adds the Migaku Chinese (ZH) note type for use with pinyin readings.")
-        self.addTaiwan.setToolTip("Adds the Migaku Chinese (TW) note type for use with bopomofo readings.")
-        self.addHK.setToolTip("Adds the Migaku Chinese (HK) note type for use with jyutping readings.")
         self.profileAF.setToolTip("Profile: Select the profile.")
         self.noteTypeAF.setToolTip("Note Type: Select the note type.")
         self.cardTypeAF.setToolTip("Card Type: Select the card type.")
@@ -1319,9 +1302,6 @@ class SettingsGui(QScrollArea):
         mColors = self.getColors("m", 6)
         cColors = self.getColors("c", 7)
         autoCSSJS = self.autoCSSJS.isChecked()
-        addChina = self.addChina.isChecked()
-        addTaiwan = self.addTaiwan.isChecked()
-        addHK = self.addHK.isChecked()
         hc = self.hanziConversion.currentText()
         rc = self.readingConversion.currentText()
         fontSize = self.fontSize.value()
@@ -1329,9 +1309,6 @@ class SettingsGui(QScrollArea):
             "ActiveFields": self.saveActiveFields(),
             "Profiles": self.selectedProfiles,
             "AutoCssJsGeneration": autoCSSJS,
-            "addSimpNote": addChina,
-            "addTradNote": addTaiwan,
-            "addCantoNote": addHK,
             "BopomofoTonesToNumber": b2n,
             "hanziConversion": hc,
             "readingConversion": rc,
@@ -1346,8 +1323,6 @@ class SettingsGui(QScrollArea):
         }
 
         self.mw.addonManager.writeConfig(__name__, newConf)
-        if addChina or addTaiwan or addHK:
-            self.modeler.addModels()
         self.cssJSHandler.injectWrapperElements()
         self.hide()
         self.mw.updateMigakuChineseConfig()

@@ -24,7 +24,6 @@ from .chineseHandler import ChineseHandler
 from .cssJSHandler import CSSJSHandler
 from .misettings import SettingsGui
 from .miutils import miInfo
-from .models import MIChineseModels
 
 anki_services = LiveAnkiServices(mw)
 config = AddonConfig.from_anki(mw)
@@ -36,8 +35,6 @@ def updateMigakuChineseConfig():
     mw.MigakuChineseConfig = config
 
 
-chineseModeler = MIChineseModels(mw, anki_services, config)
-addHook("profileLoaded", chineseModeler.addModels)
 mw.miChineseSettings = False
 db = dictdb.DictDB(addonPath)
 addonPath = dirname(__file__)
@@ -93,9 +90,7 @@ AnkiQt.loadProfile = wrap(AnkiQt.loadProfile, loadCollectionArray, "before")
 
 def openChineseSettings():
     if not mw.miChineseSettings:
-        mw.miChineseSettings = SettingsGui(
-            mw, addonPath, colArray, chineseModeler, autoCssJs, openChineseSettings, config
-        )
+        mw.miChineseSettings = SettingsGui(mw, addonPath, colArray, autoCssJs, openChineseSettings, config)
     mw.miChineseSettings.show()
     if mw.miChineseSettings.windowState() == Qt.WindowState.WindowMinimized:
         # Window is minimised. Restore it.

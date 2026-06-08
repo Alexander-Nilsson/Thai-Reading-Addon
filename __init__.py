@@ -1,3 +1,6 @@
 __version__ = "0.1.0"
 
-from . import main, miUpdater, modelChanger, models
+try:
+    from . import main, miUpdater
+except ImportError:
+    pass  # not running as a package (e.g. under pytest)
