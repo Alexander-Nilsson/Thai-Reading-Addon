@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   pipeline:
-    name: Lint, Build, and Release
+    name: Lint, Test, Build, and Release
     runs-on: ubuntu-latest
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
 
@@ -50,8 +50,8 @@ jobs:
         run: |
           uv venv --seed
 
-          # Install ruff for linting
-          .venv/bin/pip install "ruff>=0.15.0"
+          # Install dev dependencies
+          .venv/bin/pip install "ruff>=0.15.0" "ty>=0.15.0" "pytest>=8.0.0"
 
           # Install anki/aqt: extract wheels directly into site-packages
           .venv/bin/python -c "
@@ -70,6 +70,12 @@ jobs:
         run: |
           .venv/bin/ruff check .
           .venv/bin/ruff format --check .
+
+      - name: Type Check
+        run: .venv/bin/ty check .
+
+      - name: Test
+        run: .venv/bin/python -m pytest tests/ -v
 
       - name: Build
         run: .venv/bin/python build.py all

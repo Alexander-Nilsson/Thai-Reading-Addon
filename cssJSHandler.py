@@ -324,7 +324,7 @@ class CSSJSHandler:
         toneColors = self.config.cantonese_tones
         count = 1
         for toneColor in toneColors:
-            css += f".canTone{count!s}{{color:{toneColor};}}.ankidroid_dark_mode .canTone{count!s}, .nightMode .cantone{count!s}{{color:{toneColor};}}"
+            css += f".canTone{count!s}{{color:{toneColor};}}.ankidroid_dark_mode .canTone{count!s}, .nightMode .canTone{count!s}{{color:{toneColor};}}"
             count += 1
         return self.chineseCSSHeader + "\n" + css + "\n" + self.chineseCSSFooter
 
