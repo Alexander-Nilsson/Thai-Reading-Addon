@@ -35,9 +35,9 @@ def updateChineseReadingConfig():
     mw.ChineseReadingConfig = config
 
 
+addonPath = dirname(__file__)
 mw.chineseReadingSettings = False
 db = dictdb.DictDB(addonPath)
-addonPath = dirname(__file__)
 autoCssJs = CSSJSHandler(mw, anki_services, addonPath, config)
 mw.ChineseReading = ChineseHandler(mw, anki_services, addonPath, db, autoCssJs, config)
 mw.ChineseReadingConfig = config
@@ -46,7 +46,10 @@ mw.updateChineseReadingConfig = updateChineseReadingConfig
 addHook("profileLoaded", autoCssJs.injectWrapperElements)
 addHook("profileLoaded", autoCssJs.updateWrapperDict)
 
-requests.packages.urllib3.disable_warnings()
+try:
+    requests.packages.urllib3.disable_warnings()
+except AttributeError:
+    pass
 
 currentNote = False
 currentField = False

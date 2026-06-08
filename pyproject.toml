@@ -6,7 +6,13 @@ requires-python = ">=3.14"
 dependencies = []
 
 [dependency-groups]
-dev = ["ruff>=0.15.0", "ty>=0.15.0", "pytest>=8.0.0"]
+dev = [
+    "ruff>=0.15.0",
+    "ty>=0.15.0",
+    "pytest>=8.0.0",
+    "pytest-anki2[anki-2509,qt6-pypi]>=2.0.0",
+    "requests>=2.0.0",
+]
 
 [tool.ruff]
 target-version = "py314"
@@ -60,6 +66,7 @@ allowed-unresolved-imports = [
 ]
 
 [tool.pytest.ini_options]
+qt_api = "pyqt6"
 testpaths = ["tests"]
 pythonpath = ["."]
 python_files = ["test_*.py"]
