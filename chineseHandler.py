@@ -34,11 +34,12 @@ from .characterManipulator import CharacterManipulator
 
 class ChineseHandler():
 
-    def __init__(self, mw, path,  db, cssJSHandler):
+    def __init__(self, mw, path,  db, cssJSHandler, config):
         self.mw = mw 
         self.cssJSHandler = cssJSHandler
         self.path = path
         self.db = db
+        self.config = config
         self.manip = CharacterManipulator(mw)
         self.hanziRange = u'[\u4e00-\u9fff\u3400-\u4DBF\U00020000-\U0002A6DF\U0002A700-\U0002B73F\U0002B740-\U0002B81F\U0002B820-\U0002CEAF\U0002CEB0-\U0002EBEF\uF900-\uFAFF\U0002F800-\U0002FA1F]'
         self.commonJS = self.getCommonJS()
@@ -47,12 +48,12 @@ class ChineseHandler():
         self.fetchTextJS = self.getFetchTextJS()
         self.bracketsFromSelJS = self.getBracketFromSelJs()
         self.removeBracketsJS = self.getRemoveBracketJS()
-        self.config = self.getConfig()
         self.toneToNumer =  {'ˊ':'2', 'ˇ':'3', 'ˋ':'4', '˙':'5'}
      
 
-    def refreshConfig(self):
-        self.config = self.getConfig()
+    def refreshConfig(self, config=None):
+        if config is not None:
+            self.config = config
 
     def getProgressWidget(self):
         progressWidget = QWidget(None)
@@ -181,11 +182,7 @@ class ChineseHandler():
             return insertHTMLFile.read() 
 
     def getReadingType(self):
-        config = self.getConfig()
-        return config['ReadingType']
-
-    def getConfig(self):
-        return self.mw.addonManager.getConfig(__name__)
+        return self.config.reading_type
 
     def getAltReadingType(self, mName, fName):
         foundArray = []
@@ -196,7 +193,7 @@ class ChineseHandler():
         return False
 
     def bopoToneToNumber(self, text):
-        if self.config['BopomofoTonesToNumber']:
+        if self.config.bopomofo_tones_to_number:
             last = text[-1:]
             if last in self.toneToNumer:
                 text = text[:-1] + self.toneToNumer[last]
@@ -327,10 +324,9 @@ class ChineseHandler():
         return newStr
             
     def addVariants(self, text, note, editor = False):
-        config = self.getConfig()
         fields = self.mw.col.models.fieldNames(note.model())
-        for variant in ['SimplifiedField', 'TraditionalField']:
-            varAr = config[variant].split(';')
+        for variant_key in ['simplified_field', 'traditional_field']:
+            varAr = getattr(self.config, variant_key).split(';')
             selFields = varAr[0].split(',')
             for selField in selFields:
                 if selField.lower() == 'none':
@@ -395,8 +391,7 @@ class ChineseHandler():
                 return fText + sep2 + traditional  
 
     def addSimpTrad(self, text, note, editor = False):
-        config = self.getConfig()
-        varAr = config['SimpTradField'].split(';')
+        varAr = self.config.simp_trad_field.split(';')
         fields = self.mw.col.models.fieldNames(note.model())
         altFields = varAr[0].split(',')
         for altField in altFields:

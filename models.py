@@ -7,7 +7,7 @@ from shutil import copyfile
 
 
 class MIChineseModels():
-    def __init__(self, mw):
+    def __init__(self, mw, config):
         self.svg = '''
    <svg class="migaku-logo" width="30" height="39" viewBox="0 0 30 39">
     <path
@@ -18,6 +18,7 @@ class MIChineseModels():
     />
   </svg>'''
         self.mw = mw
+        self.config = config
         self.activeFields = [
             "hanzi;all;Migaku {} Sentence;Standard;Sentence;front;{}",
             "coloredhanzireading;all;Migaku {} Sentence;Standard;Sentence;back;{}",
@@ -327,32 +328,32 @@ class MIChineseModels():
 
 
     def addModels(self):
-        config = self.mw.addonManager.getConfig(__name__)
         add = False
         for model in self.modelList:
             if not self.mw.col.models.by_name(model[0]):
-                if model[0].startswith('Migaku Chinese(CN)') and config['addSimpNote']:
+                if model[0].startswith('Migaku Chinese(CN)') and self.config.add_simp_note:
                     self.addModel(model)
                     self.addExportTemplates('Chinese(CN)')
-                    self.maybeAddActiveFieldsToConfig(config, 'Chinese(CN)', "pinyin")
+                    self.maybeAddActiveFieldsToConfig('Chinese(CN)', "pinyin")
                     add = True
-                elif model[0].startswith('Migaku Chinese(TW)') and config['addTradNote']:
+                elif model[0].startswith('Migaku Chinese(TW)') and self.config.add_trad_note:
                     self.addModel(model)
                     self.addExportTemplates('Chinese(TW)')
-                    self.maybeAddActiveFieldsToConfig(config, 'Chinese(TW)', "bopomofo")
+                    self.maybeAddActiveFieldsToConfig('Chinese(TW)', "bopomofo")
                     add = True
-                elif model[0].startswith('Migaku Cantonese') and config['addCantoNote']:
+                elif model[0].startswith('Migaku Cantonese') and self.config.add_canto_note:
                     self.addModel(model)
                     self.addExportTemplates('Cantonese')
-                    self.maybeAddActiveFieldsToConfig(config, 'Cantonese', "jyutping")
+                    self.maybeAddActiveFieldsToConfig('Cantonese', "jyutping")
                     add = True
         if add:
             self.moveFontToMediaDir('_times.ttf')
             self.moveFontToMediaDir('_simsun.ttf')
 
 
-    def maybeAddActiveFieldsToConfig(self, config, name, reading):
-        activeFieldsConfig = config["ActiveFields"]
+    def maybeAddActiveFieldsToConfig(self, name, reading):
+        raw = self.mw.addonManager.getConfig(__name__)
+        activeFieldsConfig = raw["ActiveFields"]
         changed = False
         for af in self.activeFields:
             namedAf = af.format(name, reading)
@@ -360,7 +361,7 @@ class MIChineseModels():
                 activeFieldsConfig.append(namedAf)
                 changed = True
         if changed:
-            self.mw.addonManager.writeConfig(__name__, config)
+            self.mw.addonManager.writeConfig(__name__, raw)
 
 
     def addExportTemplates(self, name):

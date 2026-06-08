@@ -30,22 +30,24 @@ from anki import Collection
 from .models import MIChineseModels
 from .chineseHandler import ChineseHandler
 from .cssJSHandler import CSSJSHandler
+from .addon_config import AddonConfig
 
 
-def getConfig():
-    return mw.addonManager.getConfig(__name__)
+config = AddonConfig.from_anki(mw)
 
 def updateMigakuChineseConfig():
-    mw.MigakuChineseConfig = getConfig()
+    global config
+    config = AddonConfig.from_anki(mw)
+    mw.MigakuChineseConfig = config
 
-chineseModeler = MIChineseModels(mw)
+chineseModeler = MIChineseModels(mw, config)
 addHook("profileLoaded", chineseModeler.addModels)
 mw.miChineseSettings = False
 db = dictdb.DictDB()
 addonPath = dirname(__file__)
-autoCssJs = CSSJSHandler(mw,addonPath)
-mw.MigakuChinese = ChineseHandler(mw,addonPath, db, autoCssJs)
-mw.MigakuChineseConfig = getConfig()
+autoCssJs = CSSJSHandler(mw, addonPath, config)
+mw.MigakuChinese = ChineseHandler(mw, addonPath, db, autoCssJs, config)
+mw.MigakuChineseConfig = config
 mw.updateMigakuChineseConfig = updateMigakuChineseConfig
 # addHook("profileLoaded", autoCssJs.loadWrapperDict)
 addHook("profileLoaded", autoCssJs.injectWrapperElements)
@@ -90,7 +92,7 @@ AnkiQt.loadProfile = wrap(AnkiQt.loadProfile, loadCollectionArray, 'before')
 
 def openChineseSettings():
     if not mw.miChineseSettings:
-        mw.miChineseSettings = SettingsGui(mw, addonPath, colArray, chineseModeler, autoCssJs, openChineseSettings)
+        mw.miChineseSettings = SettingsGui(mw, addonPath, colArray, chineseModeler, autoCssJs, openChineseSettings, config)
     mw.miChineseSettings.show()
     if mw.miChineseSettings.windowState() == Qt.WindowState.WindowMinimized:
             # Window is minimised. Restore it.
@@ -124,7 +126,7 @@ def setupButtons(righttopbtns, editor):
   if not checkProfile():
         return righttopbtns
   editor._links["removeFormatting"] = lambda editor: mw.MigakuChinese.cleanField(editor)
-  if mw.MigakuChineseConfig['traditionalIcons'] :
+  if config.traditional_icons :
     duPath = os.path.join(addonPath, "icons", "tradDu.svg")
     shanPath = os.path.join(addonPath, "icons", "tradShan.svg")
   else:
@@ -222,12 +224,12 @@ sys.path.append(parent_path)
 
 
 def checkProfile():
-    config = mw.MigakuChineseConfig
-    if mw.pm.name in config['Profiles'] or ('all' in config['Profiles'] or 'All' in config['Profiles']):
+    if mw.pm.name in config.profiles or ('all' in config.profiles or 'All' in config.profiles):
         return True
     return False
 
 def supportAccept(self):
+    global config
     if self.addon != os.path.basename(addonPath):
         ogAccept(self)
     txt = self.form.editor.toPlainText()
@@ -243,7 +245,8 @@ def supportAccept(self):
 
     if new_conf != self.conf:
         self.mgr.writeConfig(self.addon, new_conf)
-        # does the add-on define an action to be fired?
+        config = AddonConfig(_raw=new_conf)
+        mw.MigakuChineseConfig = config
         act = self.mgr.configUpdatedAction(self.addon)
         if act:
             act(new_conf)

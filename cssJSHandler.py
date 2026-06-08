@@ -31,9 +31,10 @@ from anki import Collection
 
 class CSSJSHandler():
 
-    def __init__(self, mw, path):
+    def __init__(self, mw, path, config):
         self.mw = mw
         self.path = path
+        self.config = config
         self.wrapperDict = False
         self.chineseParserHeader = '<!--###MIGAKU CHINESE SUPPORT JS START###\nDo Not Edit If Using Automatic CSS and JS Management-->'
         self.chineseParserFooter = '<!--###MIGAKU CHINESE SUPPORT JS ENDS###-->' 
@@ -110,10 +111,6 @@ class CSSJSHandler():
         with open(tongwen_table_t2s, "r", encoding="utf-8") as tongwen_table_t2sFile:
             return tongwen_table_t2sFile.read()
 
-    def getConfig(self):
-        return self.mw.addonManager.getConfig(__name__)
-
-    
     def noteCardFieldExists(self, data):
         models = self.mw.col.models.all()
         error = ''
@@ -172,7 +169,7 @@ class CSSJSHandler():
         fieldConflictErrors = ''
         displayTypeError = ''
         alreadyIncluded = []
-        for item in self.config['ActiveFields']:
+        for item in self.config.active_fields:
             dataArray = item.split(";")
             displayOption = dataArray[0]
             if (len(dataArray) != 6 and len(dataArray) != 7) or  '' in dataArray:
@@ -222,15 +219,14 @@ class CSSJSHandler():
 
 
     def checkProfile(self):
-        if self.mw.pm.name in self.config['Profiles'] or ('all' in self.config['Profiles'] or 'All' in self.config['Profiles']):
+        if self.mw.pm.name in self.config.profiles or ('all' in self.config.profiles or 'All' in self.config.profiles):
             return True
         return False
 
     def injectWrapperElements(self):
-        self.config = self.getConfig()
         if not self.checkProfile():
             return
-        if not self.config["AutoCssJsGeneration"]:
+        if not self.config.auto_css_js_generation:
             return
         variantCheck = self.checkVariantSyntax()
         stCheck = self.checkSimpTradSyntax()
@@ -284,7 +280,7 @@ class CSSJSHandler():
         return True
 
     def checkReadingType(self):
-        rType = self.config['ReadingType']
+        rType = self.config.reading_type
         if rType not in ['pinyin','bopomofo','jyutping']:
             miInfo('The "'+ rType +'" value in the "ReadingType" configuration is incorrect. The value must be "pinyin", "bopomofo", or "jyutping".', level="err")
             return False
@@ -302,16 +298,16 @@ class CSSJSHandler():
         return self.hanziConverterHeader + js + self.hanziConverterFooter
 
     def getRubyFontSize(self):
-        return '.pinyin-ruby{font-size:' + str(self.config['FontSize']) + '% !important;}';
+        return '.pinyin-ruby{font-size:' + str(self.config.font_size) + '% !important;}';
 
     def getChineseCss(self):
-        toneColors = self.config['MandarinTones12345'];
+        toneColors = self.config.mandarin_tones;
         css = '.nightMode .unhovered-word .hanzi-ruby{color:white !important;}.unhovered-word .hanzi-ruby{color:inherit !important;}.unhovered-word .pinyin-ruby{visibility:hidden  !important;}' + self.getRubyFontSize();
         count = 1;
         for toneColor in toneColors:
             css += '.tone%s{color:%s;}.ankidroid_dark_mode .tone%s, .nightMode .tone%s{color:%s;}'%(str(count),toneColor, str(count),str(count),toneColor)
             count += 1
-        toneColors = self.config['CantoneseTones123456'];
+        toneColors = self.config.cantonese_tones;
         count = 1;
         for toneColor in toneColors:
             css += '.canTone%s{color:%s;}.ankidroid_dark_mode .canTone%s, .nightMode .cantone%s{color:%s;}'%(str(count),toneColor,str(count),str(count),toneColor)
@@ -394,7 +390,7 @@ class CSSJSHandler():
         return text
 
     def getReadingType(self):
-        return self.config['ReadingType']
+        return self.config.reading_type
 
     def getChineseJs(self):
         js = '<script>(function(){const CHINESE_READING_TYPE ="' + self.getReadingType() + '";' + self.chineseParserJS + '})();</script>'
@@ -425,8 +421,8 @@ class CSSJSHandler():
 
 
     def injectChineseConverterToTemplate(self, t):
-        hc = self.config['hanziConversion']
-        rc = self.config['readingConversion']
+        hc = self.config.hanzi_conversion
+        rc = self.config.reading_conversion
         if hc == 'None' and rc == 'None' :
             t['qfmt'] = self.removeHanziConverterJs(t['qfmt'])
             t['afmt'] = self.removeHanziConverterJs(t['afmt'])

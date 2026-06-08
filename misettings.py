@@ -44,7 +44,7 @@ class MigakuLabel(QLabel):
         self.clicked.emit()
 
 class SettingsGui(QScrollArea):
-    def __init__(self, mw, path, colArray, modeler, cssJSHandler, reboot):
+    def __init__(self, mw, path, colArray, modeler, cssJSHandler, reboot, config):
         super(SettingsGui, self).__init__()
         self.cssJSHandler = cssJSHandler
         self.modeler = modeler
@@ -72,7 +72,7 @@ class SettingsGui(QScrollArea):
         self.initializing = False
         self.changingProfile = False
         self.buttonStatus = 0
-        self.config = self.getConfig()
+        self.config = config
         self.cA = self.updateCurrentProfileInfo(colArray)
         self.tabs = QTabWidget()
         self.allFields = self.getAllFields()
@@ -139,28 +139,28 @@ class SettingsGui(QScrollArea):
             self.reboot()
 
     def loadFontSize(self):
-        self.fontSize.setValue(self.config['FontSize'])
+        self.fontSize.setValue(self.config.font_size)
 
     def loadAutoCSSJS(self):
-        self.autoCSSJS.setChecked(self.config['AutoCssJsGeneration'])
+        self.autoCSSJS.setChecked(self.config.auto_css_js_generation)
 
     def loadModelAdditions(self):
-        self.addChina.setChecked(self.config['addSimpNote'])
-        self.addTaiwan.setChecked(self.config['addTradNote'])
-        self.addHK.setChecked(self.config['addCantoNote'])
+        self.addChina.setChecked(self.config.add_simp_note)
+        self.addTaiwan.setChecked(self.config.add_trad_note)
+        self.addHK.setChecked(self.config.add_canto_note)
 
 
     def loadTradIcons(self):
-        self.tradIcons.setChecked(self.config['traditionalIcons'])
+        self.tradIcons.setChecked(self.config.traditional_icons)
 
     def loadBopoNumbers(self):
-        self.bopo2Number.setChecked(self.config['BopomofoTonesToNumber'])
+        self.bopo2Number.setChecked(self.config.bopomofo_tones_to_number)
 
     def loadDefaultReadingCB(self):
         for key, value in self.readingTypes.items():
             self.defaultReading.addItem(key)
             self.defaultReading.setItemData(self.defaultReading.count() - 1, value ,Qt.ItemDataRole.ToolTipRole)
-        r = self.config['ReadingType']
+        r = self.config.reading_type
         self.defaultReading.setCurrentText(self.rtTranslation[r])
 
     def loadHanziReadingConversion(self):
@@ -172,8 +172,8 @@ class SettingsGui(QScrollArea):
         for key, value in readingConTypes.items():
             self.readingConversion.addItem(key)
             self.readingConversion.setItemData(self.readingConversion.count() - 1, value ,Qt.ItemDataRole.ToolTipRole)
-        hc = self.config['hanziConversion']
-        rc = self.config['readingConversion']
+        hc = self.config.hanzi_conversion
+        rc = self.config.reading_conversion
         self.hanziConversion.setCurrentText(hc)
         self.readingConversion.setCurrentText(rc)
 
@@ -205,8 +205,8 @@ class SettingsGui(QScrollArea):
         return colA
 
     def loadColors(self):
-        mColors = self.config["MandarinTones12345"]
-        cColors = self.config["CantoneseTones123456"]
+        mColors = self.config.mandarin_tones
+        cColors = self.config.cantonese_tones
         for idx,c in enumerate(mColors):
             name = 'm' + str(idx + 1) + 'color'
             widget = getattr(self, name)
@@ -1001,15 +1001,15 @@ class SettingsGui(QScrollArea):
         if which == 1:
             fl = self.currentAlt
             currentSelection = self.altCB.currentText()
-            fs = self.config['SimpTradField']
+            fs = self.config.simp_trad_field
         elif which == 2:
             fl = self.currentSimp
             currentSelection = self.simpCB.currentText()
-            fs = self.config['SimplifiedField']
+            fs = self.config.simplified_field
         else:
             fl = self.currentTrad
             currentSelection = self.tradCB.currentText()
-            fs = self.config['TraditionalField']
+            fs = self.config.traditional_field
 
         fieldList = fs.split(';')
         separator = False
@@ -1112,7 +1112,7 @@ class SettingsGui(QScrollArea):
 
     def loadProfilesList(self):
         pl = self.currentProfiles
-        profs = self.config['Profiles']
+        profs = self.config.profiles
         if len(profs) == 0:
             pl.setText('<i>None currently selected.</i>')
         else:
@@ -1132,10 +1132,6 @@ class SettingsGui(QScrollArea):
                     self.addRemProfile.setText('Remove')
             self.selectedProfiles = profl            
             pl.setText('<i>' + ', '.join(profl) + '</i>')
-
-    def getConfig(self):
-        return self.mw.addonManager.getConfig(__name__)
-    
 
     def saveAltSimpTradConfig(self):
         if len(self.selectedAltFields) < 1:
@@ -1226,10 +1222,8 @@ class SettingsGui(QScrollArea):
         self.mw.addonManager.writeConfig(__name__, newConf)
         if addChina or addTaiwan or addHK: 
             self.modeler.addModels() 
-        # self.CSSJSHandler.injectWrapperElements()  ### properly handle cssjs handling
         self.cssJSHandler.injectWrapperElements()
         self.hide()
-        self.mw.MigakuChinese.refreshConfig()
         self.mw.updateMigakuChineseConfig()
 
     def openDialogColor(self, lineEd):
@@ -1323,7 +1317,7 @@ class SettingsGui(QScrollArea):
         return
 
     def loadActiveFields(self):
-        afs = self.config['ActiveFields']
+        afs = self.config.active_fields
         for af in afs:
             afl = af.split(';')
             dt = afl[0].lower()
