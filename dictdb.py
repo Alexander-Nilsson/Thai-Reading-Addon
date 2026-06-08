@@ -5,19 +5,12 @@
 import sqlite3
 import os.path
 
-addon_path = os.path.dirname(__file__)
-
 class DictDB:
-    conn = None
-    c = None
 
-    def __init__(self):
-        try:
-            from aqt import mw
-
-            db_file = os.path.join(mw.pm.addonFolder(), addon_path, "db", "chinese_dict.sqlite")
-        except:
-            db_file = "db/chinese_dict.sqlite"
+    def __init__(self, addon_path=None):
+        if addon_path is None:
+            addon_path = os.path.dirname(__file__)
+        db_file = os.path.join(addon_path, "db", "chinese_dict.sqlite")
 
         self.conn=sqlite3.connect(db_file)
         self.c = self.conn.cursor()

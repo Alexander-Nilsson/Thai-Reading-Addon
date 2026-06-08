@@ -31,8 +31,9 @@ from anki import Collection
 
 class CSSJSHandler():
 
-    def __init__(self, mw, path, config):
+    def __init__(self, mw, anki_services, path, config):
         self.mw = mw
+        self.anki = anki_services
         self.path = path
         self.config = config
         self.wrapperDict = False
@@ -112,7 +113,7 @@ class CSSJSHandler():
             return tongwen_table_t2sFile.read()
 
     def noteCardFieldExists(self, data):
-        models = self.mw.col.models.all()
+        models = self.anki.all_models()
         error = ''
         note = False
         card = False
@@ -163,7 +164,7 @@ class CSSJSHandler():
     def getWrapperDict(self):
         wrapperDict = {}
         displayOptions = ['hover', 'coloredhover','hanzi','coloredhanzi','reading','coloredreading','hanzireading','coloredhanzireading']
-        models = self.mw.col.models.all()
+        models = self.anki.all_models()
         syntaxErrors = ''
         notFoundErrors = ''
         fieldConflictErrors = ''
@@ -177,7 +178,7 @@ class CSSJSHandler():
             elif displayOption.lower() not in displayOptions:
                 displayTypeError += '\n"' + item + '" in "ActiveFields" has an incorrect display type of "'+ displayOption +'"\n'
             else:
-                if self.mw.pm.name != dataArray[1] and 'all' != dataArray[1].lower():
+                if self.anki.profile_name != dataArray[1] and 'all' != dataArray[1].lower():
                     continue
                 if len(dataArray) == 7:
 
@@ -219,7 +220,7 @@ class CSSJSHandler():
 
 
     def checkProfile(self):
-        if self.mw.pm.name in self.config.profiles or ('all' in self.config.profiles or 'All' in self.config.profiles):
+        if self.anki.profile_name in self.config.profiles or ('all' in self.config.profiles or 'All' in self.config.profiles):
             return True
         return False
 
@@ -232,7 +233,7 @@ class CSSJSHandler():
         stCheck = self.checkSimpTradSyntax()
         readingCheck = self.checkReadingType()
         self.wrapperDict, wrapperCheck = self.getWrapperDict();      
-        models = self.mw.col.models.all()
+        models = self.anki.all_models()
         for model in models:
             if model['name'] in self.wrapperDict:
                 model['css'] = self.editChineseCss(model['css'])
@@ -262,11 +263,11 @@ class CSSJSHandler():
                     t = self.removeChineseConverterFromTemplate(t)
                     t['qfmt'] = self.removeChineseJs(self.removeWrappers(t['qfmt']))
                     t['afmt'] = self.removeChineseJs(self.removeWrappers(t['afmt']))   
-            self.mw.col.models.save(model)
+            self.anki.save_model(model)
         return variantCheck and stCheck and readingCheck and wrapperCheck 
 
     def fieldExists(self, field):
-        models = self.mw.col.models.all()
+        models = self.anki.all_models()
         for model in models:
             for fld in model['flds']:
                 if field == fld['name'] or field.lower() == 'none':

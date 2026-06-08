@@ -34,8 +34,9 @@ from .characterManipulator import CharacterManipulator
 
 class ChineseHandler():
 
-    def __init__(self, mw, path,  db, cssJSHandler, config):
-        self.mw = mw 
+    def __init__(self, mw, anki_services, path, db, cssJSHandler, config):
+        self.mw = mw
+        self.anki = anki_services
         self.cssJSHandler = cssJSHandler
         self.path = path
         self.db = db
@@ -71,7 +72,7 @@ class ChineseHandler():
 
 
     def massGenerate(self, og, dest,  om, rt, notes, generateWidget):
-        self.mw.checkpoint('Chinese Reading Generation')
+        self.anki.checkpoint('Chinese Reading Generation')
         if not miAsk('Are you sure you want to generate from the "'+ og +'" field into  the "'+ dest +'" field?.'):
             return
         generateWidget.close() 
@@ -80,8 +81,8 @@ class ChineseHandler():
         bar.setMaximum(len(notes))
         val = 0;  
         for nid in notes:
-            note = mw.col.getNote(nid)
-            fields = mw.col.models.fieldNames(note.model())
+            note = self.anki.get_note(nid)
+            fields = self.anki.field_names(note.model())
             if og in fields and dest in fields:
 
                 text = note[og] 
@@ -92,9 +93,9 @@ class ChineseHandler():
                 note.flush()
             val+=1;
             bar.setValue(val)
-            mw.app.processEvents()
-        mw.progress.finish()
-        mw.reset()
+            self.anki.process_events()
+        self.anki.progress_finish()
+        self.anki.reset()
 
 
     def applyOM(self, addType, dest, text): ##overwrite mode/addtype
@@ -120,8 +121,8 @@ class ChineseHandler():
         bar.setMaximum(len(notes))
         val = 0;  
         for nid in notes:
-            note = mw.col.getNote(nid)
-            fields = mw.col.models.fieldNames(note.model())
+            note = self.anki.get_note(nid)
+            fields = self.anki.field_names(note.model())
             if field in fields:
                 text = note[field] 
                 text =  self.removeBrackets(text)
@@ -130,9 +131,9 @@ class ChineseHandler():
                 note.flush()
             val+=1;
             bar.setValue(val)
-            mw.app.processEvents()
-        mw.progress.finish()
-        mw.reset()
+            self.anki.process_events()
+        self.anki.progress_finish()
+        self.anki.reset()
 
 
     def editorText(self, editor):    
@@ -324,7 +325,7 @@ class ChineseHandler():
         return newStr
             
     def addVariants(self, text, note, editor = False):
-        fields = self.mw.col.models.fieldNames(note.model())
+        fields = self.anki.field_names(note.model())
         for variant_key in ['simplified_field', 'traditional_field']:
             varAr = getattr(self.config, variant_key).split(';')
             selFields = varAr[0].split(',')
@@ -392,7 +393,7 @@ class ChineseHandler():
 
     def addSimpTrad(self, text, note, editor = False):
         varAr = self.config.simp_trad_field.split(';')
-        fields = self.mw.col.models.fieldNames(note.model())
+        fields = self.anki.field_names(note.model())
         altFields = varAr[0].split(',')
         for altField in altFields:
             if altField.lower() == 'none':

@@ -31,8 +31,10 @@ from .models import MIChineseModels
 from .chineseHandler import ChineseHandler
 from .cssJSHandler import CSSJSHandler
 from .addon_config import AddonConfig
+from .anki_services import LiveAnkiServices
 
 
+anki_services = LiveAnkiServices(mw)
 config = AddonConfig.from_anki(mw)
 
 def updateMigakuChineseConfig():
@@ -40,13 +42,13 @@ def updateMigakuChineseConfig():
     config = AddonConfig.from_anki(mw)
     mw.MigakuChineseConfig = config
 
-chineseModeler = MIChineseModels(mw, config)
+chineseModeler = MIChineseModels(mw, anki_services, config)
 addHook("profileLoaded", chineseModeler.addModels)
 mw.miChineseSettings = False
-db = dictdb.DictDB()
+db = dictdb.DictDB(addonPath)
 addonPath = dirname(__file__)
-autoCssJs = CSSJSHandler(mw, addonPath, config)
-mw.MigakuChinese = ChineseHandler(mw, addonPath, db, autoCssJs, config)
+autoCssJs = CSSJSHandler(mw, anki_services, addonPath, config)
+mw.MigakuChinese = ChineseHandler(mw, anki_services, addonPath, db, autoCssJs, config)
 mw.MigakuChineseConfig = config
 mw.updateMigakuChineseConfig = updateMigakuChineseConfig
 # addHook("profileLoaded", autoCssJs.loadWrapperDict)

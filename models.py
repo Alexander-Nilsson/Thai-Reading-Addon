@@ -7,7 +7,7 @@ from shutil import copyfile
 
 
 class MIChineseModels():
-    def __init__(self, mw, config):
+    def __init__(self, mw, anki_services, config):
         self.svg = '''
    <svg class="migaku-logo" width="30" height="39" viewBox="0 0 30 39">
     <path
@@ -18,6 +18,7 @@ class MIChineseModels():
     />
   </svg>'''
         self.mw = mw
+        self.anki = anki_services
         self.config = config
         self.activeFields = [
             "hanzi;all;Migaku {} Sentence;Standard;Sentence;front;{}",
@@ -330,7 +331,7 @@ class MIChineseModels():
     def addModels(self):
         add = False
         for model in self.modelList:
-            if not self.mw.col.models.by_name(model[0]):
+            if not self.anki.model_by_name(model[0]):
                 if model[0].startswith('Migaku Chinese(CN)') and self.config.add_simp_note:
                     self.addModel(model)
                     self.addExportTemplates('Chinese(CN)')
@@ -455,22 +456,21 @@ class MIChineseModels():
         
 
     def addModel(self, model):
-        modelManager = self.mw.col.models
-        newModel = modelManager.new(model[0])
+        newModel = self.anki.new_model(model[0])
         for fieldName in model[1]:
-            field = modelManager.newField(fieldName)
-            modelManager.addField(newModel, field)
-        template = modelManager.newTemplate('Standard')
+            field = self.anki.new_field(fieldName)
+            self.anki.add_field(newModel, field)
+        template = self.anki.new_template('Standard')
         template['qfmt'] = model[2]
         template['afmt'] = model[3]
         newModel['css'] = self.style
-        modelManager.addTemplate(newModel, template)
-        modelManager.add(newModel)
+        self.anki.add_template(newModel, template)
+        self.anki.add_model(newModel)
         
     def moveFontToMediaDir(self, filename):
         src = join(dirname(__file__), filename)
         if os.path.exists(src): 
-            path = join(mw.col.media.dir(), filename)
+            path = join(self.anki.media_dir(), filename)
             if not os.path.exists(path): 
                 copyfile(src, path)
             return True
