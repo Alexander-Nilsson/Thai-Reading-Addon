@@ -43,7 +43,7 @@ class ChineseHandler:
         QVBoxLayout()
         progressWidget.setFixedSize(400, 70)
         progressWidget.setWindowModality(Qt.WindowModality.ApplicationModal)
-        progressWidget.setWindowIcon(QIcon(join(self.path, "icons", "migaku.png")))
+        progressWidget.setWindowIcon(QIcon(join(self.path, "icons", "chinese-reading.svg")))
         bar = QProgressBar(progressWidget)
         bar.setFixedSize(390, 50)
         bar.move(10, 10)

@@ -109,7 +109,7 @@ class SettingsGui(QScrollArea):
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.NoContextMenu)
         # self.setWindowTitle("Migaku Chinese Settings (%s)"%versionNumber)
         self.addonPath = path
-        self.setWindowIcon(QIcon(join(self.addonPath, "icons", "migaku.png")))
+        self.setWindowIcon(QIcon(join(self.addonPath, "icons", "chinese-reading.svg")))
         self.selectedProfiles = []
         self.selectedAltFields = []
         self.selectedSimpFields = []

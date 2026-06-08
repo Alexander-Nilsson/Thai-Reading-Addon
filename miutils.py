@@ -20,7 +20,7 @@ def miInfo(text, parent=False, level="msg", day=True):
         title = "Migaku Chinese"
     if parent is False:
         parent = aqt.mw.app.activeWindow() or aqt.mw
-    icon = QIcon(join(addon_path, "icons", "migaku.png"))
+    icon = QIcon(join(addon_path, "icons", "chinese-reading.svg"))
     mb = QMessageBox(parent)
     if not day:
         mb.setStyleSheet(" QMessageBox {background-color: #272828;}")

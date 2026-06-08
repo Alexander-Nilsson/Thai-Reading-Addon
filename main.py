@@ -209,7 +209,7 @@ def onRegenerate(browser):
         layout.addWidget(b4)
         layout.addWidget(b5)
         generateWidget.setWindowTitle("Generate Chinese Readings")
-        generateWidget.setWindowIcon(QIcon(join(addonPath, "icons", "migaku.png")))
+        generateWidget.setWindowIcon(QIcon(join(addonPath, "icons", "chinese-reading.svg")))
         generateWidget.setLayout(layout)
         generateWidget.exec_()
     else:
