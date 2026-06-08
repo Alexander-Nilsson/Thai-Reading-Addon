@@ -6,18 +6,6 @@ class AddonConfig:
     _raw: dict = field(repr=False)
 
     @property
-    def add_simp_note(self) -> bool:
-        return self._raw.get("addSimpNote", True)
-
-    @property
-    def add_trad_note(self) -> bool:
-        return self._raw.get("addTradNote", True)
-
-    @property
-    def add_canto_note(self) -> bool:
-        return self._raw.get("addCantoNote", True)
-
-    @property
     def profiles(self) -> list[str]:
         return self._raw.get("Profiles", ["all"])
 

@@ -3,9 +3,6 @@ from addon_config import AddonConfig
 
 def test_defaults():
     cfg = AddonConfig(_raw={})
-    assert cfg.add_simp_note is True
-    assert cfg.add_trad_note is True
-    assert cfg.add_canto_note is True
     assert cfg.profiles == ["all"]
     assert cfg.bopomofo_tones_to_number is True
     assert cfg.hanzi_conversion == "None"
@@ -24,9 +21,6 @@ def test_defaults():
 
 def test_custom_values():
     raw = {
-        "addSimpNote": False,
-        "addTradNote": False,
-        "addCantoNote": False,
         "Profiles": ["zh", "en"],
         "BopomofoTonesToNumber": False,
         "hanziConversion": "simp",
@@ -43,7 +37,6 @@ def test_custom_values():
         "ActiveFields": ["Sentence;1;2;;Default;Simplified", "Target Word;1;2;;None;Simplified"],
     }
     cfg = AddonConfig(_raw=raw)
-    assert cfg.add_simp_note is False
     assert cfg.profiles == ["zh", "en"]
     assert cfg.hanzi_conversion == "simp"
     assert cfg.font_size == 100

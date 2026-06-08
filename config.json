@@ -1,7 +1,4 @@
 {
-  "addSimpNote": true,
-  "addTradNote": true,
-  "addCantoNote": true,
   "Profiles": ["all"],
   "BopomofoTonesToNumber": true,
   "hanziConversion": "None",
