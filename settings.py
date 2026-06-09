@@ -12,6 +12,7 @@ from PyQt6.QtGui import QIcon, QKeySequence
 from PyQt6.QtSvgWidgets import QSvgWidget
 from PyQt6.QtWidgets import QAbstractItemView, QHeaderView
 
+from .addon_config import ActiveField, parse_active_field, serialize_active_field
 from .utils import show_ask, show_info
 
 versionNumber = "ver. 1.2.3"
@@ -1291,7 +1292,16 @@ class SettingsGui(QScrollArea):
                     dt = key
                     break
             rt = afList.item(i, 6).text().lower()
-            afs.append(";".join([dt, prof, nt, ct, field, side, rt]))
+            af = ActiveField(
+                display_type=dt,
+                profile=prof,
+                note_type=nt,
+                card_type=ct,
+                field=field,
+                side=side,
+                reading_type=rt,
+            )
+            afs.append(serialize_active_field(af))
         return afs
 
     def saveConfig(self):
@@ -1419,20 +1429,23 @@ class SettingsGui(QScrollArea):
 
     def loadActiveFields(self):
         afs = self.config.active_fields
-        for af in afs:
-            afl = af.split(";")
-            dt = afl[0].lower()
-            rt = afl[6].lower()
+        for af_str in afs:
+            parsed = parse_active_field(af_str)
+            if isinstance(parsed, str):
+                continue
+            dt = parsed.display_type
+            rt = parsed.reading_type
             if dt in self.displayTranslation:
-                prof = afl[1]
+                prof = parsed.profile
                 if prof == "all":
                     prof = "All"
+                rt_display = self.rtTranslation.get(rt, rt.title())
                 self.addToList(
                     prof,
-                    afl[2],
-                    afl[3],
-                    afl[4],
-                    afl[5][0].upper() + afl[5][1:].lower(),
+                    parsed.note_type,
+                    parsed.card_type,
+                    parsed.field,
+                    parsed.side[0].upper() + parsed.side[1:].lower(),
                     self.displayTranslation[dt],
-                    self.rtTranslation[rt],
+                    rt_display,
                 )

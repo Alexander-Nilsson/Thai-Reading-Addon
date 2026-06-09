@@ -6,6 +6,7 @@ from os.path import dirname, join
 from aqt.qt import *
 
 sys.path.append(join(dirname(__file__), "lib"))
+from .addon_config import parse_active_field
 from .js_registry import JsRegistry
 from .utils import show_info
 
@@ -119,87 +120,61 @@ class CSSJSHandler:
 
     def getWrapperDict(self):
         wrapperDict = {}
-        displayOptions = [
-            "hover",
-            "coloredhover",
-            "hanzi",
-            "coloredhanzi",
-            "reading",
-            "coloredreading",
-            "hanzireading",
-            "coloredhanzireading",
-        ]
         self.anki.all_models()
         syntaxErrors = ""
         notFoundErrors = ""
         fieldConflictErrors = ""
-        displayTypeError = ""
         alreadyIncluded = []
         for item in self.config.active_fields:
-            dataArray = item.split(";")
-            displayOption = dataArray[0]
-            if (len(dataArray) != 6 and len(dataArray) != 7) or "" in dataArray:
-                syntaxErrors += '\n"' + item + '" in "' + displayOption + '"\n'
-            elif displayOption.lower() not in displayOptions:
-                displayTypeError += (
-                    '\n"' + item + '" in "ActiveFields" has an incorrect display type of "' + displayOption + '"\n'
-                )
-            else:
-                if self.anki.profile_name != dataArray[1] and "all" != dataArray[1].lower():
-                    continue
-                if len(dataArray) == 7:
-                    if dataArray[6].lower() not in ["pinyin", "bopomofo", "jyutping"]:
-                        syntaxErrors += (
-                            '\n"'
-                            + item
-                            + '" in "ActiveFields"\nThe value "'
-                            + dataArray[6]
-                            + '" is not valid. The "ReadingType" value must be either "pinyin", "bopomofo", or "jyutping". The default value has been applied.'
-                        )
-                        dataArray[6] = "default"
-                else:
-                    dataArray.append("default")
-                if dataArray[2] != "noteTypeName" and dataArray[3] != "cardTypeName" and dataArray[4] != "fieldName":
-                    success, errorMsg = self.noteCardFieldExists(dataArray)
-                    if success:
-                        conflictFree, conflicts = self.fieldConflictCheck(dataArray, alreadyIncluded, displayOption)
-                        if conflictFree:
-                            if dataArray[2] not in wrapperDict:
-                                alreadyIncluded.append([dataArray, displayOption])
-                                wrapperDict[dataArray[2]] = [
-                                    [dataArray[3], dataArray[4], dataArray[5], displayOption, dataArray[6]]
-                                ]
-                            else:
-                                if [
-                                    dataArray[3],
-                                    dataArray[4],
-                                    dataArray[5],
-                                    displayOption,
-                                    dataArray[6],
-                                ] not in wrapperDict[dataArray[2]]:
-                                    alreadyIncluded.append([dataArray, displayOption])
-                                    wrapperDict[dataArray[2]].append(
-                                        [dataArray[3], dataArray[4], dataArray[5], displayOption, dataArray[6]]
-                                    )
+            parsed = parse_active_field(item)
+            if isinstance(parsed, str):
+                syntaxErrors += "\n" + parsed + "\n"
+                continue
+            if self.anki.profile_name != parsed.profile and "all" != parsed.profile.lower():
+                continue
+            dataArray = [
+                parsed.display_type,
+                parsed.profile,
+                parsed.note_type,
+                parsed.card_type,
+                parsed.field,
+                parsed.side,
+                parsed.reading_type,
+            ]
+            if dataArray[2] != "noteTypeName" and dataArray[3] != "cardTypeName" and dataArray[4] != "fieldName":
+                success, errorMsg = self.noteCardFieldExists(dataArray)
+                if success:
+                    conflictFree, conflicts = self.fieldConflictCheck(dataArray, alreadyIncluded, dataArray[0])
+                    if conflictFree:
+                        if dataArray[2] not in wrapperDict:
+                            alreadyIncluded.append([dataArray, dataArray[0]])
+                            wrapperDict[dataArray[2]] = [
+                                [dataArray[3], dataArray[4], dataArray[5], dataArray[0], dataArray[6]]
+                            ]
                         else:
-                            fieldConflictErrors += (
-                                "A conflict was found in this field pair:\n\n" + "\n".join(conflicts) + "\n\n"
-                            )
+                            if [
+                                dataArray[3],
+                                dataArray[4],
+                                dataArray[5],
+                                dataArray[0],
+                                dataArray[6],
+                            ] not in wrapperDict[dataArray[2]]:
+                                alreadyIncluded.append([dataArray, dataArray[0]])
+                                wrapperDict[dataArray[2]].append(
+                                    [dataArray[3], dataArray[4], dataArray[5], dataArray[0], dataArray[6]]
+                                )
                     else:
-                        notFoundErrors += (
-                            '"' + item + '" in "ActiveFields" has the following error(s):\n' + errorMsg + "\n\n"
+                        fieldConflictErrors += (
+                            "A conflict was found in this field pair:\n\n" + "\n".join(conflicts) + "\n\n"
                         )
+                else:
+                    notFoundErrors += (
+                        '"' + item + '" in "ActiveFields" has the following error(s):\n' + errorMsg + "\n\n"
+                    )
 
         if syntaxErrors != "":
             show_info(
                 'The following entries have incorrect syntax:\nPlease make sure the format is as follows:\n"displayType;profileName;noteTypeName;cardTypeName;fieldName;side(;ReadingType)".\n'
-                + syntaxErrors,
-                level="err",
-            )
-            return (wrapperDict, False)
-        if displayTypeError != "":
-            show_info(
-                'The following entries have an incorrect display type. Valid display types are "Hover", "ColoredHover", "Hanzi", "ColoredHanzi", "HanziReading", "ColoredHanziReading", "Reading", and "ColoredReading".\n'
                 + syntaxErrors,
                 level="err",
             )
