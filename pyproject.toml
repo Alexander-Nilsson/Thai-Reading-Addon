@@ -54,6 +54,8 @@ invalid-method-override = "warn"
 not-subscriptable = "warn"
 not-iterable = "warn"
 invalid-argument-type = "warn"
+unsupported-operator = "warn"
+no-matching-overload = "warn"
 
 [tool.ty.src]
 exclude = ["lib/**", "urllib3/**"]
