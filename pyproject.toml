@@ -1,6 +1,6 @@
 [project]
 name = "chinese-reading"
-version = "0.1.1"
+version = "0.1.2"
 description = "Anki addon for Chinese reading generation and card template injection"
 requires-python = ">=3.14"
 dependencies = []
