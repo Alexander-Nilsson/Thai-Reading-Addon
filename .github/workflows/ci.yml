@@ -66,7 +66,7 @@ jobs:
         run: .venv/bin/ty check .
 
       - name: Test
-        run: .venv/bin/python -m pytest tests/ -v --ignore=tests/test_smoke.py
+        run: mv urllib3 urllib3_test_tmp && .venv/bin/python -m pytest tests/ -v --ignore=tests/test_smoke.py && mv urllib3_test_tmp urllib3
 
       - name: Build
         run: .venv/bin/python build.py all
