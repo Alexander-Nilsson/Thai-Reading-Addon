@@ -11,7 +11,7 @@ HANZI_RANGE = re.compile(
     "\uf900-\ufaff\U0002f800-\U0002fa1f]"
 )
 
-TONE_TO_NUMBER: dict[str, str] = {"ˊ": "2", "ˇ": "3", "ˋ": "4", "˙": "5"}
+TONE_TO_NUMBER: dict[str, str] = {"ˊ": "2", "ˇ": "3", "ˋ": "4", "˙": "5"}  # noqa: RUF001
 
 
 def bopoToneToNumber(text: str, enabled: bool = True) -> str:
