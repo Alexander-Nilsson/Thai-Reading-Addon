@@ -7,7 +7,7 @@ from os.path import dirname, join
 from anki.utils import is_win
 from aqt.theme import theme_manager
 from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QIcon, QKeySequence
+from PyQt6.QtGui import QIcon, QKeySequence, QShortcut
 from PyQt6.QtSvgWidgets import QSvgWidget
 from PyQt6.QtWidgets import (
     QAbstractItemView,
@@ -22,7 +22,6 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QRadioButton,
     QScrollArea,
-    QShortcut,
     QSpinBox,
     QTableWidget,
     QTableWidgetItem,

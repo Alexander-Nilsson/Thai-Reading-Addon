@@ -50,6 +50,10 @@ unresolved-import = "warn"
 possibly-unresolved-reference = "warn"
 unresolved-attribute = "warn"
 invalid-assignment = "warn"
+invalid-method-override = "warn"
+not-subscriptable = "warn"
+not-iterable = "warn"
+invalid-argument-type = "warn"
 
 [tool.ty.src]
 exclude = ["lib/**", "urllib3/**"]
