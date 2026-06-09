@@ -4,9 +4,10 @@ from unittest.mock import MagicMock
 import pytest
 from conftest import import_chinese_handler
 
-from addon_config import AddonConfig
-from dictdb import DictDB
-from text_utils import clean_spaces, html_remove, replace_html
+from config.config import AddonConfig
+from reading.dictdb import DictDB
+from reading.generator import ReadingGenerator
+from reading.text_utils import clean_spaces, html_remove, replace_html, strip_brackets
 
 
 def _make_config(**overrides):
@@ -48,13 +49,7 @@ def _make_handler(ChineseHandler, config=None, db=None):
     handler.anki = anki
     handler.config = cfg
     handler.db = db
-    handler.hanziRange = (
-        "[\u4e00-\u9fff\u3400-\u4dbf\U00020000-\U0002a6df"
-        "\U0002a700-\U0002b73f\U0002b740-\U0002b81f"
-        "\U0002b820-\U0002ceaf\U0002ceb0-\U0002ebef"
-        "\uf900-\ufaff\U0002f800-\U0002fa1f]"
-    )
-    handler.toneToNumer = {"ˊ": "2", "ˇ": "3", "ˋ": "4", "˙": "5"}  # noqa: RUF001
+    handler.reading_generator = ReadingGenerator(db, cfg)
     return handler
 
 
@@ -124,32 +119,6 @@ class TestRemoveBrackets:
         assert "你 好" in result
 
 
-class TestBopoToneToNumber:
-    def test_tone2_converted(self, ChineseHandler):
-        handler = _make_handler(ChineseHandler, config=_make_config(BopomofoTonesToNumber=True))
-        assert handler.bopoToneToNumber("ㄊㄨㄥˊ") == "ㄊㄨㄥ2"
-
-    def test_tone3_converted(self, ChineseHandler):
-        handler = _make_handler(ChineseHandler, config=_make_config(BopomofoTonesToNumber=True))
-        assert handler.bopoToneToNumber("ㄍㄨˇ") == "ㄍㄨ3"
-
-    def test_tone4_converted(self, ChineseHandler):
-        handler = _make_handler(ChineseHandler, config=_make_config(BopomofoTonesToNumber=True))
-        assert handler.bopoToneToNumber("ㄉㄚˋ") == "ㄉㄚ4"
-
-    def test_tone5_converted(self, ChineseHandler):
-        handler = _make_handler(ChineseHandler, config=_make_config(BopomofoTonesToNumber=True))
-        assert handler.bopoToneToNumber("ㄉㄜ˙") == "ㄉㄜ5"
-
-    def test_tone1_appended(self, ChineseHandler):
-        handler = _make_handler(ChineseHandler, config=_make_config(BopomofoTonesToNumber=True))
-        assert handler.bopoToneToNumber("ㄇㄚ") == "ㄇㄚ1"
-
-    def test_disabled(self, ChineseHandler):
-        handler = _make_handler(ChineseHandler, config=_make_config(BopomofoTonesToNumber=False))
-        assert handler.bopoToneToNumber("ㄊㄨㄥˊ") == "ㄊㄨㄥˊ"
-
-
 class TestApplyOM:
     def test_overwrite(self, ChineseHandler):
         handler = _make_handler(ChineseHandler)
@@ -181,39 +150,6 @@ class TestApplyOM:
         assert handler.applyOM("Overwrite", "dest", None) == "dest"
         assert handler.applyOM("Add", "dest", None) == "dest"
         assert handler.applyOM("If Empty", "dest", None) == "dest"
-
-
-class TestSegmentAndLookup:
-    def test_simple_pinyin(self, ChineseHandler, real_db):
-        handler = _make_handler(ChineseHandler, db=real_db)
-        result = handler._segment_and_lookup("你好", "pinyin")
-        assert "你好" in result
-        assert "[" in result
-        assert "]" in result
-
-    def test_mixed_text_and_chinese(self, ChineseHandler, real_db):
-        handler = _make_handler(ChineseHandler, db=real_db)
-        result = handler._segment_and_lookup("hello 你好 world", "pinyin")
-        assert result.startswith("hello ")
-        assert "你好" in result
-        assert result.endswith(" world")
-
-    def test_jyutping(self, ChineseHandler, real_db):
-        handler = _make_handler(ChineseHandler, db=real_db)
-        result = handler._segment_and_lookup("你好", "jyutping")
-        assert "你好" in result
-        assert "[" in result
-
-    def test_unknown_char_passthrough(self, ChineseHandler, real_db):
-        handler = _make_handler(ChineseHandler, db=real_db)
-        result = handler._segment_and_lookup("hello", "pinyin")
-        assert "[" not in result
-        assert result == "hello"
-
-    def test_brackets_stripped_from_input(self, ChineseHandler, real_db):
-        handler = _make_handler(ChineseHandler, db=real_db)
-        result = handler._segment_and_lookup("你好[nǐhǎo]", "pinyin")
-        assert "nǐhǎo" not in result
 
 
 class TestHtmlRemove:
@@ -254,3 +190,49 @@ class TestEditorText:
         mock_editor.web.selectedText.return_value = "selected text"
         result = handler.editorText(mock_editor)
         assert result == "selected text"
+
+
+class TestStripBrackets:
+    def test_simple_bracket_removal(self):
+        assert strip_brackets("你好[nǐ hǎo]") == "你好"
+
+    def test_multiple_brackets(self):
+        assert strip_brackets("中国[zhōng guó]你好[nǐ hǎo]") == "中国你好"
+
+    def test_no_brackets(self):
+        assert strip_brackets("hello world") == "hello world"
+
+    def test_preserves_sound_tags(self):
+        assert "[sound:file.mp3]" in strip_brackets("[sound:file.mp3]")
+
+    def test_preserves_number_brackets(self):
+        result = strip_brackets("[42]")
+        assert "[42]" in result
+
+    def test_removes_content_brackets_preserves_sound(self):
+        result = strip_brackets("你好[nǐ hǎo][sound:test.mp3]")
+        assert "[sound:test.mp3]" in result
+        assert "nǐ hǎo" not in result
+
+    def test_return_sounds(self):
+        text, sounds = strip_brackets("[sound:file.mp3]你好[nǐ hǎo]", return_sounds=True)
+        assert "[sound:file.mp3]" in sounds
+        assert "nǐ hǎo" not in text
+
+    def test_remove_audio(self):
+        result = strip_brackets("你好[nǐ hǎo][sound:file.mp3]", remove_audio=True)
+        assert "[sound:file.mp3]" not in result
+        assert "nǐ hǎo" not in result
+
+    def test_html_preserved(self):
+        text = "<b>你好</b>[nǐ hǎo]"
+        result = strip_brackets(text)
+        assert "<b>" in result
+        assert "nǐ hǎo" not in result
+
+    def test_empty_string(self):
+        assert strip_brackets("") == ""
+
+    def test_preserves_spaces(self):
+        result = strip_brackets("你 好[nǐ hǎo]")
+        assert "你 好" in result

@@ -4,7 +4,7 @@ import tempfile
 
 import pytest
 
-from dictdb import DictDB
+from reading.dictdb import DictDB
 
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "db", "chinese_dict.sqlite")
 

@@ -1,7 +1,7 @@
 import os
 import tempfile
 
-from js_registry import JsRegistry
+from template.js_registry import JsRegistry
 
 
 def test_load_returns_file_content():

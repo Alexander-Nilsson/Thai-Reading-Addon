@@ -6,9 +6,8 @@ from os.path import dirname, join
 
 import aqt.editor
 import aqt.utils
-from anki.hooks import addHook, wrap
-from aqt import mw
-from aqt.qt import _
+from anki.hooks import addHook
+from aqt import gui_hooks, mw
 from aqt.utils import saveGeom, saveSplitter, showInfo
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QAction, QIcon
@@ -20,19 +19,22 @@ from PyQt6.QtWidgets import (
     QPushButton,
 )
 
-from . import dictdb
+from .reading import dictdb
 
 sys.path.append(join(dirname(__file__), "lib"))
 import requests
-from anki import Collection
-from aqt.main import AnkiQt
 
-from .addon_config import AddonConfig
-from .anki_services import LiveAnkiServices
-from .chineseHandler import ChineseHandler
-from .cssJSHandler import CSSJSHandler
-from .settings import SettingsGui
-from .utils import show_info
+from ._infra.anki_services import LiveAnkiServices
+from ._infra.utils import show_info
+from .config.config import AddonConfig
+from .config.mutation import (
+    ConfigDelta,
+    LiveConfigMutation,
+    LiveModelCatalog,
+)
+from .config.settings import SettingsGui
+from .reading.handler import ChineseHandler
+from .template.handler import CSSJSHandler
 
 anki_services = LiveAnkiServices(mw)
 config = AddonConfig.from_anki(mw)
@@ -51,9 +53,25 @@ autoCssJs = CSSJSHandler(mw, anki_services, addonPath, config)
 mw.ChineseReading = ChineseHandler(mw, anki_services, addonPath, db, autoCssJs, config)
 mw.ChineseReadingConfig = config
 mw.updateChineseReadingConfig = updateChineseReadingConfig
-# addHook("profileLoaded", autoCssJs.loadWrapperDict)
-addHook("profileLoaded", autoCssJs.injectWrapperElements)
-addHook("profileLoaded", autoCssJs.updateWrapperDict)
+
+defaults = mw.addonManager.addonConfigDefaults(addonPath)
+
+
+def rebuild_catalog():
+    mw.ChineseReadingCatalog = LiveModelCatalog(mw)
+
+
+mw.ChineseReadingCatalog = LiveModelCatalog(mw)
+mw.ChineseReadingMutation = LiveConfigMutation(
+    anki_services,
+    __name__,
+    config,
+    defaults,
+    mw.ChineseReadingCatalog,
+)
+gui_hooks.profile_did_open.append(rebuild_catalog)
+gui_hooks.profile_did_open.append(autoCssJs.injectWrapperElements)
+gui_hooks.profile_did_open.append(autoCssJs.updateWrapperDict)
 
 try:
     requests.packages.urllib3.disable_warnings()
@@ -64,50 +82,18 @@ currentNote = False
 currentField = False
 currentKey = False
 wrapperDict = False
-colArray = False
-
-
-def loadCollectionArray(self=None, b=None):
-    global colArray
-    colArray = {}
-    loadAllProfileInformation()
-
-
-def loadAllProfileInformation():
-    global colArray
-    for prof in mw.pm.profiles():
-        cpath = join(mw.pm.base, prof, "collection.anki2")
-        try:
-            tempCol = Collection(cpath)
-            noteTypes = tempCol.models.all()
-            tempCol.close()
-            tempCol = None
-            noteTypeDict = {}
-            for note in noteTypes:
-                noteTypeDict[note["name"]] = {"cardTypes": [], "fields": []}
-                for ct in note["tmpls"]:
-                    noteTypeDict[note["name"]]["cardTypes"].append(ct["name"])
-                for f in note["flds"]:
-                    noteTypeDict[note["name"]]["fields"].append(f["name"])
-            colArray[prof] = noteTypeDict
-        except Exception:
-            show_info(
-                "<b>Warning:</b><br>One of your profiles could not be loaded. "
-                "This usually happens if you've just created a new profile and are opening it for the first time. "
-                "The issue should be fixed after restarting Anki. "
-                "If it persists, then your profile is corrupted in some way.\n\n"
-                "You can fix this corruption by exporting your collection, importing it into a new profile, "
-                "and then deleting your previous profile. <b>",
-                level="wrn",
-            )
-
-
-AnkiQt.loadProfile = wrap(AnkiQt.loadProfile, loadCollectionArray, "before")
 
 
 def openChineseSettings():
     if not mw.chineseReadingSettings:
-        mw.chineseReadingSettings = SettingsGui(mw, addonPath, colArray, autoCssJs, openChineseSettings, config)
+        mw.chineseReadingSettings = SettingsGui(
+            mw,
+            addonPath,
+            mw.ChineseReadingCatalog,
+            autoCssJs,
+            openChineseSettings,
+            config,
+        )
     mw.chineseReadingSettings.show()
     if mw.chineseReadingSettings.windowState() == Qt.WindowState.WindowMinimized:
         # Window is minimised. Restore it.
@@ -155,31 +141,11 @@ def setupButtons(righttopbtns, editor):
     return righttopbtns
 
 
-def shortcutCheck(x, key):
-    if x == key:
-        return False
-    else:
-        return True
-
-
-def setupShortcuts(shortcuts, editor):
+def setupShortcuts(cuts, editor):
     if not checkProfile():
-        return shortcuts
-    # config = getConfig()
-    pitchData = []
-    pitchData.append(
-        {"hotkey": "F10", "name": "extra", "function": lambda editor=editor: mw.ChineseReading.cleanField(editor)}
-    )
-    pitchData.append(
-        {"hotkey": "F9", "name": "extra", "function": lambda editor=editor: mw.ChineseReading.addCReadings(editor)}
-    )
-    newKeys = shortcuts
-    for pitch in pitchData:
-        newKeys = list(filter(lambda x: shortcutCheck(x[0], pitch["hotkey"]), newKeys))
-        newKeys += [(pitch["hotkey"], pitch["function"])]
-    shortcuts.clear()
-    shortcuts += newKeys
-    return
+        return
+    cuts.append(("F10", lambda: mw.ChineseReading.cleanField(editor)))
+    cuts.append(("F9", lambda: mw.ChineseReading.addCReadings(editor)))
 
 
 def onRegenerate(browser):
@@ -257,20 +223,25 @@ def supportAccept(self):
     global config
     if self.addon != os.path.basename(addonPath):
         ogAccept(self)
+        return
     txt = self.form.editor.toPlainText()
     try:
         new_conf = json.loads(txt)
     except Exception as e:
-        showInfo(_("Invalid configuration: ") + repr(e))
+        showInfo("Invalid configuration: " + repr(e))
         return
 
     if not isinstance(new_conf, dict):
-        showInfo(_("Invalid configuration: top level object must be a map"))
+        showInfo("Invalid configuration: top level object must be a map")
         return
 
     if new_conf != self.conf:
-        self.mgr.writeConfig(self.addon, new_conf)
-        config = AddonConfig(_raw=new_conf)
+        delta = ConfigDelta.from_dict(new_conf)
+        try:
+            config = mw.ChineseReadingMutation.save_config(delta)
+        except Exception as e:
+            showInfo("Invalid configuration: " + str(e))
+            return
         mw.ChineseReadingConfig = config
         autoCssJs.refreshConfig(config)
         mw.ChineseReading.refreshConfig(config)
@@ -288,13 +259,13 @@ def supportAccept(self):
 ogAccept = aqt.addons.ConfigEditor.accept
 aqt.addons.ConfigEditor.accept = supportAccept
 
-addHook("browser.setupMenus", setupMenu)
+gui_hooks.browser_menus_did_init.append(setupMenu)
 addHook("setupEditorButtons", setupButtons)
-addHook("setupEditorShortcuts", setupShortcuts)
+gui_hooks.editor_did_init_shortcuts.append(setupShortcuts)
 
 
 def getFieldName(fieldId, note):
-    fields = mw.col.models.fieldNames(note.model())
+    fields = mw.col.models.field_names(note.model())
     field = fields[int(fieldId)]
     return field
 

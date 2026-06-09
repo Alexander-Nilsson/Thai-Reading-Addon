@@ -19,7 +19,7 @@ def _mock_anki_deps():
 
 
 def _import_anki_services():
-    import anki_services
+    from _infra import anki_services
 
     importlib.reload(anki_services)
     return anki_services.AnkiServices, anki_services.LiveAnkiServices

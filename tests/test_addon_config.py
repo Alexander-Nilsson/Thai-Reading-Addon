@@ -1,4 +1,4 @@
-from addon_config import AddonConfig
+from config.config import AddonConfig
 
 
 def test_defaults():

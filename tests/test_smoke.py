@@ -3,6 +3,8 @@
 import os
 
 import pytest
+
+pytest_anki = pytest.importorskip("pytest_anki", reason="pytest-anki not installed")
 from pytest_anki import AnkiSession
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
