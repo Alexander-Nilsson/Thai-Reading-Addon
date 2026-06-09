@@ -5,12 +5,31 @@ from operator import itemgetter
 from os.path import dirname, join
 
 from anki.utils import is_win
-from aqt.qt import *
 from aqt.theme import theme_manager
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QIcon, QKeySequence
 from PyQt6.QtSvgWidgets import QSvgWidget
-from PyQt6.QtWidgets import QAbstractItemView, QHeaderView
+from PyQt6.QtWidgets import (
+    QAbstractItemView,
+    QCheckBox,
+    QColorDialog,
+    QComboBox,
+    QGroupBox,
+    QHBoxLayout,
+    QHeaderView,
+    QLabel,
+    QLineEdit,
+    QPushButton,
+    QRadioButton,
+    QScrollArea,
+    QShortcut,
+    QSpinBox,
+    QTableWidget,
+    QTableWidgetItem,
+    QTabWidget,
+    QVBoxLayout,
+    QWidget,
+)
 
 from .addon_config import ActiveField, parse_active_field, serialize_active_field
 from .utils import show_ask, show_info
@@ -61,11 +80,17 @@ class SettingsGui(QScrollArea):
             ],
             "Hover": [
                 "hover",
-                "Hover: Displays text without tone coloring or reading information,\nbut displays an individual word's reading information when it is hovered.",
+                (
+                    "Hover: Displays text without tone coloring or reading information,\n"
+                    "but displays an individual word's reading information when it is hovered."
+                ),
             ],
             "Colored Hover": [
                 "coloredhover",
-                "Colored Hover: Displays text without tone coloring or reading information,\nbut displays an individual word's tone coloring and reading information when it is hovered.",
+                (
+                    "Colored Hover: Displays text without tone coloring or reading information,\n"
+                    "but displays an individual word's tone coloring and reading information when it is hovered."
+                ),
             ],
             "Hanzi Reading": [
                 "hanzireading",
@@ -77,11 +102,17 @@ class SettingsGui(QScrollArea):
             ],
             "Reading": [
                 "reading",
-                "Reading: Displays text in your chosen reading type without tone coloring.\nNote that if a word's reading is not available it will be displayed in hanzi.",
+                (
+                    "Reading: Displays text in your chosen reading type without tone coloring.\n"
+                    "Note that if a word's reading is not available it will be displayed in hanzi."
+                ),
             ],
             "Colored Reading": [
                 "coloredreading",
-                "Colored Reading: Displays text in your chosen reading type with tone coloring.\nNote that if a word's reading is not available it will be displayed in hanzi.",
+                (
+                    "Colored Reading: Displays text in your chosen reading type with tone coloring.\n"
+                    "Note that if a word's reading is not available it will be displayed in hanzi."
+                ),
             ],
         }
         self.displayTranslation = {
@@ -217,8 +248,8 @@ class SettingsGui(QScrollArea):
 
         return self.ciSort(fieldList)
 
-    def ciSort(self, l):
-        return sorted(l, key=lambda s: s.lower())
+    def ciSort(self, lst):
+        return sorted(lst, key=lambda s: s.lower())
 
     def updateCurrentProfileInfo(self, colA):
         pn = self.mw.pm.name
@@ -683,52 +714,69 @@ class SettingsGui(QScrollArea):
 
     def initTooltips(self):
         self.profileCB.setToolTip(
-            'These are the profiles that the add-on will be active on.\nWhen set to "All", the add-on will be active on all profiles.'
+            "These are the profiles that the add-on will be active on.\n"
+            'When set to "All", the add-on will be active on all profiles.'
         )
         self.addRemProfile.setToolTip("Add/Remove a profile.")
         self.defaultReading.setToolTip(
-            "This is the default reading generation that will be used when\ngenerating in a field that has not been designated as an Active Field."
+            "This is the default reading generation that will be used when "
+            "generating in a field that has not been designated as an Active Field."
         )
         self.bopo2Number.setToolTip(
-            "When enabled bopomofo readings will be generated with numbers\ninstead of tone marks.This makes editing incorrect tones easier because\nnumbers are easier to type then tone marks. When viewed during reviews, or previews\ntone marks will replace the numbers."
+            "When enabled bopomofo readings will be generated with numbers "
+            "instead of tone marks. This makes editing incorrect tones easier because "
+            "numbers are easier to type then tone marks. When viewed during reviews, or previews "
+            "tone marks will replace the numbers."
         )
         self.altCB.setToolTip(
-            "The fields where the alternate characters will be generated.If the target field where readings are\ngenerated has only simplified characters then traditional characters will be placed in this\nfield and vice versa. If the target contains a mix of both simplified and traditional characters then a consistent\nalternate containing only simplified and traditional characters. A variant will only be generated if it is\ndifferent than the original text."
+            "The fields where the alternate characters will be generated. "
+            "If the target field where readings are generated has only simplified characters "
+            "then traditional characters will be placed in this field and vice versa. "
+            "If the target contains a mix of both simplified and traditional characters then "
+            "a consistent alternate containing only simplified and traditional characters. "
+            "A variant will only be generated if it is different than the original text."
         )
         self.simpCB.setToolTip(
-            "The fields where simplified characters version of the text\nwill be generated when reading generation occurs. The variant will be added\neven it it is the same as the original text."
+            "The fields where simplified characters version of the text "
+            "will be generated when reading generation occurs. The variant will be added "
+            "even it it is the same as the original text."
         )
         self.tradCB.setToolTip(
-            "The fields where traditional characters version of the text\nwill be generated when reading generation occurs. The variant will be added\neven it it is the same as the original text."
+            "The fields where traditional characters version of the text "
+            "will be generated when reading generation occurs. The variant will be added "
+            "even it it is the same as the original text."
         )
         self.altOW.setToolTip(
-            "The alternate variant will be generated into the selected field(s),\noverwriting their current contents."
+            "The alternate variant will be generated into the selected field(s), overwriting their current contents."
         )
         self.altIfE.setToolTip(
-            "The alternate variant will be generated into the selected field(s)\nonly if they are empty."
+            "The alternate variant will be generated into the selected field(s) only if they are empty."
         )
         self.altWithSep.setToolTip(
-            'The alternate variant will be added on to the selected field(s)\nfollowing the separator. The default separator is an html line break "<br>".'
+            "The alternate variant will be added on to the selected field(s) "
+            'following the separator. The default separator is an html line break "<br>".'
         )
         self.altSep.setToolTip("The separator to be used when adding the alternate variant.")
         self.simpOW.setToolTip(
-            "The simplified variant will be generated into the selected field(s),\noverwriting their current contents."
+            "The simplified variant will be generated into the selected field(s), overwriting their current contents."
         )
         self.simpIfE.setToolTip(
-            "The simplified variant will be generated into the selected field(s)\nonly if they are empty."
+            "The simplified variant will be generated into the selected field(s) only if they are empty."
         )
         self.simpWithSep.setToolTip(
-            'The simplified variant will be added on to the selected field(s)\nfollowing the separator. The default separator is an html line break "<br>".'
+            "The simplified variant will be added on to the selected field(s) "
+            'following the separator. The default separator is an html line break "<br>".'
         )
         self.simpSep.setToolTip("The separator to be used when adding the simplified variant.")
         self.tradOW.setToolTip(
-            "The traditional variant will be generated into the selected field(s),\noverwriting their current contents."
+            "The traditional variant will be generated into the selected field(s), overwriting their current contents."
         )
         self.tradIfE.setToolTip(
-            "The traditional variant will be generated into the selected field(s)\nonly if they are empty."
+            "The traditional variant will be generated into the selected field(s) only if they are empty."
         )
         self.tradWithSep.setToolTip(
-            'The traditional variant will be added on to the selected field(s) following\nthe separator. The default separator is an html line break "<br>".'
+            "The traditional variant will be added on to the selected field(s) following "
+            'the separator. The default separator is an html line break "<br>".'
         )
         self.tradSep.setToolTip("The separator to be used when adding the traditional variant.")
 
@@ -758,7 +806,8 @@ class SettingsGui(QScrollArea):
         )
 
         self.autoCSSJS.setToolTip(
-            "Enable or disable automatic CSS and JavaScript handling.\n Disabling this option is not recommended if you are not familiar with these technologies."
+            "Enable or disable automatic CSS and JavaScript handling.\n"
+            "Disabling this option is not recommended if you are not familiar with these technologies."
         )
         self.profileAF.setToolTip("Profile: Select the profile.")
         self.noteTypeAF.setToolTip("Note Type: Select the note type.")
@@ -769,7 +818,9 @@ class SettingsGui(QScrollArea):
             "Display Type: Select the display type,\nhover over a display type for fuctionality details."
         )
         self.readingAF.setToolTip(
-            "Reading Type: Select the reading type,\ndetermines which reading system will be used when generating readings\nfor this card type."
+            "Reading Type: Select the reading type, "
+            "determines which reading system will be used when generating readings "
+            "for this card type."
         )
 
     def initHandlers(self):
@@ -948,7 +999,8 @@ class SettingsGui(QScrollArea):
             show_info(
                 "This row cannot be added because row #"
                 + str(found)
-                + " in the Active Fields List already targets this given field and side combination. Please review that entry and try again.",
+                + " in the Active Fields List already targets "
+                + "this given field and side combination. Please review that entry and try again.",
                 level="err",
             )
         else:
@@ -980,7 +1032,8 @@ class SettingsGui(QScrollArea):
             show_info(
                 "This row cannot be edited in this manner because row #"
                 + str(found)
-                + " in the Active Fields List already targets this given field and side combination. Please review that entry and try again.",
+                + " in the Active Fields List already targets "
+                + "this given field and side combination. Please review that entry and try again.",
                 level="err",
             )
         else:

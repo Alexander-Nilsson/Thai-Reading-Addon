@@ -53,7 +53,7 @@ jobs:
           # Install dev dependencies
           .venv/bin/pip install \
             "ruff>=0.15.0" \
-            "ty>=0.15.0" \
+            "ty>=0.0.46" \
             "pytest>=8.0.0" \
             "pytest-anki2[anki-2509,qt6-pypi]>=2.0.0"
 

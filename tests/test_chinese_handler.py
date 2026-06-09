@@ -5,8 +5,8 @@ import pytest
 from conftest import import_chinese_handler
 
 from addon_config import AddonConfig
-from text_utils import clean_spaces, html_remove, replace_html
 from dictdb import DictDB
+from text_utils import clean_spaces, html_remove, replace_html
 
 
 def _make_config(**overrides):
@@ -54,7 +54,7 @@ def _make_handler(ChineseHandler, config=None, db=None):
         "\U0002b820-\U0002ceaf\U0002ceb0-\U0002ebef"
         "\uf900-\ufaff\U0002f800-\U0002fa1f]"
     )
-    handler.toneToNumer = {"ˊ": "2", "ˇ": "3", "ˋ": "4", "˙": "5"}
+    handler.toneToNumer = {"ˊ": "2", "ˇ": "3", "ˋ": "4", "˙": "5"}  # noqa: RUF001
     return handler
 
 

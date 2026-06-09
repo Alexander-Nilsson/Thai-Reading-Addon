@@ -1,7 +1,7 @@
-from typing import Any, Protocol
+from typing import Protocol
 
 from anki.collection import Collection
-from anki.models import FieldDict, NoteType
+from anki.models import NoteType
 from anki.notes import Note
 
 

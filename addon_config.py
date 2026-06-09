@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field
 
-
 _DISPLAY_OPTIONS = [
     "hover",
     "coloredhover",

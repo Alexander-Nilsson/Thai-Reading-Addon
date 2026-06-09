@@ -8,7 +8,7 @@ dependencies = []
 [dependency-groups]
 dev = [
     "ruff>=0.15.0",
-    "ty>=0.15.0",
+    "ty>=0.0.46",
     "pytest>=8.0.0",
     "pytest-anki2[anki-2509,qt6-pypi]>=2.0.0",
     "requests>=2.0.0",
@@ -17,7 +17,7 @@ dev = [
 [tool.ruff]
 target-version = "py314"
 line-length = 120
-exclude = ["lib", "urllib3"]
+exclude = ["lib", "urllib3", "Pyperclip.py"]
 extend-exclude = ["__pycache__", "*.pyc"]
 
 [tool.ruff.lint]
@@ -32,6 +32,7 @@ select = [
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
+"dictdb.py" = ["E722"]
 
 [tool.ruff.format]
 quote-style = "double"

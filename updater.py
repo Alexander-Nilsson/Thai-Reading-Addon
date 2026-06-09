@@ -14,7 +14,8 @@ def shutdownDB(parent, mgr, ids, on_done, client):
     dledIds = ids
     if addonId in ids and hasattr(mw, "ChineseReading"):
         show_info(
-            "Chinese Reading's database will be disconnected so that the update may proceed. The add-on will not function properly until Anki is restarted after the update."
+            "Chinese Reading's database will be disconnected so that the update may proceed. "
+            "The add-on will not function properly until Anki is restarted after the update."
         )
         mw.ChineseReading.db.closeConnection()
         mw.ChineseReading.db = False
@@ -24,7 +25,8 @@ def shutdownDB(parent, mgr, ids, on_done, client):
 def restartDB(*args):
     if addonId in dledIds and hasattr(mw, "ChineseReading"):
         show_info(
-            "Chinese Reading has been updated. Chinese Reading will not function properly until Anki is restarted. Please restart Anki to start using the new version now!"
+            "Chinese Reading has been updated. Chinese Reading will not function properly until Anki is restarted. "
+            "Please restart Anki to start using the new version now!"
         )
 
 

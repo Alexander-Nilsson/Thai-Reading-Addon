@@ -3,8 +3,6 @@ import re
 import sys
 from os.path import dirname, join
 
-from aqt.qt import *
-
 sys.path.append(join(dirname(__file__), "lib"))
 from .addon_config import parse_active_field
 from .js_registry import JsRegistry
@@ -37,7 +35,10 @@ class CSSJSHandler:
             "<!--###CHINESE READING CONVERTER JS START###\nDo Not Edit If Using Automatic CSS and JS Management-->"
         )
         self.hanziConverterFooter = "<!--###CHINESE READING CONVERTER JS ENDS###-->"
-        self.pinBopoConverterHeader = "<!--###CHINESE READING PINYIN BOPOMOFO CONVERTER JS START###\nDo Not Edit If Using Automatic CSS and JS Management-->"
+        self.pinBopoConverterHeader = (
+            "<!--###CHINESE READING PINYIN BOPOMOFO CONVERTER JS START###\n"
+            "Do Not Edit If Using Automatic CSS and JS Management-->"
+        )
         self.pinBopoConverterFooter = "<!--###CHINESE READING PINYIN BOPOMOFO CONVERTER JS ENDS###-->"
         self.js = JsRegistry(join(path, "js"))
         self.tongwen_coreJS = self.js.load("tongwen_core.js")
@@ -82,9 +83,9 @@ class CSSJSHandler:
         if not note:
             return (
                 False,
-                'The "'
-                + data[2]
-                + '" note type does not exist in this profile, if this note type exists in another profile consider setting its profile setting to the appropriate profile in the Active Fields settings menu.',
+                'The "' + data[2] + '" note type does not exist in this profile, if this note type exists '
+                "in another profile consider setting its profile setting to the appropriate profile "
+                "in the Active Fields settings menu.",
             )
 
         if not card:
@@ -174,18 +175,23 @@ class CSSJSHandler:
 
         if syntaxErrors != "":
             show_info(
-                'The following entries have incorrect syntax:\nPlease make sure the format is as follows:\n"displayType;profileName;noteTypeName;cardTypeName;fieldName;side(;ReadingType)".\n'
-                + syntaxErrors,
+                "The following entries have incorrect syntax:\n"
+                "Please make sure the format is as follows:\n"
+                '"displayType;profileName;noteTypeName;cardTypeName;fieldName;side(;ReadingType)".\n' + syntaxErrors,
                 level="err",
             )
             return (wrapperDict, False)
         # if notFoundErrors != '':
-        #     show_info('The following entries have incorrect values that are not found in your Anki collection. Please review these entries and fix any spelling mistakes.\n\n' + notFoundErrors, level="err")
+        #     show_info(
+        #         'The following entries have incorrect values that are not found '
+        #         'in your Anki collection. Please review these entries and fix '
+        #         'any spelling mistakes.\n\n' + notFoundErrors, level="err"
+        #     )
         #     return (wrapperDict,False);
         if fieldConflictErrors != "":
             show_info(
-                "You have entries that point to the same field and the same side. Please make sure that a field and side combination does not conflict.\n\n"
-                + fieldConflictErrors,
+                "You have entries that point to the same field and the same side. "
+                "Please make sure that a field and side combination does not conflict.\n\n" + fieldConflictErrors,
                 level="err",
             )
             return (wrapperDict, False)
@@ -263,9 +269,8 @@ class CSSJSHandler:
         rType = self.config.reading_type
         if rType not in ["pinyin", "bopomofo", "jyutping"]:
             show_info(
-                'The "'
-                + rType
-                + '" value in the "ReadingType" configuration is incorrect. The value must be "pinyin", "bopomofo", or "jyutping".',
+                'The "' + rType + '" value in the "ReadingType" configuration is incorrect. '
+                'The value must be "pinyin", "bopomofo", or "jyutping".',
                 level="err",
             )
             return False
@@ -290,7 +295,9 @@ class CSSJSHandler:
             + self.tongwen_table_ss2tJS
             + self.tongwen_table_st2sJS
             + self.tongwen_table_t2sJS
-            + '"simplified"===CHINESE_CONVERSION_TYPE?TongWen.trans2Simp(document):"traditional"===CHINESE_CONVERSION_TYPE&&TongWen.trans2Trad(document);</script>'
+            + '"simplified"===CHINESE_CONVERSION_TYPE'
+            "?TongWen.trans2Simp(document)"
+            ':"traditional"===CHINESE_CONVERSION_TYPE&&TongWen.trans2Trad(document);</script>'
         )
         return self.hanziConverterHeader + js + self.hanziConverterFooter
 
@@ -300,17 +307,24 @@ class CSSJSHandler:
     def getChineseCss(self):
         toneColors = self.config.mandarin_tones
         css = (
-            ".nightMode .unhovered-word .hanzi-ruby{color:white !important;}.unhovered-word .hanzi-ruby{color:inherit !important;}.unhovered-word .pinyin-ruby{visibility:hidden  !important;}"
-            + self.getRubyFontSize()
+            ".nightMode .unhovered-word .hanzi-ruby{color:white !important;}"
+            ".unhovered-word .hanzi-ruby{color:inherit !important;}"
+            ".unhovered-word .pinyin-ruby{visibility:hidden  !important;}" + self.getRubyFontSize()
         )
         count = 1
         for toneColor in toneColors:
-            css += f".tone{count!s}{{color:{toneColor};}}.ankidroid_dark_mode .tone{count!s}, .nightMode .tone{count!s}{{color:{toneColor};}}"
+            css += (
+                f".tone{count!s}{{color:{toneColor};}}"
+                f".ankidroid_dark_mode .tone{count!s}, .nightMode .tone{count!s}{{color:{toneColor};}}"
+            )
             count += 1
         toneColors = self.config.cantonese_tones
         count = 1
         for toneColor in toneColors:
-            css += f".canTone{count!s}{{color:{toneColor};}}.ankidroid_dark_mode .canTone{count!s}, .nightMode .canTone{count!s}{{color:{toneColor};}}"
+            css += (
+                f".canTone{count!s}{{color:{toneColor};}}"
+                f".ankidroid_dark_mode .canTone{count!s}, .nightMode .canTone{count!s}{{color:{toneColor};}}"
+            )
             count += 1
         return self.chineseCSSHeader + "\n" + css + "\n" + self.chineseCSSFooter
 

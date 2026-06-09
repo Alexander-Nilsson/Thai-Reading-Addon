@@ -88,7 +88,8 @@ class DictDB:
             return self._get_char_traditional(w)  # single character
 
         # We're looking up a string that's not in the dictionary
-        # We'll try each 4-character sequence in turn, then 3-sequence, then 2-sequence and if those fails, do unit lookup.
+        # We'll try each 4-character sequence in turn, then 3-sequence,
+        # then 2-sequence and if those fails, do unit lookup.
         traditional = ""
         w = w[:]
         while len(w) > 0:
@@ -145,7 +146,8 @@ class DictDB:
             return self._get_char_simplified(w)  # single character
 
         # We're looking up a string that's not in the dictionary
-        # We'll try each 4-character sequence in turn, then 3-sequence, then 2-sequence and if those fails, do unit lookup.
+        # We'll try each 4-character sequence in turn, then 3-sequence,
+        # then 2-sequence and if those fails, do unit lookup.
         simplified = ""
         w = w[:]
         while len(w) > 0:

@@ -3,7 +3,7 @@
 from os.path import dirname, join
 
 import aqt
-from aqt.qt import *
+from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QMessageBox
 
 addon_path = dirname(__file__)

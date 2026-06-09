@@ -5,10 +5,12 @@ from os.path import dirname, join
 
 import aqt.editor
 import aqt.utils
-from aqt.qt import *
 
 sys.path.append(join(dirname(__file__), "lib"))
 from dragonmapper import transcriptions
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QIcon
+from PyQt6.QtWidgets import QLabel, QProgressBar, QVBoxLayout, QWidget
 
 from .js_registry import JsRegistry
 from .text_utils import clean_spaces, html_remove, replace_html, separate_pinyin
@@ -23,7 +25,12 @@ class ChineseHandler:
         self.path = path
         self.db = db
         self.config = config
-        self.hanziRange = "[\u4e00-\u9fff\u3400-\u4dbf\U00020000-\U0002a6df\U0002a700-\U0002b73f\U0002b740-\U0002b81f\U0002b820-\U0002ceaf\U0002ceb0-\U0002ebef\uf900-\ufaff\U0002f800-\U0002fa1f]"
+        self.hanziRange = (
+            "[\u4e00-\u9fff\u3400-\u4dbf\U00020000-\U0002a6df"
+            "\U0002a700-\U0002b73f\U0002b740-\U0002b81f"
+            "\U0002b820-\U0002ceaf\U0002ceb0-\U0002ebef"
+            "\uf900-\ufaff\U0002f800-\U0002fa1f]"
+        )
         self.js = JsRegistry(join(path, "js"))
         self.commonJS = self.js.load("common.js")
         self.insertHTMLJS = self.js.load("insertHTML.js")
@@ -31,7 +38,7 @@ class ChineseHandler:
         self.fetchTextJS = self.js.load("fetchText.js")
         self.bracketsFromSelJS = self.js.load("bracketsFromSel.js")
         self.removeBracketsJS = self.js.load("removeBrackets.js")
-        self.toneToNumer = {"ˊ": "2", "ˇ": "3", "ˋ": "4", "˙": "5"}
+        self.toneToNumer = {"ˊ": "2", "ˇ": "3", "ˋ": "4", "˙": "5"}  # noqa: RUF001
 
     def refreshConfig(self, config=None):
         if config is not None:
@@ -96,7 +103,8 @@ class ChineseHandler:
         if not show_ask(
             '####WARNING#####\nAre you sure you want to mass remove readings from the "'
             + field
-            + '" field? Please make sure you have selected the correct field as this will remove all "[" and "]" and text in between from a field.'
+            + '" field? Please make sure you have selected the correct field '
+            'as this will remove all "[" and "]" and text in between from a field.'
         ):
             return
         generateWidget.close()
@@ -242,9 +250,9 @@ class ChineseHandler:
                     ordinal = False
                     if editor:
                         ordinal = self.getFieldOrdinal(note, selField)
-                    if variant == "SimplifiedField":
+                    if variant_key == "simplified_field":
                         text = self.db.get_simplified(self.removeBrackets(text))
-                    elif variant == "TraditionalField":
+                    elif variant_key == "traditional_field":
                         text = self.db.get_traditional(self.removeBrackets(text))
                     if not text:
                         return

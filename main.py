@@ -8,8 +8,17 @@ import aqt.editor
 import aqt.utils
 from anki.hooks import addHook, wrap
 from aqt import mw
-from aqt.qt import *
+from aqt.qt import _
 from aqt.utils import saveGeom, saveSplitter, showInfo
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QAction, QIcon
+from PyQt6.QtWidgets import (
+    QComboBox,
+    QDialog,
+    QHBoxLayout,
+    QLabel,
+    QPushButton,
+)
 
 from . import dictdb
 
@@ -81,9 +90,14 @@ def loadAllProfileInformation():
                 for f in note["flds"]:
                     noteTypeDict[note["name"]]["fields"].append(f["name"])
             colArray[prof] = noteTypeDict
-        except:
+        except Exception:
             show_info(
-                "<b>Warning:</b><br>One of your profiles could not be loaded. This usually happens if you've just created a new profile and are opening it for the first time.The issue should be fixed after restarting Anki.If it persists, then your profile is corrupted in some way.\n\nYou can fix this corruption by exporting your collection, importing it into a new profile, and then deleting your previous profile. <b>",
+                "<b>Warning:</b><br>One of your profiles could not be loaded. "
+                "This usually happens if you've just created a new profile and are opening it for the first time. "
+                "The issue should be fixed after restarting Anki. "
+                "If it persists, then your profile is corrupted in some way.\n\n"
+                "You can fix this corruption by exporting your collection, importing it into a new profile, "
+                "and then deleting your previous profile. <b>",
                 level="wrn",
             )
 
