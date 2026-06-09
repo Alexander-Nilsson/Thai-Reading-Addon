@@ -47,6 +47,7 @@ def get_includes():
         "settings.py",
         "updater.py",
         "utils.py",
+        "text_utils.py",
         "Pyperclip.py",
         "js_registry.py",
         "addon_config.py",

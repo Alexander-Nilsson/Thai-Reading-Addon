@@ -79,7 +79,7 @@ def _restore_mocks(saved):
 
 def _load_base_modules():
     _ensure_package()
-    for name in ("addon_config", "utils", "dictdb", "js_registry"):
+    for name in ("addon_config", "utils", "dictdb", "js_registry", "text_utils"):
         filepath = os.path.join(ROOT, f"{name}.py")
         if os.path.exists(filepath):
             _load_submodule(name, filepath)

@@ -5,6 +5,7 @@ import pytest
 from conftest import import_chinese_handler
 
 from addon_config import AddonConfig
+from text_utils import clean_spaces, html_remove, replace_html
 from dictdb import DictDB
 
 
@@ -216,33 +217,28 @@ class TestSegmentAndLookup:
 
 
 class TestHtmlRemove:
-    def test_removes_html_tags(self, ChineseHandler):
-        handler = _make_handler(ChineseHandler)
-        finds, text = handler.htmlRemove("<b>hello</b>")
+    def test_removes_html_tags(self):
+        finds, text = html_remove("<b>hello</b>")
         assert "--=HTML=--" in text
         assert finds == ["<b>", "</b>"]
 
-    def test_replaces_html_back(self, ChineseHandler):
-        handler = _make_handler(ChineseHandler)
-        finds, text = handler.htmlRemove("<b>hello</b>")
-        result = handler.replaceHTML(text, finds)
+    def test_replaces_html_back(self):
+        finds, text = html_remove("<b>hello</b>")
+        result = replace_html(text, finds)
         assert result == "<b>hello</b>"
 
-    def test_no_html(self, ChineseHandler):
-        handler = _make_handler(ChineseHandler)
-        finds, text = handler.htmlRemove("plain text")
+    def test_no_html(self):
+        finds, text = html_remove("plain text")
         assert text == "plain text"
         assert finds == []
 
 
 class TestCleanSpaces:
-    def test_removes_double_spaces(self, ChineseHandler):
-        handler = _make_handler(ChineseHandler)
-        assert handler.cleanSpaces("hello  world") == "helloworld"
+    def test_removes_double_spaces(self):
+        assert clean_spaces("hello  world") == "helloworld"
 
-    def test_single_space_preserved(self, ChineseHandler):
-        handler = _make_handler(ChineseHandler)
-        assert handler.cleanSpaces("hello world") == "hello world"
+    def test_single_space_preserved(self):
+        assert clean_spaces("hello world") == "hello world"
 
 
 class TestEditorText:
