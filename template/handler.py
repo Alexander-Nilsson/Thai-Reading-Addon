@@ -4,8 +4,9 @@ from os.path import dirname, join
 
 sys.path.append(join(dirname(__file__), "..", "lib"))
 
-from .._infra.utils import show_info
-from ..config.config import parse_active_field
+from _infra.utils import show_info
+from config.config import parse_active_field
+
 from .injector import TemplateInjector, newline_reduce
 from .js_registry import JsRegistry
 
@@ -16,8 +17,8 @@ class CSSJSHandler:
         self.anki = anki_services
         self.path = path
         self.config = config
-        self.wrapperDict = False
         self.injector = TemplateInjector(JsRegistry(join(path, "js")))
+        self.wrapperDict: dict = {}
 
     def updateWrapperDict(self):
         self.wrapperDict, _wrapperCheck = self.getWrapperDict()

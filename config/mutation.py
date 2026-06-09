@@ -268,6 +268,7 @@ class LiveConfigMutation:
         i: int,
         errors: list[ValidationError],
     ) -> None:
+        assert self._catalog is not None
         if af.profile != "all" and af.profile not in self._catalog.profile_names():
             errors.append(
                 ValidationError(

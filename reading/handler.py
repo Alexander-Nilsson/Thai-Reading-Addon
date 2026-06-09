@@ -10,8 +10,9 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QLabel, QProgressBar, QVBoxLayout, QWidget
 
-from .._infra.utils import show_ask
-from ..template.js_registry import JsRegistry
+from _infra.utils import show_ask
+from template.js_registry import JsRegistry
+
 from .generator import ReadingGenerator
 from .text_utils import strip_brackets
 

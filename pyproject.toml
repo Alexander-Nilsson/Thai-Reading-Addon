@@ -58,7 +58,7 @@ unsupported-operator = "warn"
 no-matching-overload = "warn"
 
 [tool.ty.src]
-exclude = ["lib/**", "urllib3/**"]
+exclude = ["lib/**", "urllib3/**", "_infra/**", "tests/**"]
 
 [tool.ty.analysis]
 allowed-unresolved-imports = [
@@ -70,6 +70,10 @@ allowed-unresolved-imports = [
     "gtts.*",
     "urllib3.*",
     "requests.*",
+    "_infra.*",
+    "reading.*",
+    "config.*",
+    "template.*",
 ]
 
 [tool.pytest.ini_options]

@@ -3,6 +3,7 @@
 import platform
 from operator import itemgetter
 from os.path import dirname, join
+from typing import Any
 
 from anki.utils import is_win
 from aqt.theme import theme_manager
@@ -30,9 +31,9 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from .._infra.utils import show_ask, show_info
-from .config import ActiveField, parse_active_field, serialize_active_field
-from .mutation import ConfigDelta
+from _infra.utils import show_ask, show_info
+from config.config import ActiveField, parse_active_field, serialize_active_field
+from config.mutation import ConfigDelta
 
 versionNumber = "ver. 1.2.3"
 
@@ -43,7 +44,7 @@ class ClickableSVG(QSvgWidget):
     def __init__(self, parent=None):
         QSvgWidget.__init__(self, parent)
 
-    def mousePressEvent(self, ev):
+    def mousePressEvent(self, a0):
         self.clicked.emit()
 
 
@@ -53,7 +54,7 @@ class ClickableLabel(QLabel):
     def __init__(self, parent=None):
         QLabel.__init__(self, parent)
 
-    def mousePressEvent(self, ev):
+    def mousePressEvent(self, a0):  # ty:ignore[invalid-method-override]
         self.clicked.emit()
 
 
@@ -129,8 +130,8 @@ class SettingsGui(QScrollArea):
         }
         self.rtTranslation = {"pinyin": "Pinyin", "bopomofo": "Bopomofo", "jyutping": "Jyutping"}
         self.mw = mw
-        self.sortedProfiles = False
-        self.sortedNoteTypes = False
+        self.sortedProfiles: list = []
+        self.sortedNoteTypes: list = []
         self.selectedRow = False
         self.initializing = False
         self.changingProfile = False
@@ -151,7 +152,7 @@ class SettingsGui(QScrollArea):
         self.resetButton = QPushButton("Restore Defaults")
         self.cancelButton = QPushButton("Cancel")
         self.applyButton = QPushButton("Apply")
-        self.layout = QVBoxLayout()
+        self.mainLayout = QVBoxLayout()
         self.innerWidget = QWidget()
         self.setupMainLayout()
         self.tabs.addTab(self.getOptionsTab(), "Options")
@@ -628,6 +629,7 @@ class SettingsGui(QScrollArea):
         afTable.setHorizontalHeaderLabels(
             ["Profile", "Note Type", "Card Type", "Field", "Side", "Display Type", "Reading Type", ""]
         )
+        assert tableHeader is not None
         tableHeader.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         tableHeader.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
         tableHeader.setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
@@ -938,7 +940,7 @@ class SettingsGui(QScrollArea):
         self.initializing = True
         self.buttonStatus = 0
         self.addEditAF.setText("Add")
-        self.selectedRow = False
+        self.selectedRow: Any = False
         self.clearAllAF()
         self.initActiveFieldsCB()
         self.initializing = False
@@ -1123,18 +1125,24 @@ class SettingsGui(QScrollArea):
     def loadAltSimpTradFieldsCB(self):
         self.altCB.addItem("Clipboard")
         self.altCB.addItem("──────────────────")
-        self.altCB.model().item(self.altCB.count() - 1).setEnabled(False)
-        self.altCB.model().item(self.altCB.count() - 1).setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        m = self.altCB.model()
+        assert m is not None
+        m.item(self.altCB.count() - 1).setEnabled(False)  # ty:ignore[unresolved-attribute]
+        m.item(self.altCB.count() - 1).setTextAlignment(Qt.AlignmentFlag.AlignCenter)  # ty:ignore[unresolved-attribute]
         self.altCB.addItems(self.allFields)
         self.simpCB.addItem("Clipboard")
         self.simpCB.addItem("──────────────────")
-        self.simpCB.model().item(self.simpCB.count() - 1).setEnabled(False)
-        self.simpCB.model().item(self.simpCB.count() - 1).setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        m2 = self.simpCB.model()
+        assert m2 is not None
+        m2.item(self.simpCB.count() - 1).setEnabled(False)  # ty:ignore[unresolved-attribute]
+        m2.item(self.simpCB.count() - 1).setTextAlignment(Qt.AlignmentFlag.AlignCenter)  # ty:ignore[unresolved-attribute]
         self.simpCB.addItems(self.allFields)
         self.tradCB.addItem("Clipboard")
         self.tradCB.addItem("──────────────────")
-        self.tradCB.model().item(self.tradCB.count() - 1).setEnabled(False)
-        self.tradCB.model().item(self.tradCB.count() - 1).setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        m3 = self.tradCB.model()
+        assert m3 is not None
+        m3.item(self.tradCB.count() - 1).setEnabled(False)  # ty:ignore[unresolved-attribute]
+        m3.item(self.tradCB.count() - 1).setTextAlignment(Qt.AlignmentFlag.AlignCenter)  # ty:ignore[unresolved-attribute]
         self.tradCB.addItems(self.allFields)
 
     def loadFieldsList(self, which):
@@ -1242,8 +1250,10 @@ class SettingsGui(QScrollArea):
         pcb = self.profileCB
         pcb.addItem("All")
         pcb.addItem("──────")
-        pcb.model().item(pcb.count() - 1).setEnabled(False)
-        pcb.model().item(pcb.count() - 1).setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        m = pcb.model()
+        assert m is not None
+        m.item(pcb.count() - 1).setEnabled(False)  # ty:ignore[unresolved-attribute]
+        m.item(pcb.count() - 1).setTextAlignment(Qt.AlignmentFlag.AlignCenter)  # ty:ignore[unresolved-attribute]
         for prof in self.catalog.profile_names():
             pcb.addItem(prof)
             pcb.setItemData(pcb.count() - 1, prof, Qt.ItemDataRole.ToolTipRole)
@@ -1328,6 +1338,7 @@ class SettingsGui(QScrollArea):
             field = afList.item(i, 3).text()
             side = afList.item(i, 4).text().lower()
             target = afList.item(i, 5).text()
+            dt = target
             for key, value in self.displayTranslation.items():
                 if value == target:
                     dt = key
@@ -1421,8 +1432,10 @@ class SettingsGui(QScrollArea):
         aP = self.profileAF
         aP.addItem("All")
         aP.addItem("──────────────────")
-        aP.model().item(aP.count() - 1).setEnabled(False)
-        aP.model().item(aP.count() - 1).setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        m = aP.model()
+        assert m is not None
+        m.item(aP.count() - 1).setEnabled(False)  # ty:ignore[unresolved-attribute]
+        m.item(aP.count() - 1).setTextAlignment(Qt.AlignmentFlag.AlignCenter)  # ty:ignore[unresolved-attribute]
         self.loadAllProfiles()
         self.loadCardTypesFields()
         for key, value in self.sides.items():
