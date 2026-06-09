@@ -69,7 +69,7 @@ jobs:
         run: .venv/bin/python -m pytest tests/ -v --ignore=tests/test_smoke.py
 
       - name: Build
-        run: .venv/bin/python build.py all
+        run: .venv/bin/python _infra/build.py all
 
       # --- RELEASE SECTION (Only runs on master branch push) ---
 
@@ -101,7 +101,7 @@ jobs:
               f.truncate()
           "
 
-.venv/bin/python _infra/build.py all
+          .venv/bin/python _infra/build.py all
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
