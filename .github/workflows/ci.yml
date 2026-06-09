@@ -101,7 +101,7 @@ jobs:
               f.truncate()
           "
 
-          .venv/bin/python build.py all
+.venv/bin/python _infra/build.py all
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
