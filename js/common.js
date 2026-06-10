@@ -20,6 +20,8 @@ function unnest_span(span) {
 }
 
 function selectAllFieldNodes(field, sel){
+  if (!field) return;
+  field.focus();
   setFormat("inserthtml", '');
   const newRange = new Range();
   sel.removeAllRanges();
@@ -50,13 +52,75 @@ function clean_field(field) {
 }
 
 function is_field(node) {
-  return node.nodeName === "DIV" && node.classList.contains("field");
+  return node && node.nodeName === "DIV" && node.classList && node.classList.contains("field");
 }
+
 function get_field(sel) {
-  var node = sel.baseNode;
-  while (node && !is_field(node)) {
-    node = node.parentNode;
+  if (!sel) return null;
+  var node = sel.baseNode || sel.anchorNode;
+  while (node) {
+    if (is_field(node)) return node;
+    // Cross shadow boundary
+    if (node.parentNode) {
+      node = node.parentNode;
+    } else if (node.host) {
+      node = node.host;
+    } else if (node.getRootNode && node.getRootNode().host) {
+      node = node.getRootNode().host;
+    } else {
+      break;
+    }
   }
-  return node;
+  // Fallback to active element
+  node = document.activeElement;
+  while (node) {
+    if (is_field(node)) return node;
+    if (node.nodeName === "ANKI-EDITABLE" && node.shadowRoot) {
+      var f = node.shadowRoot.querySelector("div.field");
+      if (f) return f;
+    }
+    node = node.parentNode || node.host || (node.getRootNode && node.getRootNode().host);
+  }
+  return null;
+}
+
+function get_field_by_ordinal(ordinal) {
+  // Try ID first (old Anki)
+  var field = document.getElementById('f' + ordinal);
+  if (field) return field;
+
+  // Try anki-editable (modern Anki)
+  var editables = document.querySelectorAll('anki-editable');
+  if (editables[ordinal]) {
+    if (editables[ordinal].shadowRoot) {
+      return editables[ordinal].shadowRoot.querySelector("div.field");
+    }
+    return editables[ordinal].querySelector("div.field");
+  }
+
+  // Try counting div.field (middle Anki versions or custom editors)
+  var fields = document.querySelectorAll('div.field');
+  if (fields[ordinal]) return fields[ordinal];
+
+  return null;
+}
+
+function get_field_ordinal(field) {
+    if (!field) return 0;
+    if (field.id && field.id.startsWith('f')) {
+        return parseInt(field.id.substring(1));
+    }
+    // Try to find via anki-editable
+    var editables = document.querySelectorAll('anki-editable');
+    for (var i = 0; i < editables.length; i++) {
+        var f = editables[i].shadowRoot ? editables[i].shadowRoot.querySelector("div.field") : editables[i].querySelector("div.field");
+        if (f === field) return i;
+    }
+    // Try to find via div.field
+    var fields = document.querySelectorAll('div.field');
+    for (var i = 0; i < fields.length; i++) {
+        if (fields[i] === field) return i;
+    }
+    return 0;
 }
 

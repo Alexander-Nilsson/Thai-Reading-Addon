@@ -101,42 +101,42 @@ class TestGetAltFayin:
 
     def test_returns_empty_for_missing(self, test_db):
         result = test_db.getAltFayin("XYZNOTACHAR")
-        assert result == []
+        assert result is None
 
     def test_real_db_lookup(self, real_db):
         result = real_db.getAltFayin("一")
-        assert result is not False
+        assert result is not None
 
 
 class TestGetFayin:
     def test_returns_pinyin_from_cidian(self, test_db):
         result = test_db.getFayin("中国")
-        assert result is not False
+        assert result is not None
         assert result[0][0] == "zhōng guó"
 
     def test_returns_empty_for_missing(self, test_db):
         result = test_db.getFayin("NOTAWORD")
-        assert result == []
+        assert result is None
 
 
 class TestGetJyutping:
     def test_returns_jyutping_for_simplified(self, test_db):
         result = test_db.getJyutping("中国")
-        assert result is not False
+        assert result is not None
         assert result[0][0] == "zung1 gwok3"
 
     def test_returns_jyutping_for_traditional(self, test_db):
         result = test_db.getJyutping("中國")
-        assert result is not False
+        assert result is not None
         assert result[0][0] == "zung1 gwok3"
 
     def test_returns_empty_for_missing(self, test_db):
         result = test_db.getJyutping("NOTAWORD")
-        assert result == []
+        assert result is None
 
     def test_real_db_lookup(self, real_db):
         result = real_db.getJyutping("你好")
-        assert result is not False
+        assert result is not None
 
 
 class TestGetSimplified:

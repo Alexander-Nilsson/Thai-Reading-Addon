@@ -100,21 +100,22 @@ class AddonConfig:
 
     @classmethod
     def from_anki(cls, mw):
-        return cls(_raw=mw.addonManager.getConfig(__name__))
+        raw = mw.addonManager.getConfig(__name__) or {}
+        return cls(_raw=raw)
 
 
-def parse_active_field(raw: str) -> ActiveField | str:
+def parse_active_field(raw: str) -> ActiveField:
     parts = raw.split(";")
     if (len(parts) != 6 and len(parts) != 7) or "" in parts:
-        return f'invalid syntax: "{raw}"'
+        raise ValueError(f'invalid syntax: "{raw}"')
     display_type = parts[0].lower()
     if display_type not in _DISPLAY_OPTIONS:
-        return f'invalid display type: "{parts[0]}"'
+        raise ValueError(f'invalid display type: "{parts[0]}"')
     reading_type = "default"
     if len(parts) == 7:
         reading_type = parts[6].lower()
         if reading_type not in _READING_OPTIONS and reading_type != "default":
-            return f'invalid reading type: "{parts[6]}"'
+            raise ValueError(f'invalid reading type: "{parts[6]}"')
     return ActiveField(
         display_type=display_type,
         profile=parts[1],

@@ -12,37 +12,33 @@ function removeBrackets() {
   if(!/\[[^\[]*?\]/.test(text))return ;
   replacements = false;
   pattern = /<[^<]*?>/g;
-  matches = false;
+  let matches = false;
   if (pattern.test(text)){
     matches = text.match(pattern)
-    for (x in matches){
-        text = text.replace(matches[x], '---NEWLINE___')
-    }   
-    // text.match(/<[^<]?>/, '')
+    for (let i = 0; i < matches.length; i++){
+        text = text.replace(matches[i], '---NEWLINE___')
+    }
   }
   
-  matches2 = false;
+  let matches2 = false;
   if (pattern2.test(text)){
     matches2 = text.match(pattern2)
-    for (x in matches2){
-        text = text.replace(matches2[x], '---SOUNDREF___')
-    }   
-    // text.match(/<[^<]?>/, '')
+    for (let i = 0; i < matches2.length; i++){
+        text = text.replace(matches2[i], '---SOUNDREF___')
+    }
   }
   text = cleanUpSpaces(text);
   if(matches){
-    for (x in matches){
-      text = text.replace( '---NEWLINE___', matches[x])
-    } 
-
+    for (let i = 0; i < matches.length; i++){
+      text = text.replace( '---NEWLINE___', matches[i])
+    }
   }
 
   text = text.replace(/\[[^\[]*?\]/g, "");
   if(matches2){
-    for (x in matches2){
-      text = text.replace( '---SOUNDREF___', matches2[x])
-    } 
-
+    for (let i = 0; i < matches2.length; i++){
+      text = text.replace( '---SOUNDREF___', matches2[i])
+    }
   }
   const html = text;
   selectAllFieldNodes(field, sel);

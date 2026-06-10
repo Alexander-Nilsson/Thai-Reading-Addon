@@ -2,9 +2,9 @@ import re
 
 
 def html_remove(text):
-    pattern = r"(?:<[^<]+?>)"
-    finds = re.findall(pattern, text)
-    text = re.sub(r"<[^<]+?>", "--=HTML=--", text)
+    pattern = re.compile(r"(?:<[^<]+?>)")
+    finds = pattern.findall(text)
+    text = pattern.sub("--=HTML=--", text)
     return finds, text
 
 

@@ -1,5 +1,6 @@
 #
 import json
+import logging
 import os
 import sys
 from os.path import dirname, join
@@ -7,7 +8,7 @@ from os.path import dirname, join
 import aqt.editor
 import aqt.utils
 from anki.hooks import addHook
-from aqt import gui_hooks, mw
+from aqt import gui_hooks
 from aqt.utils import saveGeom, saveSplitter, showInfo
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QAction, QIcon
@@ -19,59 +20,31 @@ from PyQt6.QtWidgets import (
     QPushButton,
 )
 
-from reading import dictdb
+from .reading import dictdb  # ty: ignore[unresolved-import]
 
 sys.path.append(join(dirname(__file__), "lib"))
 import requests
 
-from _infra.anki_services import LiveAnkiServices
-from _infra.utils import show_info
-from config.config import AddonConfig
-from config.mutation import (
+from ._infra.anki_services import LiveAnkiServices  # ty: ignore[unresolved-import]
+from ._infra.utils import show_info  # ty: ignore[unresolved-import]
+from .config.config import AddonConfig  # ty: ignore[unresolved-import]
+from .config.mutation import (  # ty: ignore[unresolved-import]
     ConfigDelta,
     LiveConfigMutation,
     LiveModelCatalog,
 )
-from config.settings import SettingsGui
-from reading.handler import ChineseHandler
-from template.handler import CSSJSHandler
-
-anki_services = LiveAnkiServices(mw)
-config = AddonConfig.from_anki(mw)
-
-
-def updateChineseReadingConfig():
-    global config
-    config = AddonConfig.from_anki(mw)
-    mw.ChineseReadingConfig = config  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
-
+from .config.settings import SettingsGui  # ty: ignore[unresolved-import]
+from .reading.handler import ChineseHandler  # ty: ignore[unresolved-import]
+from .template.handler import CSSJSHandler  # ty: ignore[unresolved-import]
 
 addonPath = dirname(__file__)
-mw.chineseReadingSettings = False  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
-db = dictdb.DictDB(addonPath)
-autoCssJs = CSSJSHandler(mw, anki_services, addonPath, config)
-mw.ChineseReading = ChineseHandler(mw, anki_services, addonPath, db, autoCssJs, config)  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
-mw.ChineseReadingConfig = config  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
-mw.updateChineseReadingConfig = updateChineseReadingConfig  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
 
-defaults = mw.addonManager.addonConfigDefaults(addonPath)
-
-
-def rebuild_catalog():
-    mw.ChineseReadingCatalog = LiveModelCatalog(mw)  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
-
-
-mw.ChineseReadingCatalog = LiveModelCatalog(mw)  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
-mw.ChineseReadingMutation = LiveConfigMutation(  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
-    anki_services,
-    __name__,
-    config,
-    defaults,  # ty:ignore[invalid-argument-type]
-    mw.ChineseReadingCatalog,  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
-)
-gui_hooks.profile_did_open.append(rebuild_catalog)
-gui_hooks.profile_did_open.append(autoCssJs.injectWrapperElements)
-gui_hooks.profile_did_open.append(autoCssJs.updateWrapperDict)
+_log = logging.getLogger("chinese_reading")
+_log.setLevel(logging.DEBUG)
+_handler = logging.FileHandler(join(addonPath, "debug.log"), mode="w")
+_handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
+_log.addHandler(_handler)
+_log.info("Addon loaded")
 
 try:
     requests.packages.urllib3.disable_warnings()  # ty:ignore[unresolved-attribute]
@@ -83,8 +56,72 @@ currentField = False
 currentKey = False
 wrapperDict = False
 
+db = dictdb.DictDB(addonPath)
+
+config: AddonConfig
+anki_services: LiveAnkiServices
+autoCssJs: CSSJSHandler
+defaults: dict[str, object] | None = None
+
+
+def _init_profile():
+    from aqt import mw
+
+    global config, anki_services, autoCssJs, defaults
+
+    anki_services = LiveAnkiServices(mw)
+    config = AddonConfig.from_anki(mw)
+
+    mw.chineseReadingSettings = False  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
+    autoCssJs = CSSJSHandler(mw, anki_services, addonPath, config)
+    mw.ChineseReading = ChineseHandler(mw, anki_services, addonPath, db, autoCssJs, config)  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
+    mw.ChineseReadingConfig = config  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
+    mw.updateChineseReadingConfig = updateChineseReadingConfig  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
+
+    defaults = mw.addonManager.addonConfigDefaults(addonPath)
+
+    mw.ChineseReadingCatalog = LiveModelCatalog(mw)  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
+    mw.ChineseReadingMutation = LiveConfigMutation(  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
+        anki_services,
+        __name__,
+        config,
+        defaults,
+        mw.ChineseReadingCatalog,  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
+    )
+
+    autoCssJs.injectWrapperElements()
+    autoCssJs.updateWrapperDict()
+    setupGuiMenu()
+
+
+def _rebuild_catalog():
+    from aqt import mw
+
+    assert defaults is not None
+    mw.ChineseReadingCatalog = LiveModelCatalog(mw)  # type: ignore[attr-defined]
+    mw.ChineseReadingMutation = LiveConfigMutation(  # type: ignore[attr-defined]
+        anki_services,
+        __name__,
+        config,
+        defaults,
+        mw.ChineseReadingCatalog,  # type: ignore[attr-defined]
+    )
+
+
+def updateChineseReadingConfig():
+    global config
+    from aqt import mw
+
+    config = AddonConfig.from_anki(mw)
+    mw.ChineseReadingConfig = config  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
+
+
+gui_hooks.profile_did_open.append(_init_profile)
+
 
 def openChineseSettings():
+    from aqt import mw
+
     if not mw.chineseReadingSettings:  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
         mw.chineseReadingSettings = SettingsGui(  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
             mw,
@@ -102,13 +139,15 @@ def openChineseSettings():
 
 
 def setupGuiMenu():
+    from aqt import mw
 
-    if not hasattr(mw, "ChineseReadingMenuSettings"):
-        mw.ChineseReadingMenuSettings = []  # type: ignore[attr-defined]  # ty:ignore[invalid-assignment]
-    if not hasattr(mw, "ChineseReadingMenuActions"):
-        mw.ChineseReadingMenuActions = []  # type: ignore[attr-defined]  # ty:ignore[invalid-assignment]
+    if getattr(mw, "_chinese_reading_menu_added", False):
+        return
+    mw._chinese_reading_menu_added = True  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
 
-    # Add to Tools menu
+    mw.ChineseReadingMenuSettings = []  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
+    mw.ChineseReadingMenuActions = []  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
+
     setting = QAction("Chinese Reading Settings", mw)
     setting.triggered.connect(openChineseSettings)
     mw.ChineseReadingMenuSettings.append(setting)  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
@@ -120,10 +159,18 @@ def setupGuiMenu():
         mw.form.menuTools.addAction(act)
 
 
-setupGuiMenu()
+def checkProfile():
+    from aqt import mw
+
+    result = mw.pm.name in config.profiles or ("all" in config.profiles or "All" in config.profiles)
+    _log.debug("checkProfile: profile=%s, in_config=%s, result=%s", mw.pm.name, config.profiles, result)
+    return result
 
 
 def setupButtons(righttopbtns, editor):
+    from aqt import mw
+
+    _log.debug("setupButtons called, checkProfile=%s", checkProfile())
     if not checkProfile():
         return righttopbtns
     editor._links["removeFormatting"] = lambda editor: mw.ChineseReading.cleanField(editor)  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
@@ -137,18 +184,24 @@ def setupButtons(righttopbtns, editor):
     righttopbtns.insert(0, editor._addButton(icon=shanPath, cmd="removeFormatting", tip="Hotkey: F10", id="删"))
     editor._links["addCReadings"] = lambda editor: mw.ChineseReading.addCReadings(editor)  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
     righttopbtns.insert(0, editor._addButton(icon=duPath, cmd="addCReadings", tip="Hotkey: F9", id="读"))
+    _log.debug("setupButtons completed, editor._links keys: %s", list(editor._links.keys()))
     return righttopbtns
 
 
 def setupShortcuts(cuts, editor):
+    from aqt import mw
+
+    _log.debug("setupShortcuts called, checkProfile=%s", checkProfile())
     if not checkProfile():
         return
     cuts.append(("F10", lambda: mw.ChineseReading.cleanField(editor)))  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
     cuts.append(("F9", lambda: mw.ChineseReading.addCReadings(editor)))  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
+    _log.debug("setupShortcuts completed, shortcuts count: %d", len(cuts))
 
 
 def onRegenerate(browser):
     import anki.find
+    from aqt import mw
 
     notes = browser.selectedNotes()
     if notes:
@@ -177,7 +230,7 @@ def onRegenerate(browser):
                 notes,
                 generateWidget,
             )
-        )  ##add in the vars
+        )
         b5 = QPushButton("Remove Readings")
         b5.clicked.connect(lambda: mw.ChineseReading.massRemove(cb.currentText(), notes, generateWidget))  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
         layout.addWidget(og)
@@ -212,13 +265,9 @@ parent_path = os.path.dirname(current_path)
 sys.path.append(parent_path)
 
 
-def checkProfile():
-    if mw.pm.name in config.profiles or ("all" in config.profiles or "All" in config.profiles):
-        return True
-    return False
-
-
 def supportAccept(self):
+    from aqt import mw
+
     global config
     if self.addon != os.path.basename(addonPath):
         ogAccept(self)
@@ -264,19 +313,55 @@ gui_hooks.editor_did_init_shortcuts.append(setupShortcuts)
 
 
 def getFieldName(fieldId, note):
+    from aqt import mw
+
     fields = mw.col.models.field_names(note.model())
     field = fields[int(fieldId)]
     return field
 
 
 def bridgeReroute(self, cmd):
+    from aqt import mw
+
     global currentKey
+    _log.debug(
+        "bridgeReroute called with cmd=%s, note.id=%s",
+        cmd[:200] if len(cmd) > 200 else cmd,
+        self.note.id if hasattr(self, "note") and self.note else "N/A",
+    )
+
+    if cmd.startswith("focus:") or cmd.startswith("blur:"):
+        parts = cmd.split(":")
+        if len(parts) >= 2:
+            try:
+                mw._lastFocusedFieldOrdinal = int(parts[1])  # type: ignore[attr-defined]
+                _log.debug("Tracking focused field ordinal: %d", mw._lastFocusedFieldOrdinal)  # type: ignore[attr-defined]
+            except ValueError:
+                pass
+
     if checkProfile():
         if cmd.startswith("textToCReading"):
             splitList = cmd.split(":||:||:")
-            if self.note.id == int(splitList[3]):
-                field = getFieldName(splitList[2], self.note)
-                mw.ChineseReading.finalizeReadings(splitList[1], field, self.note, self)  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
+            _log.debug(
+                "textToCReading split: parts_count=%d, note_id=%s",
+                len(splitList),
+                splitList[3] if len(splitList) > 3 else "N/A",
+            )
+            try:
+                note_id_from_js = int(splitList[3])
+                _log.debug("textToCReading note_id_from_js=%d, self.note.id=%d", note_id_from_js, self.note.id)
+                if self.note.id == note_id_from_js:
+                    field = getFieldName(splitList[2], self.note)
+                    _log.debug(
+                        "Calling finalizeReadings with text length=%d, field=%s",
+                        len(splitList[1]) if splitList[1] else 0,
+                        field,
+                    )
+                    mw.ChineseReading.finalizeReadings(splitList[1], field, self.note, self)  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
+                else:
+                    _log.debug("Note ID mismatch, skipping")
+            except (ValueError, IndexError) as e:
+                _log.error("Error parsing textToCReading command: %s", e)
             return
     if not cmd.startswith("textToCReading"):
         ogReroute(self, cmd)
@@ -284,3 +369,5 @@ def bridgeReroute(self, cmd):
 
 ogReroute = aqt.editor.Editor.onBridgeCmd
 aqt.editor.Editor.onBridgeCmd = bridgeReroute  # type: ignore[assignment]  # ty:ignore[invalid-assignment]
+
+gui_hooks.profile_did_open.append(_rebuild_catalog)

@@ -1,5 +1,10 @@
 import re
+import sys
+from os.path import dirname, join
 from typing import Any
+
+sys.path.append(join(dirname(__file__), "..", "lib"))
+from dragonmapper import transcriptions
 
 from . import text_utils
 from .text_utils import strip_brackets
@@ -70,8 +75,6 @@ class ReadingGenerator:
                         results = text_utils.separate_pinyin(result[0][0]).split(" ")
                         for idx, fayin in enumerate(results):
                             if rType == "bopomofo":
-                                from dragonmapper import transcriptions
-
                                 results[idx] = bopoToneToNumber(
                                     transcriptions.pinyin_to_zhuyin(fayin),
                                     self._config.bopomofo_tones_to_number,

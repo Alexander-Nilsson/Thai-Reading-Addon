@@ -1,6 +1,7 @@
 function insertHTMLToField(newHTML, ordinal) {
   const sel = window.getSelection();
-  const field = document.getElementById('f' + ordinal);
+  const field = get_field_by_ordinal(ordinal);
+  if (!field) return;
   selectAllFieldNodes(field, sel);
   selectText(field, sel);
   setFormat("inserthtml", newHTML.trim());

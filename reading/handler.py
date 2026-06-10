@@ -1,4 +1,5 @@
 #
+import logging
 import sys
 from os.path import dirname, join
 
@@ -10,11 +11,12 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QLabel, QProgressBar, QVBoxLayout, QWidget
 
-from _infra.utils import show_ask
-from template.js_registry import JsRegistry
-
+from .._infra.utils import show_ask  # ty: ignore[unresolved-import]
+from ..template.js_registry import JsRegistry  # ty: ignore[unresolved-import]
 from .generator import ReadingGenerator
 from .text_utils import strip_brackets
+
+_log = logging.getLogger("chinese_reading")
 
 
 class ChineseHandler:
@@ -53,6 +55,7 @@ class ChineseHandler:
         return progressWidget, bar
 
     def massGenerate(self, og, dest, om, rt, notes, generateWidget):
+        _log.debug("massGenerate called: og=%s, dest=%s, om=%s, rt=%s, notes_count=%d", og, dest, om, rt, len(notes))
         self.anki.checkpoint("Chinese Reading Generation")
         if not show_ask(
             'Are you sure you want to generate from the "' + og + '" field into  the "' + dest + '" field?.'
@@ -68,6 +71,7 @@ class ChineseHandler:
             fields = self.anki.field_names(note.model())
             if og in fields and dest in fields:
                 text = note[og]
+                _log.debug("massGenerate: processing note %d, text length=%d", nid, len(text) if text else 0)
                 newText = self.finalizeReadings(text, og, note, rType=rt)
                 note[dest] = self.applyOM(om, note[dest], newText)
                 self.addVariants(self.removeBrackets(text), note)
@@ -123,6 +127,7 @@ class ChineseHandler:
 
     def editorText(self, editor):
         text = editor.web.selectedText()
+        _log.debug("editorText: got text=%s", repr(text[:50]) if text and len(text) > 50 else repr(text))
         if not text:
             return False
         else:
@@ -135,22 +140,62 @@ class ChineseHandler:
             editor.web.eval(self.commonJS + self.removeBracketsJS)
 
     def addCReadings(self, editor):
-        editor.web.eval(self.commonJS + self.fetchTextJS)
+        _log.debug("addCReadings called, editor=%s", editor)
+        text = self.editorText(editor)
+        if text:
+            _log.debug("addCReadings: text selected, calling fetchTextJS")
+            editor.web.eval(self.commonJS + self.fetchTextJS)
+        else:
+            _log.debug("addCReadings: no text selected, using tracked field")
+
+            if self.mw and getattr(self.mw, "_lastFocusedFieldOrdinal", None) is not None:
+                ordinal = self.mw._lastFocusedFieldOrdinal
+                note_id = editor.note.id if editor.note else 0
+                js_set_field = (
+                    f"window.currentField = get_field_by_ordinal({ordinal}); window.currentNoteId = '{note_id}';"
+                )
+                _log.debug(
+                    "addCReadings: set currentField via ordinal %d, note_id=%s",
+                    ordinal,
+                    note_id,
+                )
+            else:
+                js_set_field = "console.log('Chinese Reading: No focused field tracked');"
+            editor.web.eval(js_set_field + self.commonJS + self.fetchTextJS)
 
     def finalizeReadings(self, text, field, note, editor=False, rType=False):
+        _log.debug(
+            "finalizeReadings called: text=%s, field=%s, editor=%s, rType=%s",
+            repr(text[:50]) if text and len(text) > 50 else repr(text),
+            field,
+            bool(editor),
+            rType,
+        )
         if text == "":
+            _log.debug("finalizeReadings: empty text, returning")
             return
+        note_type_name = note.model()["name"]
         if not rType:
-            altType = self.cssJSHandler.get_alt_reading_type(note.model()["name"], field)
+            altType = self.cssJSHandler.get_alt_reading_type(note_type_name, field)
+            _log.debug("finalizeReadings: note_type=%s, field=%s, altType=%s", note_type_name, field, altType)
             if altType:
                 rType = altType
             else:
                 rType = self.config.reading_type
+                _log.debug("finalizeReadings: using config.reading_type=%s", rType)
             if rType not in ["pinyin", "bopomofo", "jyutping"]:
+                _log.debug("finalizeReadings: invalid rType=%s, returning", rType)
                 return
+        _log.debug("finalizeReadings: generating with rType=%s", rType)
         newStr = self.reading_generator.generate(text, rType)
+        _log.debug("finalizeReadings: generated string length=%d", len(newStr) if newStr else 0)
         if editor:
-            editor.web.eval(self.commonJS + self.insertHTMLJS % newStr.replace('"', '\\"').replace("\n", ""))
+            if not newStr:
+                _log.warning("finalizeReadings: newStr is empty, nothing to insert")
+                return
+            safeStr = newStr.replace('"', '\\"').replace("\n", "")
+            _log.debug("finalizeReadings: inserting HTML via editor.web.eval, length=%d", len(safeStr))
+            editor.web.eval(self.commonJS + self.insertHTMLJS % safeStr)
             self.addVariants(text, note, editor)
             self.addSimpTrad(text, note, editor)
         else:

@@ -4,9 +4,8 @@ from os.path import dirname, join
 
 sys.path.append(join(dirname(__file__), "..", "lib"))
 
-from _infra.utils import show_info
-from config.config import parse_active_field
-
+from .._infra.utils import show_info  # ty: ignore[unresolved-import]
+from ..config.config import parse_active_field  # ty: ignore[unresolved-import]
 from .injector import TemplateInjector, newline_reduce
 from .js_registry import JsRegistry
 
@@ -95,9 +94,10 @@ class CSSJSHandler:
         fieldConflictErrors = ""
         alreadyIncluded = []
         for item in self.config.active_fields:
-            parsed = parse_active_field(item)
-            if isinstance(parsed, str):
-                syntaxErrors += "\n" + parsed + "\n"
+            try:
+                parsed = parse_active_field(item)
+            except ValueError as e:
+                syntaxErrors += "\n" + str(e) + "\n"
                 continue
             if self.anki.profile_name != parsed.profile and "all" != parsed.profile.lower():
                 continue
@@ -146,6 +146,12 @@ class CSSJSHandler:
                 "The following entries have incorrect syntax:\n"
                 "Please make sure the format is as follows:\n"
                 '"displayType;profileName;noteTypeName;cardTypeName;fieldName;side(;ReadingType)".\n' + syntaxErrors,
+                level="err",
+            )
+            return (wrapperDict, False)
+        if notFoundErrors != "":
+            show_info(
+                "The following entries in \"ActiveFields\" could not be found:\n\n" + notFoundErrors,
                 level="err",
             )
             return (wrapperDict, False)

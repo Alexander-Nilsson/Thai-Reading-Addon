@@ -236,3 +236,21 @@ class TestStripBrackets:
     def test_preserves_spaces(self):
         result = strip_brackets("你 好[nǐ hǎo]")
         assert "你 好" in result
+
+
+class TestAddCReadingsNoTextSelected:
+    def test_no_main_import_error_when_no_text_selected(self, ChineseHandler, real_db):
+        """addCReadings should not fail with ModuleNotFoundError when no text selected."""
+        handler = _make_handler(ChineseHandler, db=real_db)
+        handler.commonJS = ""
+        handler.fetchTextJS = ""
+
+        mock_editor = MagicMock()
+        mock_editor.web.selectedText.return_value = ""
+
+        try:
+            handler.addCReadings(mock_editor)
+        except ModuleNotFoundError as e:
+            if "main" in str(e):
+                pytest.fail(f"addCReadings raised ModuleNotFoundError for 'main': {e}")
+            raise

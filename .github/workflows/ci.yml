@@ -53,7 +53,7 @@ jobs:
           # Install dev dependencies
           .venv/bin/pip install \
             "ruff>=0.15.0" \
-            "ty>=0.0.46" \
+
             "pytest>=8.0.0" \
             "pytest-anki2[anki-2509,qt6-pypi]>=2.0.0"
 
@@ -63,7 +63,7 @@ jobs:
           .venv/bin/ruff format --check .
 
       - name: Type Check
-        run: .venv/bin/ty check .
+        run: uvx ty check .
 
       - name: Test
         run: .venv/bin/python -m pytest tests/ -v --ignore=tests/test_smoke.py

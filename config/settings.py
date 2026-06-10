@@ -31,9 +31,9 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from _infra.utils import show_ask, show_info
-from config.config import ActiveField, parse_active_field, serialize_active_field
-from config.mutation import ConfigDelta
+from .._infra.utils import show_ask, show_info  # ty: ignore[unresolved-import]
+from .config import ActiveField, parse_active_field, serialize_active_field
+from .mutation import ConfigDelta
 
 versionNumber = "ver. 1.2.3"
 

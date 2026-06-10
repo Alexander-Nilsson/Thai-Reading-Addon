@@ -6,29 +6,29 @@ function removeBracketsFromSel(text) {
   let matches = false;
   if (pattern.test(text)){
     matches = text.match(pattern)
-    for (x in matches){
-        text = text.replace(matches[x], '---NEWLINE___')
-    }   
+    for (let i = 0; i < matches.length; i++){
+        text = text.replace(matches[i], '---NEWLINE___')
+    }
   }
   let matches2 = false;
   if (pattern2.test(text)){
     matches2 = text.match(pattern2)
-    for (x in matches2){
-        text = text.replace(matches2[x], '---SOUNDREF___')
-    }   
+    for (let i = 0; i < matches2.length; i++){
+        text = text.replace(matches2[i], '---SOUNDREF___')
+    }
   }
 
   text = cleanUpSpaces(text);
   if(matches){
-    for (x in matches){
-      text = text.replace( '---NEWLINE___', matches[x])
-    } 
+    for (let i = 0; i < matches.length; i++){
+      text = text.replace( '---NEWLINE___', matches[i])
+    }
   }
   text = text.replace(/\[[^\[]*?\]/g, "");
   if(matches2){
-    for (x in matches2){
-      text = text.replace( '---SOUNDREF___', matches2[x])
-    } 
+    for (let i = 0; i < matches2.length; i++){
+      text = text.replace( '---SOUNDREF___', matches2[i])
+    }
 
   }
   return text;
@@ -63,7 +63,7 @@ function selBrackDelete() {
   if(startCont.isSameNode(endCont)) offset = 7;
   startCont.textContent = startCont.textContent.substring(0,startOff) + '--IND--' + startCont.textContent.substring(startOff);
   endCont.textContent = endCont.textContent.substring(0,endOff + offset) + '--IND--' + endCont.textContent.substring(endOff + offset);
-  const range =  sel.toString().length;
+  var range =  sel.toString().length;
   var selectedText = cur.innerHTML.match(/--IND--.+--IND--/)[0];
   var removedText = removeBracketsFromSel(selectedText);
   removedText = removedText.replace(/--IND--/g, '');

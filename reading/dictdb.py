@@ -14,13 +14,6 @@ class DictDB:
         self.conn = sqlite3.connect(db_file)
         self.c = self.conn.cursor()
 
-        try:
-            self.c.execute("create index isimplified on cidian ( simplified );")
-            self.c.execute("create unique index itraditional on cidian ( traditional, pinyin );")
-            self.conn.commit()
-        except:
-            pass
-
     def pushCantonese(self, trad, simp, jyut, pinyin):
         self.c.execute(
             "INSERT INTO cantonese (traditional, simplified, jyutping, pinyin) VALUES (?, ?, ?, ?);",
@@ -33,48 +26,34 @@ class DictDB:
     def closeConnection(self):
         self.c.close()
         self.conn.close()
-        self = False
 
     def pushToAltDict(self, trad, simp, pinyin):
         self.c.execute("INSERT INTO altDict (traditional, simplified, pinyin) VALUES (?, ?, ?);", (trad, simp, pinyin))
 
     def _get_char_pinyin(self, c):
         self.c.execute("select kMandarin from hanzi where cp = ?;", (c,))
-        try:
-            (pinyin,) = self.c.fetchone()
-            return pinyin
-        except:
-            return None
+        row = self.c.fetchone()
+        return row[0] if row else None
 
     def _get_word_pinyin(self, w, taiwan=False):
         self.c.execute("select pinyin, pinyin_taiwan from cidian where traditional=? or simplified=?;", (w, w))
-        try:
-            pinyin, taiwan_pinyin = self.c.fetchone()
-            if taiwan and taiwan_pinyin is not None:
-                return taiwan_pinyin
-            else:
-                return pinyin
-        except:
-            # Not in dictionary
+        row = self.c.fetchone()
+        if row is None:
             return None
+        pinyin, taiwan_pinyin = row
+        if taiwan and taiwan_pinyin is not None:
+            return taiwan_pinyin
+        return pinyin
 
     def _get_char_traditional(self, c):
-        """Uses Unihan to find a traditional variant"""
         self.c.execute("select kTraditionalVariant from hanzi where cp = ?;", (c,))
-        try:
-            (k,) = self.c.fetchone()
-            return k
-        except:
-            return None
+        row = self.c.fetchone()
+        return row[0] if row else None
 
     def _get_word_traditional(self, w):
-        """Uses CEDICT to find a traditional variant"""
         self.c.execute("select traditional from cidian where simplified=? or traditional=?;", (w, w))
-        try:
-            (k,) = self.c.fetchone()
-            return k
-        except:
-            return None
+        row = self.c.fetchone()
+        return row[0] if row else None
 
     def get_traditional(self, w, wl=4):
         """Returns the full traditional form of a string.
@@ -117,22 +96,14 @@ class DictDB:
         return traditional.replace("U+5F8C", "").replace("U+4F75", "")
 
     def _get_char_simplified(self, c):
-        """Uses Unihan to find a simplified variant"""
         self.c.execute("select kSimplifiedVariant from hanzi where cp = ?;", (c,))
-        try:
-            (k,) = self.c.fetchone()
-            return k
-        except:
-            return None
+        row = self.c.fetchone()
+        return row[0] if row else None
 
     def _get_word_simplified(self, w):
-        """Uses CEDICT to find a traditional variant"""
         self.c.execute("select simplified from cidian where traditional=? or simplified=?;", (w, w))
-        try:
-            (k,) = self.c.fetchone()
-            return k
-        except:
-            return None
+        row = self.c.fetchone()
+        return row[0] if row else None
 
     def get_simplified(self, w, wl=4):
         """Returns the full traditional form of a string.
@@ -176,28 +147,16 @@ class DictDB:
 
     def getAllAltFayin(self):
         self.c.execute("select traditional, simplified, pinyin from altDict;")
-        try:
-            return self.c.fetchall()
-        except:
-            return False
+        return self.c.fetchall() or None
 
     def getAltFayin(self, w):
         self.c.execute("select distinct pinyin from altDict where (traditional=? or simplified=?) limit 1;", (w, w))
-        try:
-            return self.c.fetchall()
-        except:
-            return False
+        return self.c.fetchall() or None
 
     def getFayin(self, w):
         self.c.execute("select distinct pinyin from cidian where (traditional=? or simplified=?) limit 1;", (w, w))
-        try:
-            return self.c.fetchall()
-        except:
-            return False
+        return self.c.fetchall() or None
 
     def getJyutping(self, w):
         self.c.execute("select distinct jyutping from cantonese where (traditional=? or simplified=?) limit 1;", (w, w))
-        try:
-            return self.c.fetchall()
-        except:
-            return False
+        return self.c.fetchall() or None
