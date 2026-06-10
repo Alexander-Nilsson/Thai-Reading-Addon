@@ -1,34 +1,332 @@
-2026-06-10 20:26:21,901 INFO Addon loaded
-2026-06-10 20:26:30,222 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
-2026-06-10 20:26:30,222 DEBUG setupButtons called, checkProfile=True
-2026-06-10 20:26:30,222 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
-2026-06-10 20:26:30,223 DEBUG setupButtons completed, editor._links keys: ['fields', 'cards', 'bold', 'italic', 'underline', 'super', 'sub', 'clear', 'colour', 'changeCol', 'cloze', 'attach', 'record', 'more', 'dupes', 'paste', 'cutOrCopy', 'htmlEdit', 'mathjaxInline', 'mathjaxBlock', 'mathjaxChemistry', 'toggleMathjax', 'toggleShrinkImages', 'toggleCloseHTMLTags', 'addImageForOcclusion', 'addImageForOcclusionFromClipboard', 'ajt__ajt_media_converter_button', 'ajt__rename_media_files', 'I/O', 'play_sound_button', 'removeFormatting', 'addCReadings']
-2026-06-10 20:26:30,223 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
-2026-06-10 20:26:30,223 DEBUG setupShortcuts called, checkProfile=True
-2026-06-10 20:26:30,223 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
-2026-06-10 20:26:30,224 DEBUG setupShortcuts completed, shortcuts count: 2
-2026-06-10 20:26:30,761 DEBUG bridgeReroute called with cmd=editorState:0:-1, note.id=1549754043224
-2026-06-10 20:26:30,761 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
-2026-06-10 20:26:30,886 DEBUG bridgeReroute called with cmd=focus:0, note.id=1549754043224
-2026-06-10 20:26:30,887 DEBUG Tracking focused field ordinal: 0
-2026-06-10 20:26:30,887 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
-2026-06-10 20:26:31,361 DEBUG bridgeReroute called with cmd=key:17:1549754043224:y, note.id=1549754043224
-2026-06-10 20:26:31,362 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
-2026-06-10 20:26:33,845 DEBUG bridgeReroute called with cmd=addCReadings, note.id=1549754043224
-2026-06-10 20:26:33,846 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
-2026-06-10 20:26:33,846 DEBUG addCReadings called, editor=<aqt.editor.Editor object at 0x7f1c483f81a0>
-2026-06-10 20:26:33,846 DEBUG editorText: got text=''
-2026-06-10 20:26:33,846 DEBUG addCReadings: no text selected, using tracked field
-2026-06-10 20:26:33,846 DEBUG addCReadings: set currentField via ordinal 0, note_id=1549754043224
-2026-06-10 20:26:35,680 DEBUG bridgeReroute called with cmd=blur:0:1549754043224:也是遇到了种种难关, note.id=1549754043224
-2026-06-10 20:26:35,680 DEBUG Tracking focused field ordinal: 0
-2026-06-10 20:26:35,680 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
-2026-06-10 20:26:35,713 DEBUG bridgeReroute called with cmd=focus:0, note.id=1549754043224
-2026-06-10 20:26:35,713 DEBUG Tracking focused field ordinal: 0
-2026-06-10 20:26:35,713 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
-2026-06-10 20:26:36,715 DEBUG bridgeReroute called with cmd=blur:0:1549754043224:也是遇到了种种难关, note.id=1549754043224
-2026-06-10 20:26:36,716 DEBUG Tracking focused field ordinal: 0
-2026-06-10 20:26:36,716 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
-2026-06-10 20:26:36,735 DEBUG bridgeReroute called with cmd=focus:3, note.id=1549754043224
-2026-06-10 20:26:36,735 DEBUG Tracking focused field ordinal: 3
-2026-06-10 20:26:36,736 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:06:24,608 INFO Addon loaded
+2026-06-10 21:09:55,756 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:09:55,763 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:09:55,764 DEBUG setupButtons called, checkProfile=True
+2026-06-10 21:09:55,764 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:09:55,764 DEBUG setupButtons completed, editor._links keys: ['fields', 'cards', 'bold', 'italic', 'underline', 'super', 'sub', 'clear', 'colour', 'changeCol', 'cloze', 'attach', 'record', 'more', 'dupes', 'paste', 'cutOrCopy', 'htmlEdit', 'mathjaxInline', 'mathjaxBlock', 'mathjaxChemistry', 'toggleMathjax', 'toggleShrinkImages', 'toggleCloseHTMLTags', 'addImageForOcclusion', 'addImageForOcclusionFromClipboard', 'ajt__ajt_media_converter_button', 'ajt__rename_media_files', 'I/O', 'play_sound_button', 'removeFormatting', 'addCReadings']
+2026-06-10 21:09:55,764 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:09:55,764 DEBUG setupShortcuts called, checkProfile=True
+2026-06-10 21:09:55,764 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:09:55,764 DEBUG setupShortcuts completed, shortcuts count: 2
+2026-06-10 21:09:56,498 DEBUG bridgeReroute called with cmd=editorState:0:-1, note.id=1584014982650
+2026-06-10 21:09:56,498 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:09:57,099 DEBUG bridgeReroute called with cmd=key:14:1584014982650:<i><span morph-status="undefined"> 1920年[nián]</span>,<span morph-status="known"> 我[wǒ] 们[men]</span><span morph-status="known"> 的[de]</span><span morph-status="known"> 汽[qì] 车[ch, note.id=1584014982650
+2026-06-10 21:09:57,100 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:09:57,959 DEBUG bridgeReroute called with cmd=key:14:1612115812735:(抬頭看)<span morph-status="unknown">卸下</span><span morph-status="known">了</span><span morph-status="unknown">自尊</span> <span morph-status="unknown">光環</span>, note.id=1612115812735
+2026-06-10 21:09:57,959 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:09:59,199 DEBUG bridgeReroute called with cmd=key:14:1612115812742:(在遠方)<span morph-status="unknown">椰子</span><span morph-status="unknown">樹</span><span morph-status="unknown">搖晃</span>, note.id=1612115812742
+2026-06-10 21:09:59,199 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:10:00,993 DEBUG bridgeReroute called with cmd=addCReadings, note.id=1612115812742
+2026-06-10 21:10:00,993 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:10:00,994 DEBUG addCReadings called, editor=<aqt.editor.Editor object at 0x7f406a70e900>
+2026-06-10 21:10:00,994 DEBUG editorText: got text=''
+2026-06-10 21:10:00,995 DEBUG addCReadings: no text selected, resolving field
+2026-06-10 21:10:00,996 DEBUG addCReadings: note type config found: field=Expression ordinal=0
+2026-06-10 21:10:00,996 DEBUG addCReadings: bypassing JS, finalizing directly for field Expression
+2026-06-10 21:10:00,996 DEBUG finalizeReadings called: text='(在遠方)椰子樹搖晃', field=Expression, editor=True, rType=False
+2026-06-10 21:10:00,997 DEBUG finalizeReadings: note_type=Subs2srs, field=Expression, altType=pinyin
+2026-06-10 21:10:00,997 DEBUG finalizeReadings: generating with rType=pinyin
+2026-06-10 21:10:01,003 DEBUG finalizeReadings: generated string length=57
+2026-06-10 21:10:01,003 DEBUG addToNote: updating field Expression
+2026-06-10 21:10:01,026 DEBUG addToNote: updating field Traditional
+2026-06-10 21:10:01,039 DEBUG addToNote: updating field Traditional
+2026-06-10 21:10:01,644 DEBUG bridgeReroute called with cmd=key:0:1612115812742:(在[zai4]遠方[yuan3 fang1])椰子[ye1 zi5]樹[shu4]搖晃[yao2 huang4], note.id=1612115812742
+2026-06-10 21:10:01,644 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:10:01,988 DEBUG bridgeReroute called with cmd=addCReadings, note.id=1612115812742
+2026-06-10 21:10:01,988 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:10:01,989 DEBUG addCReadings called, editor=<aqt.editor.Editor object at 0x7f406a70e900>
+2026-06-10 21:10:01,989 DEBUG editorText: got text=''
+2026-06-10 21:10:01,989 DEBUG addCReadings: no text selected, resolving field
+2026-06-10 21:10:01,990 DEBUG addCReadings: note type config found: field=Expression ordinal=0
+2026-06-10 21:10:01,991 DEBUG addCReadings: bypassing JS, finalizing directly for field Expression
+2026-06-10 21:10:01,991 DEBUG finalizeReadings called: text='(在遠方)椰子樹搖晃', field=Expression, editor=True, rType=False
+2026-06-10 21:10:01,992 DEBUG finalizeReadings: note_type=Subs2srs, field=Expression, altType=pinyin
+2026-06-10 21:10:01,992 DEBUG finalizeReadings: generating with rType=pinyin
+2026-06-10 21:10:01,994 DEBUG finalizeReadings: generated string length=57
+2026-06-10 21:10:01,994 DEBUG addToNote: text is identical, skipping update for field Expression
+2026-06-10 21:10:02,007 DEBUG addToNote: updating field Traditional
+2026-06-10 21:10:02,018 DEBUG addToNote: updating field Traditional
+2026-06-10 21:10:02,612 DEBUG bridgeReroute called with cmd=addCReadings, note.id=1612115812742
+2026-06-10 21:10:02,612 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:10:02,612 DEBUG addCReadings called, editor=<aqt.editor.Editor object at 0x7f406a70e900>
+2026-06-10 21:10:02,612 DEBUG editorText: got text=''
+2026-06-10 21:10:02,613 DEBUG addCReadings: no text selected, resolving field
+2026-06-10 21:10:02,613 DEBUG addCReadings: note type config found: field=Expression ordinal=0
+2026-06-10 21:10:02,613 DEBUG addCReadings: bypassing JS, finalizing directly for field Expression
+2026-06-10 21:10:02,613 DEBUG finalizeReadings called: text='(在遠方)椰子樹搖晃', field=Expression, editor=True, rType=False
+2026-06-10 21:10:02,614 DEBUG finalizeReadings: note_type=Subs2srs, field=Expression, altType=pinyin
+2026-06-10 21:10:02,614 DEBUG finalizeReadings: generating with rType=pinyin
+2026-06-10 21:10:02,615 DEBUG finalizeReadings: generated string length=57
+2026-06-10 21:10:02,615 DEBUG addToNote: text is identical, skipping update for field Expression
+2026-06-10 21:10:02,632 DEBUG addToNote: updating field Traditional
+2026-06-10 21:10:02,648 DEBUG addToNote: updating field Traditional
+2026-06-10 21:10:02,822 DEBUG bridgeReroute called with cmd=addCReadings, note.id=1612115812742
+2026-06-10 21:10:02,823 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:10:02,823 DEBUG addCReadings called, editor=<aqt.editor.Editor object at 0x7f406a70e900>
+2026-06-10 21:10:02,823 DEBUG editorText: got text=''
+2026-06-10 21:10:02,823 DEBUG addCReadings: no text selected, resolving field
+2026-06-10 21:10:02,824 DEBUG addCReadings: note type config found: field=Expression ordinal=0
+2026-06-10 21:10:02,824 DEBUG addCReadings: bypassing JS, finalizing directly for field Expression
+2026-06-10 21:10:02,824 DEBUG finalizeReadings called: text='(在遠方)椰子樹搖晃', field=Expression, editor=True, rType=False
+2026-06-10 21:10:02,825 DEBUG finalizeReadings: note_type=Subs2srs, field=Expression, altType=pinyin
+2026-06-10 21:10:02,825 DEBUG finalizeReadings: generating with rType=pinyin
+2026-06-10 21:10:02,826 DEBUG finalizeReadings: generated string length=57
+2026-06-10 21:10:02,826 DEBUG addToNote: text is identical, skipping update for field Expression
+2026-06-10 21:10:02,848 DEBUG addToNote: updating field Traditional
+2026-06-10 21:10:02,866 DEBUG addToNote: updating field Traditional
+2026-06-10 21:10:02,972 DEBUG bridgeReroute called with cmd=addCReadings, note.id=1612115812742
+2026-06-10 21:10:02,972 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:10:02,973 DEBUG addCReadings called, editor=<aqt.editor.Editor object at 0x7f406a70e900>
+2026-06-10 21:10:02,973 DEBUG editorText: got text=''
+2026-06-10 21:10:02,973 DEBUG addCReadings: no text selected, resolving field
+2026-06-10 21:10:02,974 DEBUG addCReadings: note type config found: field=Expression ordinal=0
+2026-06-10 21:10:02,974 DEBUG addCReadings: bypassing JS, finalizing directly for field Expression
+2026-06-10 21:10:02,974 DEBUG finalizeReadings called: text='(在遠方)椰子樹搖晃', field=Expression, editor=True, rType=False
+2026-06-10 21:10:02,975 DEBUG finalizeReadings: note_type=Subs2srs, field=Expression, altType=pinyin
+2026-06-10 21:10:02,975 DEBUG finalizeReadings: generating with rType=pinyin
+2026-06-10 21:10:02,976 DEBUG finalizeReadings: generated string length=57
+2026-06-10 21:10:02,977 DEBUG addToNote: text is identical, skipping update for field Expression
+2026-06-10 21:10:03,000 DEBUG addToNote: updating field Traditional
+2026-06-10 21:10:03,018 DEBUG addToNote: updating field Traditional
+2026-06-10 21:10:03,853 DEBUG bridgeReroute called with cmd=removeFormatting, note.id=1612115812742
+2026-06-10 21:10:03,854 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:10:03,854 DEBUG editorText: got text=''
+2026-06-10 21:10:03,855 DEBUG cleanField: bypassing JS, removing brackets directly for field Expression
+2026-06-10 21:10:04,463 DEBUG bridgeReroute called with cmd=key:0:1612115812742:(在遠方)椰子樹搖晃, note.id=1612115812742
+2026-06-10 21:10:04,463 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:10:05,160 DEBUG bridgeReroute called with cmd=addCReadings, note.id=1612115812742
+2026-06-10 21:10:05,160 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:10:05,160 DEBUG addCReadings called, editor=<aqt.editor.Editor object at 0x7f406a70e900>
+2026-06-10 21:10:05,161 DEBUG editorText: got text=''
+2026-06-10 21:10:05,161 DEBUG addCReadings: no text selected, resolving field
+2026-06-10 21:10:05,161 DEBUG addCReadings: note type config found: field=Expression ordinal=0
+2026-06-10 21:10:05,161 DEBUG addCReadings: bypassing JS, finalizing directly for field Expression
+2026-06-10 21:10:05,162 DEBUG finalizeReadings called: text='(在遠方)椰子樹搖晃', field=Expression, editor=True, rType=False
+2026-06-10 21:10:05,162 DEBUG finalizeReadings: note_type=Subs2srs, field=Expression, altType=pinyin
+2026-06-10 21:10:05,162 DEBUG finalizeReadings: generating with rType=pinyin
+2026-06-10 21:10:05,164 DEBUG finalizeReadings: generated string length=57
+2026-06-10 21:10:05,164 DEBUG addToNote: updating field Expression
+2026-06-10 21:10:05,186 DEBUG addToNote: updating field Traditional
+2026-06-10 21:10:05,203 DEBUG addToNote: updating field Traditional
+2026-06-10 21:10:05,808 DEBUG bridgeReroute called with cmd=key:0:1612115812742:(在[zai4]遠方[yuan3 fang1])椰子[ye1 zi5]樹[shu4]搖晃[yao2 huang4], note.id=1612115812742
+2026-06-10 21:10:05,808 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:10:05,845 DEBUG bridgeReroute called with cmd=addCReadings, note.id=1612115812742
+2026-06-10 21:10:05,845 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:10:05,845 DEBUG addCReadings called, editor=<aqt.editor.Editor object at 0x7f406a70e900>
+2026-06-10 21:10:05,845 DEBUG editorText: got text=''
+2026-06-10 21:10:05,845 DEBUG addCReadings: no text selected, resolving field
+2026-06-10 21:10:05,845 DEBUG addCReadings: note type config found: field=Expression ordinal=0
+2026-06-10 21:10:05,845 DEBUG addCReadings: bypassing JS, finalizing directly for field Expression
+2026-06-10 21:10:05,845 DEBUG finalizeReadings called: text='(在遠方)椰子樹搖晃', field=Expression, editor=True, rType=False
+2026-06-10 21:10:05,846 DEBUG finalizeReadings: note_type=Subs2srs, field=Expression, altType=pinyin
+2026-06-10 21:10:05,846 DEBUG finalizeReadings: generating with rType=pinyin
+2026-06-10 21:10:05,846 DEBUG finalizeReadings: generated string length=57
+2026-06-10 21:10:05,846 DEBUG addToNote: text is identical, skipping update for field Expression
+2026-06-10 21:10:05,853 DEBUG addToNote: updating field Traditional
+2026-06-10 21:10:05,863 DEBUG addToNote: updating field Traditional
+2026-06-10 21:10:09,709 DEBUG bridgeReroute called with cmd=removeFormatting, note.id=1612115812742
+2026-06-10 21:10:09,709 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:10:09,709 DEBUG editorText: got text=''
+2026-06-10 21:10:09,710 DEBUG cleanField: bypassing JS, removing brackets directly for field Expression
+2026-06-10 21:10:10,279 DEBUG bridgeReroute called with cmd=removeFormatting, note.id=1612115812742
+2026-06-10 21:10:10,280 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:10:10,280 DEBUG editorText: got text=''
+2026-06-10 21:10:10,318 DEBUG bridgeReroute called with cmd=key:0:1612115812742:(在遠方)椰子樹搖晃, note.id=1612115812742
+2026-06-10 21:10:10,318 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:10:11,200 DEBUG bridgeReroute called with cmd=removeFormatting, note.id=1612115812742
+2026-06-10 21:10:11,200 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:10:11,200 DEBUG editorText: got text=''
+2026-06-10 21:10:11,899 DEBUG bridgeReroute called with cmd=addCReadings, note.id=1612115812742
+2026-06-10 21:10:11,899 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:10:11,899 DEBUG addCReadings called, editor=<aqt.editor.Editor object at 0x7f406a70e900>
+2026-06-10 21:10:11,900 DEBUG editorText: got text=''
+2026-06-10 21:10:11,900 DEBUG addCReadings: no text selected, resolving field
+2026-06-10 21:10:11,900 DEBUG addCReadings: note type config found: field=Expression ordinal=0
+2026-06-10 21:10:11,900 DEBUG addCReadings: bypassing JS, finalizing directly for field Expression
+2026-06-10 21:10:11,901 DEBUG finalizeReadings called: text='(在遠方)椰子樹搖晃', field=Expression, editor=True, rType=False
+2026-06-10 21:10:11,901 DEBUG finalizeReadings: note_type=Subs2srs, field=Expression, altType=pinyin
+2026-06-10 21:10:11,902 DEBUG finalizeReadings: generating with rType=pinyin
+2026-06-10 21:10:11,904 DEBUG finalizeReadings: generated string length=57
+2026-06-10 21:10:11,905 DEBUG addToNote: updating field Expression
+2026-06-10 21:10:11,925 DEBUG addToNote: updating field Traditional
+2026-06-10 21:10:11,942 DEBUG addToNote: updating field Traditional
+2026-06-10 21:10:12,336 DEBUG bridgeReroute called with cmd=addCReadings, note.id=1612115812742
+2026-06-10 21:10:12,336 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:10:12,337 DEBUG addCReadings called, editor=<aqt.editor.Editor object at 0x7f406a70e900>
+2026-06-10 21:10:12,337 DEBUG editorText: got text=''
+2026-06-10 21:10:12,337 DEBUG addCReadings: no text selected, resolving field
+2026-06-10 21:10:12,338 DEBUG addCReadings: note type config found: field=Expression ordinal=0
+2026-06-10 21:10:12,338 DEBUG addCReadings: bypassing JS, finalizing directly for field Expression
+2026-06-10 21:10:12,338 DEBUG finalizeReadings called: text='(在遠方)椰子樹搖晃', field=Expression, editor=True, rType=False
+2026-06-10 21:10:12,339 DEBUG finalizeReadings: note_type=Subs2srs, field=Expression, altType=pinyin
+2026-06-10 21:10:12,339 DEBUG finalizeReadings: generating with rType=pinyin
+2026-06-10 21:10:12,341 DEBUG finalizeReadings: generated string length=57
+2026-06-10 21:10:12,341 DEBUG addToNote: text is identical, skipping update for field Expression
+2026-06-10 21:10:12,362 DEBUG addToNote: updating field Traditional
+2026-06-10 21:10:12,379 DEBUG addToNote: updating field Traditional
+2026-06-10 21:10:12,554 DEBUG bridgeReroute called with cmd=key:0:1612115812742:(在[zai4]遠方[yuan3 fang1])椰子[ye1 zi5]樹[shu4]搖晃[yao2 huang4], note.id=1612115812742
+2026-06-10 21:10:12,554 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:10:16,781 DEBUG bridgeReroute called with cmd=addCReadings, note.id=1612115812742
+2026-06-10 21:10:16,782 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:10:16,782 DEBUG addCReadings called, editor=<aqt.editor.Editor object at 0x7f406a70e900>
+2026-06-10 21:10:16,782 DEBUG editorText: got text=''
+2026-06-10 21:10:16,782 DEBUG addCReadings: no text selected, resolving field
+2026-06-10 21:10:16,783 DEBUG addCReadings: note type config found: field=Expression ordinal=0
+2026-06-10 21:10:16,783 DEBUG addCReadings: bypassing JS, finalizing directly for field Expression
+2026-06-10 21:10:16,783 DEBUG finalizeReadings called: text='(在遠方)椰子樹搖晃', field=Expression, editor=True, rType=False
+2026-06-10 21:10:16,783 DEBUG finalizeReadings: note_type=Subs2srs, field=Expression, altType=pinyin
+2026-06-10 21:10:16,783 DEBUG finalizeReadings: generating with rType=pinyin
+2026-06-10 21:10:16,784 DEBUG finalizeReadings: generated string length=57
+2026-06-10 21:10:16,784 DEBUG addToNote: text is identical, skipping update for field Expression
+2026-06-10 21:10:16,801 DEBUG addToNote: updating field Traditional
+2026-06-10 21:10:16,817 DEBUG addToNote: updating field Traditional
+2026-06-10 21:10:18,268 DEBUG bridgeReroute called with cmd=addCReadings, note.id=1612115812742
+2026-06-10 21:10:18,269 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:10:18,269 DEBUG addCReadings called, editor=<aqt.editor.Editor object at 0x7f406a70e900>
+2026-06-10 21:10:18,269 DEBUG editorText: got text=''
+2026-06-10 21:10:18,269 DEBUG addCReadings: no text selected, resolving field
+2026-06-10 21:10:18,270 DEBUG addCReadings: note type config found: field=Expression ordinal=0
+2026-06-10 21:10:18,270 DEBUG addCReadings: bypassing JS, finalizing directly for field Expression
+2026-06-10 21:10:18,270 DEBUG finalizeReadings called: text='(在遠方)椰子樹搖晃', field=Expression, editor=True, rType=False
+2026-06-10 21:10:18,271 DEBUG finalizeReadings: note_type=Subs2srs, field=Expression, altType=pinyin
+2026-06-10 21:10:18,271 DEBUG finalizeReadings: generating with rType=pinyin
+2026-06-10 21:10:18,273 DEBUG finalizeReadings: generated string length=57
+2026-06-10 21:10:18,273 DEBUG addToNote: text is identical, skipping update for field Expression
+2026-06-10 21:10:18,292 DEBUG addToNote: updating field Traditional
+2026-06-10 21:10:18,309 DEBUG addToNote: updating field Traditional
+2026-06-10 21:10:19,404 DEBUG bridgeReroute called with cmd=removeFormatting, note.id=1612115812742
+2026-06-10 21:10:19,404 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:10:19,405 DEBUG editorText: got text=''
+2026-06-10 21:10:19,405 DEBUG cleanField: bypassing JS, removing brackets directly for field Expression
+2026-06-10 21:10:20,014 DEBUG bridgeReroute called with cmd=key:0:1612115812742:(在遠方)椰子樹搖晃, note.id=1612115812742
+2026-06-10 21:10:20,014 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:10:22,933 DEBUG bridgeReroute called with cmd=addCReadings, note.id=1612115812742
+2026-06-10 21:10:22,934 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:10:22,934 DEBUG addCReadings called, editor=<aqt.editor.Editor object at 0x7f406a70e900>
+2026-06-10 21:10:22,934 DEBUG editorText: got text=''
+2026-06-10 21:10:22,934 DEBUG addCReadings: no text selected, resolving field
+2026-06-10 21:10:22,935 DEBUG addCReadings: note type config found: field=Expression ordinal=0
+2026-06-10 21:10:22,935 DEBUG addCReadings: bypassing JS, finalizing directly for field Expression
+2026-06-10 21:10:22,935 DEBUG finalizeReadings called: text='(在遠方)椰子樹搖晃', field=Expression, editor=True, rType=False
+2026-06-10 21:10:22,936 DEBUG finalizeReadings: note_type=Subs2srs, field=Expression, altType=pinyin
+2026-06-10 21:10:22,936 DEBUG finalizeReadings: generating with rType=pinyin
+2026-06-10 21:10:22,938 DEBUG finalizeReadings: generated string length=57
+2026-06-10 21:10:22,938 DEBUG addToNote: updating field Expression
+2026-06-10 21:10:22,958 DEBUG addToNote: updating field Traditional
+2026-06-10 21:10:22,975 DEBUG addToNote: updating field Traditional
+2026-06-10 21:10:23,437 DEBUG bridgeReroute called with cmd=addCReadings, note.id=1612115812742
+2026-06-10 21:10:23,438 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:10:23,438 DEBUG addCReadings called, editor=<aqt.editor.Editor object at 0x7f406a70e900>
+2026-06-10 21:10:23,439 DEBUG editorText: got text=''
+2026-06-10 21:10:23,439 DEBUG addCReadings: no text selected, resolving field
+2026-06-10 21:10:23,440 DEBUG addCReadings: note type config found: field=Expression ordinal=0
+2026-06-10 21:10:23,441 DEBUG addCReadings: bypassing JS, finalizing directly for field Expression
+2026-06-10 21:10:23,441 DEBUG finalizeReadings called: text='(在遠方)椰子樹搖晃', field=Expression, editor=True, rType=False
+2026-06-10 21:10:23,442 DEBUG finalizeReadings: note_type=Subs2srs, field=Expression, altType=pinyin
+2026-06-10 21:10:23,442 DEBUG finalizeReadings: generating with rType=pinyin
+2026-06-10 21:10:23,445 DEBUG finalizeReadings: generated string length=57
+2026-06-10 21:10:23,445 DEBUG addToNote: text is identical, skipping update for field Expression
+2026-06-10 21:10:23,468 DEBUG addToNote: updating field Traditional
+2026-06-10 21:10:23,483 DEBUG addToNote: updating field Traditional
+2026-06-10 21:10:23,585 DEBUG bridgeReroute called with cmd=key:0:1612115812742:(在[zai4]遠方[yuan3 fang1])椰子[ye1 zi5]樹[shu4]搖晃[yao2 huang4], note.id=1612115812742
+2026-06-10 21:10:23,585 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:10:23,855 DEBUG bridgeReroute called with cmd=addCReadings, note.id=1612115812742
+2026-06-10 21:10:23,856 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:10:23,856 DEBUG addCReadings called, editor=<aqt.editor.Editor object at 0x7f406a70e900>
+2026-06-10 21:10:23,856 DEBUG editorText: got text=''
+2026-06-10 21:10:23,856 DEBUG addCReadings: no text selected, resolving field
+2026-06-10 21:10:23,857 DEBUG addCReadings: note type config found: field=Expression ordinal=0
+2026-06-10 21:10:23,857 DEBUG addCReadings: bypassing JS, finalizing directly for field Expression
+2026-06-10 21:10:23,857 DEBUG finalizeReadings called: text='(在遠方)椰子樹搖晃', field=Expression, editor=True, rType=False
+2026-06-10 21:10:23,858 DEBUG finalizeReadings: note_type=Subs2srs, field=Expression, altType=pinyin
+2026-06-10 21:10:23,858 DEBUG finalizeReadings: generating with rType=pinyin
+2026-06-10 21:10:23,860 DEBUG finalizeReadings: generated string length=57
+2026-06-10 21:10:23,860 DEBUG addToNote: text is identical, skipping update for field Expression
+2026-06-10 21:10:23,881 DEBUG addToNote: updating field Traditional
+2026-06-10 21:10:23,899 DEBUG addToNote: updating field Traditional
+2026-06-10 21:10:24,534 DEBUG bridgeReroute called with cmd=addCReadings, note.id=1612115812742
+2026-06-10 21:10:24,535 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:10:24,535 DEBUG addCReadings called, editor=<aqt.editor.Editor object at 0x7f406a70e900>
+2026-06-10 21:10:24,535 DEBUG editorText: got text=''
+2026-06-10 21:10:24,535 DEBUG addCReadings: no text selected, resolving field
+2026-06-10 21:10:24,535 DEBUG addCReadings: note type config found: field=Expression ordinal=0
+2026-06-10 21:10:24,535 DEBUG addCReadings: bypassing JS, finalizing directly for field Expression
+2026-06-10 21:10:24,536 DEBUG finalizeReadings called: text='(在遠方)椰子樹搖晃', field=Expression, editor=True, rType=False
+2026-06-10 21:10:24,536 DEBUG finalizeReadings: note_type=Subs2srs, field=Expression, altType=pinyin
+2026-06-10 21:10:24,536 DEBUG finalizeReadings: generating with rType=pinyin
+2026-06-10 21:10:24,537 DEBUG finalizeReadings: generated string length=57
+2026-06-10 21:10:24,537 DEBUG addToNote: text is identical, skipping update for field Expression
+2026-06-10 21:10:24,548 DEBUG addToNote: updating field Traditional
+2026-06-10 21:10:24,562 DEBUG addToNote: updating field Traditional
+2026-06-10 21:10:25,465 DEBUG bridgeReroute called with cmd=removeFormatting, note.id=1612115812742
+2026-06-10 21:10:25,465 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:10:25,465 DEBUG editorText: got text=''
+2026-06-10 21:10:25,466 DEBUG cleanField: bypassing JS, removing brackets directly for field Expression
+2026-06-10 21:10:26,077 DEBUG bridgeReroute called with cmd=key:0:1612115812742:(在遠方)椰子樹搖晃, note.id=1612115812742
+2026-06-10 21:10:26,077 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:10:26,833 DEBUG bridgeReroute called with cmd=addCReadings, note.id=1612115812742
+2026-06-10 21:10:26,834 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:10:26,834 DEBUG addCReadings called, editor=<aqt.editor.Editor object at 0x7f406a70e900>
+2026-06-10 21:10:26,834 DEBUG editorText: got text=''
+2026-06-10 21:10:26,834 DEBUG addCReadings: no text selected, resolving field
+2026-06-10 21:10:26,835 DEBUG addCReadings: note type config found: field=Expression ordinal=0
+2026-06-10 21:10:26,835 DEBUG addCReadings: bypassing JS, finalizing directly for field Expression
+2026-06-10 21:10:26,835 DEBUG finalizeReadings called: text='(在遠方)椰子樹搖晃', field=Expression, editor=True, rType=False
+2026-06-10 21:10:26,835 DEBUG finalizeReadings: note_type=Subs2srs, field=Expression, altType=pinyin
+2026-06-10 21:10:26,836 DEBUG finalizeReadings: generating with rType=pinyin
+2026-06-10 21:10:26,838 DEBUG finalizeReadings: generated string length=57
+2026-06-10 21:10:26,838 DEBUG addToNote: updating field Expression
+2026-06-10 21:10:26,855 DEBUG addToNote: updating field Traditional
+2026-06-10 21:10:26,870 DEBUG addToNote: updating field Traditional
+2026-06-10 21:10:27,474 DEBUG bridgeReroute called with cmd=key:0:1612115812742:(在[zai4]遠方[yuan3 fang1])椰子[ye1 zi5]樹[shu4]搖晃[yao2 huang4], note.id=1612115812742
+2026-06-10 21:10:27,474 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:10:27,618 DEBUG bridgeReroute called with cmd=cards, note.id=1612115812742
+2026-06-10 21:10:27,619 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:10:50,344 DEBUG bridgeReroute called with cmd=focus:0, note.id=1612115812742
+2026-06-10 21:10:50,344 DEBUG Tracking focused field ordinal: 0
+2026-06-10 21:10:50,345 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:10:50,345 DEBUG editor_did_focus_field: ordinal=0
+2026-06-10 21:10:51,836 DEBUG bridgeReroute called with cmd=addCReadings, note.id=1612115812742
+2026-06-10 21:10:51,836 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:10:51,836 DEBUG addCReadings called, editor=<aqt.editor.Editor object at 0x7f406a70e900>
+2026-06-10 21:10:51,836 DEBUG editorText: got text=''
+2026-06-10 21:10:51,837 DEBUG addCReadings: no text selected, resolving field
+2026-06-10 21:10:51,837 DEBUG addCReadings: note type config found: field=Expression ordinal=0
+2026-06-10 21:10:51,837 DEBUG addCReadings: bypassing JS, finalizing directly for field Expression
+2026-06-10 21:10:51,837 DEBUG finalizeReadings called: text='(在遠方)椰子樹搖晃', field=Expression, editor=True, rType=False
+2026-06-10 21:10:51,838 DEBUG finalizeReadings: note_type=Subs2srs, field=Expression, altType=pinyin
+2026-06-10 21:10:51,838 DEBUG finalizeReadings: generating with rType=pinyin
+2026-06-10 21:10:51,839 DEBUG finalizeReadings: generated string length=57
+2026-06-10 21:10:51,839 DEBUG addToNote: text is identical, skipping update for field Expression
+2026-06-10 21:10:51,857 DEBUG addToNote: updating field Traditional
+2026-06-10 21:10:51,873 DEBUG addToNote: updating field Traditional
+2026-06-10 21:10:51,882 DEBUG bridgeReroute called with cmd=blur:0:1612115812742:(在[zai4]遠方[yuan3 fang1])椰子[ye1 zi5]樹[shu4]搖晃[yao2 huang4], note.id=1612115812742
+2026-06-10 21:10:51,882 DEBUG Tracking focused field ordinal: 0
+2026-06-10 21:10:51,882 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:10:51,885 DEBUG bridgeReroute called with cmd=focus:0, note.id=1612115812742
+2026-06-10 21:10:51,885 DEBUG Tracking focused field ordinal: 0
+2026-06-10 21:10:51,885 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:10:51,886 DEBUG editor_did_focus_field: ordinal=0
+2026-06-10 21:10:53,413 DEBUG bridgeReroute called with cmd=removeFormatting, note.id=1612115812742
+2026-06-10 21:10:53,413 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:10:53,413 DEBUG editorText: got text=''
+2026-06-10 21:10:53,414 DEBUG cleanField: bypassing JS, removing brackets directly for field Expression
+2026-06-10 21:10:53,440 DEBUG bridgeReroute called with cmd=key:0:1612115812742:(在遠方)椰子樹搖晃, note.id=1612115812742
+2026-06-10 21:10:53,441 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:10:53,443 DEBUG bridgeReroute called with cmd=blur:0:1612115812742:(在遠方)椰子樹搖晃, note.id=1612115812742
+2026-06-10 21:10:53,443 DEBUG Tracking focused field ordinal: 0
+2026-06-10 21:10:53,443 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:10:53,457 DEBUG bridgeReroute called with cmd=focus:0, note.id=1612115812742
+2026-06-10 21:10:53,457 DEBUG Tracking focused field ordinal: 0
+2026-06-10 21:10:53,457 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:10:53,457 DEBUG editor_did_focus_field: ordinal=0
+2026-06-10 21:10:58,691 DEBUG bridgeReroute called with cmd=blur:0:1612115812742:(在遠方)椰子樹搖晃, note.id=1612115812742
+2026-06-10 21:10:58,691 DEBUG Tracking focused field ordinal: 0
+2026-06-10 21:10:58,691 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:10:59,482 DEBUG bridgeReroute called with cmd=focus:0, note.id=1612115812742
+2026-06-10 21:10:59,482 DEBUG Tracking focused field ordinal: 0
+2026-06-10 21:10:59,482 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True
+2026-06-10 21:10:59,482 DEBUG editor_did_focus_field: ordinal=0
+2026-06-10 21:10:59,868 DEBUG bridgeReroute called with cmd=blur:0:1612115812742:(在遠方)椰子樹搖晃, note.id=1612115812742
+2026-06-10 21:10:59,868 DEBUG Tracking focused field ordinal: 0
+2026-06-10 21:10:59,869 DEBUG checkProfile: profile=Alexander, in_config=['All'], result=True

@@ -85,12 +85,18 @@ function get_field(sel) {
 }
 
 function get_field_by_ordinal(ordinal) {
+  var doc = document;
+  // If we are in a legacy/isolated context, try to look at the parent
+  if (doc.querySelectorAll('anki-editable').length === 0 && window.parent && window.parent.document) {
+      doc = window.parent.document;
+  }
+
   // Try ID first (old Anki)
-  var field = document.getElementById('f' + ordinal);
+  var field = doc.getElementById('f' + ordinal);
   if (field) return field;
 
   // Try anki-editable (modern Anki)
-  var editables = document.querySelectorAll('anki-editable');
+  var editables = doc.querySelectorAll('anki-editable');
   if (editables[ordinal]) {
     if (editables[ordinal].shadowRoot) {
       return editables[ordinal].shadowRoot.querySelector("div.field");
@@ -98,8 +104,8 @@ function get_field_by_ordinal(ordinal) {
     return editables[ordinal].querySelector("div.field");
   }
 
-  // Try counting div.field (middle Anki versions or custom editors)
-  var fields = document.querySelectorAll('div.field');
+  // Try counting div.field
+  var fields = doc.querySelectorAll('div.field');
   if (fields[ordinal]) return fields[ordinal];
 
   return null;

@@ -370,4 +370,13 @@ def bridgeReroute(self, cmd):
 ogReroute = aqt.editor.Editor.onBridgeCmd
 aqt.editor.Editor.onBridgeCmd = bridgeReroute  # type: ignore[assignment]  # ty:ignore[invalid-assignment]
 
+
+def _on_editor_focus_field(note, current_field_index: int) -> None:
+    from aqt import mw
+
+    mw._lastFocusedFieldOrdinal = current_field_index  # type: ignore[attr-defined]
+    _log.debug("editor_did_focus_field: ordinal=%d", current_field_index)
+
+
+gui_hooks.editor_did_focus_field.append(_on_editor_focus_field)
 gui_hooks.profile_did_open.append(_rebuild_catalog)

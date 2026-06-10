@@ -136,8 +136,34 @@ class ChineseHandler:
     def cleanField(self, editor):
         if self.editorText(editor):
             editor.web.eval(self.commonJS + self.bracketsFromSelJS)
-        else:
-            editor.web.eval(self.commonJS + self.removeBracketsJS)
+            return
+
+        note = editor.note
+        configured_field_name = None
+
+        if note is not None:
+            note_type_name = note.model()["name"]
+            wrapper = self.cssJSHandler.wrapperDict.get(note_type_name)
+            if wrapper:
+                configured_field_name = wrapper[0][1]
+
+        if configured_field_name and note and configured_field_name in note:
+            text = note[configured_field_name]
+            cleaned_text = self.removeBrackets(text)
+            if text != cleaned_text:
+                _log.debug("cleanField: bypassing JS, removing brackets directly for field %s", configured_field_name)
+                note[configured_field_name] = cleaned_text
+                self.anki.col.update_note(note)
+                # Find ordinal to update the UI
+                ordinal = self.getFieldOrdinal(note, configured_field_name)
+                if ordinal is not False:
+                    editor.web.eval(self.commonJS + self.insertToFieldJS % (cleaned_text.replace('"', '\\"'), str(ordinal)))
+                
+                # Always trigger a reload as a fallback to ensure the UI matches the DB
+                editor.loadNoteKeepingFocus()
+            return
+
+        editor.web.eval(self.commonJS + self.removeBracketsJS)
 
     def addCReadings(self, editor):
         _log.debug("addCReadings called, editor=%s", editor)
@@ -145,23 +171,50 @@ class ChineseHandler:
         if text:
             _log.debug("addCReadings: text selected, calling fetchTextJS")
             editor.web.eval(self.commonJS + self.fetchTextJS)
-        else:
-            _log.debug("addCReadings: no text selected, using tracked field")
+            return
 
-            if self.mw and getattr(self.mw, "_lastFocusedFieldOrdinal", None) is not None:
-                ordinal = self.mw._lastFocusedFieldOrdinal
-                note_id = editor.note.id if editor.note else 0
-                js_set_field = (
-                    f"window.currentField = get_field_by_ordinal({ordinal}); window.currentNoteId = '{note_id}';"
-                )
+        _log.debug("addCReadings: no text selected, resolving field")
+        ordinal = None
+        note = editor.note
+        note_id = note.id if note else 0
+        configured_field_name = None
+
+        # Try note-type config first
+        if note is not None:
+            note_type_name = note.model()["name"]
+            wrapper = self.cssJSHandler.wrapperDict.get(note_type_name)
+            if wrapper:
+                configured_field_name = wrapper[0][1]
+                ordinal = self.getFieldOrdinal(note, configured_field_name)
                 _log.debug(
-                    "addCReadings: set currentField via ordinal %d, note_id=%s",
+                    "addCReadings: note type config found: field=%s ordinal=%s",
+                    configured_field_name,
                     ordinal,
-                    note_id,
                 )
-            else:
-                js_set_field = "console.log('Chinese Reading: No focused field tracked');"
-            editor.web.eval(js_set_field + self.commonJS + self.fetchTextJS)
+
+        # If we have a configured field, we can bypass the DOM and use the note data directly
+        if configured_field_name and note and configured_field_name in note:
+            text = note[configured_field_name]
+            # IDEMPOTENCY: Remove existing readings before adding new ones
+            cleaned_text = self.removeBrackets(text)
+            _log.debug("addCReadings: bypassing JS, finalizing directly for field %s", configured_field_name)
+            self.finalizeReadings(cleaned_text, configured_field_name, note, editor)
+            # Ensure the note is saved and UI is updated
+            self.anki.col.update_note(note)
+            editor.loadNoteKeepingFocus()
+            return
+
+        # Fallback for unconfigured fields: try to find focused field via JS
+        if ordinal is None and self.mw and getattr(self.mw, "_lastFocusedFieldOrdinal", None) is not None:
+            ordinal = self.mw._lastFocusedFieldOrdinal
+            _log.debug("addCReadings: using tracked ordinal=%d", ordinal)
+
+        if ordinal is not None:
+            js_set_field = f"var currentField = get_field_by_ordinal({ordinal}); var currentNoteId = '{note_id}';"
+        else:
+            js_set_field = "console.log('Chinese Reading: No field could be resolved');"
+
+        editor.web.eval(self.commonJS + js_set_field + self.fetchTextJS)
 
     def finalizeReadings(self, text, field, note, editor=False, rType=False):
         _log.debug(
@@ -174,6 +227,10 @@ class ChineseHandler:
         if text == "":
             _log.debug("finalizeReadings: empty text, returning")
             return
+
+        # IDEMPOTENCY: Ensure we don't add readings to already bracketed text
+        text = self.removeBrackets(text)
+
         note_type_name = note.model()["name"]
         if not rType:
             altType = self.cssJSHandler.get_alt_reading_type(note_type_name, field)
@@ -193,9 +250,10 @@ class ChineseHandler:
             if not newStr:
                 _log.warning("finalizeReadings: newStr is empty, nothing to insert")
                 return
-            safeStr = newStr.replace('"', '\\"').replace("\n", "")
-            _log.debug("finalizeReadings: inserting HTML via editor.web.eval, length=%d", len(safeStr))
-            editor.web.eval(self.commonJS + self.insertHTMLJS % safeStr)
+            
+            # IDEMPOTENCY: Use addToNote which now checks for duplicates
+            self.addToNote(editor, note, field, self.getFieldOrdinal(note, field), newStr)
+            
             self.addVariants(text, note, editor)
             self.addSimpTrad(text, note, editor)
         else:
@@ -238,19 +296,17 @@ class ChineseHandler:
                     if varAr[1] == "overwrite":
                         self.addToNote(editor, note, selField, ordinal, text)
                     elif varAr[1] == "add":
+                        if text in note[selField]:
+                            _log.debug("addVariants: variant already in field %s, skipping", selField)
+                            continue
+
                         separator = "<br>"
                         if len(varAr) == 3:
                             separator = varAr[2]
-                        if note[selField] == "" or editor:
-                            self.addToNote(
-                                editor,
-                                note,
-                                selField,
-                                ordinal,
-                                note[selField] + separator.replace("<br>", "", 1) + text,
-                            )
-                        else:
-                            self.addToNote(editor, note, selField, ordinal, note[selField] + separator + text)
+                        
+                        current_val = note[selField]
+                        new_val = current_val + (separator if current_val else "") + text
+                        self.addToNote(editor, note, selField, ordinal, new_val)
                     elif varAr[1] == "no":
                         if note[selField] == "":
                             self.addToNote(editor, note, selField, ordinal, text)
@@ -283,12 +339,19 @@ class ChineseHandler:
                 separator = separator.replace("<br>", "", 1)
             if len(varAr) == 4:
                 separator = varAr[3]
-            if not sSame and not tSame:
-                return fText + separator + simplified + sep2 + traditional
-            elif not sSame and tSame:
-                return fText + separator + simplified
-            elif not tSame and sSame:
-                return fText + sep2 + traditional
+            
+            s_to_add = simplified if not sSame and simplified not in fText else ""
+            t_to_add = traditional if not tSame and traditional not in fText else ""
+            
+            if not s_to_add and not t_to_add:
+                return fText
+            
+            res = fText
+            if s_to_add:
+                res += separator + s_to_add
+            if t_to_add:
+                res += (sep2 if s_to_add else separator) + t_to_add
+            return res
 
     def addSimpTrad(self, text, note, editor=False):
         varAr = self.config.simp_trad_field.split(";")
@@ -320,10 +383,15 @@ class ChineseHandler:
             return False
 
     def addToNote(self, editor, note, field, ordinal, text):
+        if note[field] == text:
+            _log.debug("addToNote: text is identical, skipping update for field %s", field)
+            return
+
+        _log.debug("addToNote: updating field %s", field)
+        note[field] = text
+
         if ordinal is not False and editor is not False:
             editor.web.eval(self.commonJS + self.insertToFieldJS % (text.replace('"', '\\"'), str(ordinal)))
-        else:
-            note[field] = text
 
     def reloadEditor(self):
         browser = aqt.DialogManager._dialogs["Browser"][1]
