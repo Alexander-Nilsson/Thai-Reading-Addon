@@ -174,20 +174,17 @@ class TestValidate:
         assert len(errs) == 1
         assert errs[0].field == "active_fields"
 
-    def test_rejects_active_field_with_bad_note_type(self, mutation):
+    def test_allows_active_field_with_missing_note_type(self, mutation):
         errs = mutation.validate(ConfigDelta(active_fields=("hover;User 1;MissingNote;Card 1;Front;Both;pinyin",)))
-        assert len(errs) == 1
-        assert "MissingNote" in errs[0].message
+        assert errs == []
 
-    def test_rejects_active_field_with_bad_card_type(self, mutation):
+    def test_allows_active_field_with_missing_card_type(self, mutation):
         errs = mutation.validate(ConfigDelta(active_fields=("hover;User 1;Basic;MissingCard;Front;Both;pinyin",)))
-        assert len(errs) == 1
-        assert "MissingCard" in errs[0].message
+        assert errs == []
 
-    def test_rejects_active_field_with_bad_field(self, mutation):
+    def test_allows_active_field_with_missing_field(self, mutation):
         errs = mutation.validate(ConfigDelta(active_fields=("hover;User 1;Basic;Card 1;MissingField;Both;pinyin",)))
-        assert len(errs) == 1
-        assert "MissingField" in errs[0].message
+        assert errs == []
 
     def test_accepts_valid_active_field(self, mutation):
         errs = mutation.validate(ConfigDelta(active_fields=("hover;User 1;Basic;Card 1;Front;Both;pinyin",)))

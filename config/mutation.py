@@ -251,15 +251,17 @@ class LiveConfigMutation:
             )
         if delta.active_fields is not None:
             for i, raw in enumerate(delta.active_fields):
-                parsed = parse_active_field(raw)
-                if isinstance(parsed, str):
+                try:
+                    parsed = parse_active_field(raw)
+                except ValueError as e:
                     errors.append(
                         ValidationError(
                             "active_fields",
-                            f"active_fields[{i}]: {parsed}",
+                            f"active_fields[{i}]: {e}",
                         )
                     )
-                elif self._catalog is not None:
+                    continue
+                if self._catalog is not None:
                     self._validate_af_against_catalog(parsed, i, errors)
 
     def _validate_af_against_catalog(
@@ -276,32 +278,3 @@ class LiveConfigMutation:
                     f"active_fields[{i}]: profile {af.profile!r} not found",
                 )
             )
-        if af.profile == "all":
-            profiles = self._catalog.profile_names()
-        else:
-            profiles = [af.profile]
-        for prof in profiles:
-            if af.note_type not in self._catalog.model_names(prof):
-                errors.append(
-                    ValidationError(
-                        "active_fields",
-                        f"active_fields[{i}]: note type {af.note_type!r} not found in profile {prof!r}",
-                    )
-                )
-                return
-            if af.card_type not in self._catalog.card_type_names(prof, af.note_type):
-                errors.append(
-                    ValidationError(
-                        "active_fields",
-                        f"active_fields[{i}]: card type {af.card_type!r} not found in {prof}/{af.note_type}",
-                    )
-                )
-                return
-            if af.field not in self._catalog.field_names(prof, af.note_type):
-                errors.append(
-                    ValidationError(
-                        "active_fields",
-                        f"active_fields[{i}]: field {af.field!r} not found in {prof}/{af.note_type}",
-                    )
-                )
-                return
