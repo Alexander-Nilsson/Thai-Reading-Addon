@@ -11,8 +11,6 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Any, Protocol
 
-from anki import Collection
-
 from .config import AddonConfig, parse_active_field
 
 # ── Model discovery (replaces colArray global) ─────────────────
@@ -38,6 +36,8 @@ class LiveModelCatalog:
     """
 
     def __init__(self, mw) -> None:
+        from anki import Collection
+
         self._profiles: dict[str, dict[str, ModelInfo]] = {}
         for prof in mw.pm.profiles():
             try:

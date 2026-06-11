@@ -151,7 +151,7 @@ class CSSJSHandler:
             return (wrapperDict, False)
         if notFoundErrors != "":
             show_info(
-                "The following entries in \"ActiveFields\" could not be found:\n\n" + notFoundErrors,
+                'The following entries in "ActiveFields" could not be found:\n\n' + notFoundErrors,
                 level="err",
             )
             return (wrapperDict, False)

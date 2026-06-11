@@ -2,9 +2,9 @@ import os
 from unittest.mock import patch
 
 import pytest
-from conftest import import_css_js_handler
 
 from config.config import AddonConfig
+from conftest import import_css_js_handler
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 

@@ -1,13 +1,7 @@
-__version__ = "0.1.3"
+"""Chinese Reading Addon for Anki"""
 
-try:
-    from . import main  # type: ignore[import]  # ty:ignore[unresolved-import]
-except Exception:
-    import traceback
+import sys
 
-    traceback.print_exc()
-
-try:
-    from ._infra import updater  # type: ignore[import]  # ty:ignore[unresolved-import]
-except Exception:
-    pass
+# Only do the real import when we're actually loaded as a package by Anki
+if __spec__ is not None and __spec__.parent:
+    from . import main

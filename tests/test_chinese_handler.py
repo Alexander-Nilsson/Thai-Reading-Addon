@@ -1,11 +1,9 @@
-import os
 from unittest.mock import MagicMock
 
 import pytest
-from conftest import import_chinese_handler
 
 from config.config import AddonConfig
-from reading.dictdb import DictDB
+from conftest import import_chinese_handler
 from reading.generator import ReadingGenerator
 from reading.text_utils import clean_spaces, html_remove, replace_html, strip_brackets
 
@@ -31,9 +29,6 @@ def _make_config(**overrides):
     return AddonConfig(_raw=raw)
 
 
-DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "db", "chinese_dict.sqlite")
-
-
 @pytest.fixture(scope="module")
 def ChineseHandler():
     return import_chinese_handler()
@@ -50,14 +45,8 @@ def _make_handler(ChineseHandler, config=None, db=None):
     handler.config = cfg
     handler.db = db
     handler.reading_generator = ReadingGenerator(db, cfg)
+    handler.cssJSHandler = MagicMock()
     return handler
-
-
-@pytest.fixture
-def real_db():
-    d = DictDB(os.path.dirname(os.path.dirname(__file__)))
-    yield d
-    d.closeConnection()
 
 
 class TestRemoveBrackets:
@@ -239,9 +228,9 @@ class TestStripBrackets:
 
 
 class TestAddCReadingsNoTextSelected:
-    def test_no_main_import_error_when_no_text_selected(self, ChineseHandler, real_db):
+    def test_no_main_import_error_when_no_text_selected(self, ChineseHandler, test_db):
         """addCReadings should not fail with ModuleNotFoundError when no text selected."""
-        handler = _make_handler(ChineseHandler, db=real_db)
+        handler = _make_handler(ChineseHandler, db=test_db)
         handler.commonJS = ""
         handler.fetchTextJS = ""
 

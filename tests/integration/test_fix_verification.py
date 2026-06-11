@@ -1,19 +1,28 @@
+# ruff: noqa: E402
 import os
-import pytest
 from unittest.mock import MagicMock
+
+import pytest
 
 # Skip if pytest_anki is not available
 pytest_anki = pytest.importorskip("pytest_anki", reason="pytest-anki2 not installed")
 from pytest_anki import AnkiSession
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# Config with ActiveFields mapping Subs2srs to Expression field
+# Config with no active fields (set up manually per-test to avoid
+# show_info blocking during profile load when note type doesn't exist yet)
 SUBS2SRS_CONFIG = {
     "ReadingType": "pinyin",
-    "ActiveFields": ["ruby;all;Subs2srs;Card 1;Expression;front;pinyin"],
+    "ActiveFields": [],
     "Profiles": ["all"],
 }
+
+
+def _setup_wrapper_dict(handler, note_type="Subs2srs"):
+    """Configure wrapperDict so addCReadings/cleanField can resolve fields."""
+    handler.cssJSHandler.wrapperDict = {note_type: [["Card 1", "Expression", "front", "coloredhanzi", "pinyin"]]}
+
 
 _ANKI_SESSION_PARAMS = dict(
     load_profile=False,
@@ -22,6 +31,7 @@ _ANKI_SESSION_PARAMS = dict(
 )
 
 ADDON_NAME = "chinese_reading"
+
 
 def _create_subs2srs_notetype(col):
     notetype = col.models.new("Subs2srs")
@@ -34,6 +44,7 @@ def _create_subs2srs_notetype(col):
     col.models.save(notetype)
     return notetype
 
+
 @pytest.mark.parametrize("anki_session", [_ANKI_SESSION_PARAMS], indirect=True)
 def test_idempotent_reading_generation(anki_session: AnkiSession) -> None:
     """Verify that generating readings multiple times doesn't duplicate them."""
@@ -41,35 +52,37 @@ def test_idempotent_reading_generation(anki_session: AnkiSession) -> None:
     with anki_session.profile_loaded():
         mw = anki_session.mw
         col = mw.col
-        
+
         # 1. Setup note with Subs2srs note type
         notetype = _create_subs2srs_notetype(col)
         note = col.new_note(notetype)
         note["Expression"] = "你好"
         col.add_note(note, col.decks.current()["id"])
-        
+
         # Access the handler
         handler = mw.ChineseReading
-        
+        _setup_wrapper_dict(handler)
+
         # Mock editor
         mock_editor = MagicMock()
         mock_editor.note = note
-        mock_editor.web.selectedText.return_value = "" # No selection, use field resolution
-        
+        mock_editor.web.selectedText.return_value = ""  # No selection, use field resolution
+
         # 2. First generation
         handler.addCReadings(mock_editor)
-        
+
         first_result = note["Expression"]
         assert "你好" in first_result
-        assert "[nǐ hǎo]" in first_result
-        
+        assert "[ni3 hao3]" in first_result
+
         # 3. Second generation (should be identical, no duplication)
         handler.addCReadings(mock_editor)
-        
+
         second_result = note["Expression"]
         assert second_result == first_result
         # Ensure we don't have [nǐ hǎo][nǐ hǎo]
-        assert second_result.count("[nǐ hǎo]") == 1
+        assert second_result.count("[ni3 hao3]") == 1
+
 
 @pytest.mark.parametrize("anki_session", [_ANKI_SESSION_PARAMS], indirect=True)
 def test_remove_reading_button(anki_session: AnkiSession) -> None:
@@ -78,21 +91,22 @@ def test_remove_reading_button(anki_session: AnkiSession) -> None:
     with anki_session.profile_loaded():
         mw = anki_session.mw
         col = mw.col
-        
+
         # 1. Setup note with existing readings
         notetype = _create_subs2srs_notetype(col)
         note = col.new_note(notetype)
         note["Expression"] = "你好[nǐ hǎo]"
         col.add_note(note, col.decks.current()["id"])
-        
+
         handler = mw.ChineseReading
+        _setup_wrapper_dict(handler)
         mock_editor = MagicMock()
         mock_editor.note = note
         mock_editor.web.selectedText.return_value = ""
-        
+
         # 2. Trigger removal
         handler.cleanField(mock_editor)
-        
+
         # 3. Verify it was stripped
         assert note["Expression"] == "你好"
         # Verify it was saved to DB

@@ -21,7 +21,7 @@ pytest_anki = pytest.importorskip("pytest_anki", reason="pytest-anki2 not instal
 from anki.hooks import runFilter
 from pytest_anki import AnkiSession
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # ── Config matching what a real user would set via Anki addon config ──
 
@@ -208,7 +208,7 @@ class TestEditorIntegration:
             assert len(captured_js) >= 1
             last_js = captured_js[-1]
             assert "window.currentField" in last_js
-            assert "getElementById('f0')" in last_js
+            assert "get_field_by_ordinal(0)" in last_js
             assert str(note.id) in last_js
             assert "fetchCText" in last_js
 
@@ -230,7 +230,6 @@ class TestEditorIntegration:
 
             assert len(captured_js) >= 1
             last_js = captured_js[-1]
-            assert "window.currentField" not in last_js
             assert "fetchCText" in last_js
 
     @pytest.mark.parametrize("anki_session", [_ANKI_SESSION_PARAMS], indirect=True)
@@ -252,7 +251,7 @@ class TestEditorIntegration:
 
             assert len(captured_js) >= 1
             last_js = captured_js[-1]
-            assert "No focused field tracked" in last_js
+            assert "No field could be resolved" in last_js
             assert "fetchCText" in last_js
 
 

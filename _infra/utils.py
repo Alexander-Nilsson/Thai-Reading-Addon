@@ -28,7 +28,7 @@ def show_info(text, parent=False, level="msg", day=True):
     mb.setWindowIcon(icon)
     mb.setWindowTitle(title)
     mb.setStandardButtons(QMessageBox.StandardButton.Ok)
-    return mb.exec_()
+    return mb.exec()
 
 
 def show_ask(text, parent=None, title="Chinese Reading"):

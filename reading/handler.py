@@ -157,8 +157,10 @@ class ChineseHandler:
                 # Find ordinal to update the UI
                 ordinal = self.getFieldOrdinal(note, configured_field_name)
                 if ordinal is not False:
-                    editor.web.eval(self.commonJS + self.insertToFieldJS % (cleaned_text.replace('"', '\\"'), str(ordinal)))
-                
+                    safe_text = cleaned_text.replace('"', '\\"')
+                    js = self.commonJS + self.insertToFieldJS % (safe_text, str(ordinal))
+                    editor.web.eval(js)
+
                 # Always trigger a reload as a fallback to ensure the UI matches the DB
                 editor.loadNoteKeepingFocus()
             return
@@ -250,10 +252,10 @@ class ChineseHandler:
             if not newStr:
                 _log.warning("finalizeReadings: newStr is empty, nothing to insert")
                 return
-            
+
             # IDEMPOTENCY: Use addToNote which now checks for duplicates
             self.addToNote(editor, note, field, self.getFieldOrdinal(note, field), newStr)
-            
+
             self.addVariants(text, note, editor)
             self.addSimpTrad(text, note, editor)
         else:
@@ -303,7 +305,7 @@ class ChineseHandler:
                         separator = "<br>"
                         if len(varAr) == 3:
                             separator = varAr[2]
-                        
+
                         current_val = note[selField]
                         new_val = current_val + (separator if current_val else "") + text
                         self.addToNote(editor, note, selField, ordinal, new_val)
@@ -339,13 +341,13 @@ class ChineseHandler:
                 separator = separator.replace("<br>", "", 1)
             if len(varAr) == 4:
                 separator = varAr[3]
-            
+
             s_to_add = simplified if not sSame and simplified not in fText else ""
             t_to_add = traditional if not tSame and traditional not in fText else ""
-            
+
             if not s_to_add and not t_to_add:
                 return fText
-            
+
             res = fText
             if s_to_add:
                 res += separator + s_to_add

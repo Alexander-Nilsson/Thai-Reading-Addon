@@ -1,7 +1,9 @@
 import importlib
 import importlib.util
 import os
+import sqlite3
 import sys
+import tempfile
 from unittest.mock import MagicMock
 
 import pytest
@@ -142,5 +144,79 @@ def db():
     from reading.dictdb import DictDB
 
     d = DictDB(ROOT)
+    yield d
+    d.closeConnection()
+
+
+def _create_test_db(path):
+    conn = sqlite3.connect(path)
+    c = conn.cursor()
+    c.execute(
+        "CREATE TABLE cidian (traditional, simplified, pinyin, pinyin_taiwan, "
+        "classifiers, alternates, english, german, french, spanish)"
+    )
+    c.execute("CREATE TABLE cantonese (traditional TEXT, simplified TEXT, jyutping TEXT, pinyin TEXT)")
+    c.execute("CREATE TABLE altDict (traditional TEXT, simplified TEXT, pinyin TEXT)")
+    c.execute("CREATE TABLE hanzi (cp, kMandarin, kCantonese, kSimplifiedVariant, kTraditionalVariant)")
+    c.execute("CREATE INDEX isimplified ON cidian (simplified)")
+    c.execute("CREATE UNIQUE INDEX itraditional ON cidian (traditional, pinyin)")
+    conn.commit()
+    conn.close()
+
+
+def _populate_test_db(path):
+    conn = sqlite3.connect(path)
+    c = conn.cursor()
+    c.executemany(
+        "INSERT INTO cidian (traditional, simplified, pinyin, pinyin_taiwan) VALUES (?, ?, ?, ?)",
+        [
+            ("中國", "中国", "zhōng guó", "zhōng guó"),
+            ("你好", "你好", "nǐ hǎo", "nǐ hǎo"),
+            ("學生", "学生", "xué shēng", None),
+        ],
+    )
+    c.executemany(
+        "INSERT INTO cantonese (traditional, simplified, jyutping, pinyin) VALUES (?, ?, ?, ?)",
+        [
+            ("中國", "中国", "zung1 gwok3", "zhong1 guo2"),
+            ("你好", "你好", "lei5 hou2", "ni3 hao3"),
+        ],
+    )
+    c.executemany(
+        "INSERT INTO altDict (traditional, simplified, pinyin) VALUES (?, ?, ?)",
+        [
+            ("一", "一", "yī"),
+            ("在", "在", "zài"),
+            ("你好", "你好", "nǐ hǎo"),
+        ],
+    )
+    c.executemany(
+        "INSERT INTO hanzi (cp, kMandarin, kCantonese, kSimplifiedVariant, kTraditionalVariant) VALUES (?, ?, ?, ?, ?)",
+        [
+            ("中", "zhōng", "zung1", None, None),
+            ("國", "guó", "gwok3", "国", None),
+            ("学", "xué", "hok6", None, "學"),
+        ],
+    )
+    conn.commit()
+    conn.close()
+
+
+@pytest.fixture
+def test_db_path():
+    with tempfile.TemporaryDirectory() as td:
+        db_dir = os.path.join(td, "db")
+        os.makedirs(db_dir)
+        db_file = os.path.join(db_dir, "chinese_dict.sqlite")
+        _create_test_db(db_file)
+        _populate_test_db(db_file)
+        yield td
+
+
+@pytest.fixture
+def test_db(test_db_path):
+    from reading.dictdb import DictDB
+
+    d = DictDB(test_db_path)
     yield d
     d.closeConnection()

@@ -357,7 +357,7 @@ def bridgeReroute(self, cmd):
                         len(splitList[1]) if splitList[1] else 0,
                         field,
                     )
-                    mw.ChineseReading.finalizeReadings(splitList[1], field, self.note, self)  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
+                    mw.ChineseReading.finalizeReadings(splitList[1], field, self.note, self)  # type: ignore[attr-defined]
                 else:
                     _log.debug("Note ID mismatch, skipping")
             except (ValueError, IndexError) as e:
