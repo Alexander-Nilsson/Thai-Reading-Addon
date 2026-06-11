@@ -13,10 +13,12 @@ Tests are forked by default (each test gets a fresh subprocess).
 """
 
 import os
+import sys
 
 import pytest
 
 pytest_anki = pytest.importorskip("pytest_anki", reason="pytest-anki2 not installed")
+from anki.hooks import runFilter
 from pytest_anki import AnkiSession
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -252,6 +254,100 @@ class TestEditorIntegration:
             last_js = captured_js[-1]
             assert "No focused field tracked" in last_js
             assert "fetchCText" in last_js
+
+
+class TestHookRegistration:
+    """Smoke tests verifying Anki hooks are registered by the addon.
+
+    These were moved from tests/anki/test_smoke.py (deleted) since they
+    share the same AnkiSession fixture as the editor integration tests.
+    """
+
+    @pytest.mark.parametrize("anki_session", [_ANKI_SESSION_PARAMS], indirect=True)
+    def test_editor_buttons_registered(self, anki_session: AnkiSession) -> None:
+        """setupEditorButtons hook adds F9/F10 buttons with correct commands."""
+        anki_session.load_addon(ADDON_NAME)
+        with anki_session.profile_loaded():
+            from unittest.mock import MagicMock
+
+            editor = MagicMock()
+            editor._links = {}
+            editor._addButton.return_value = "<button>test</button>"
+
+            buttons = runFilter("setupEditorButtons", [], editor)
+
+            assert len(buttons) == 2, f"Expected 2 editor buttons, got {len(buttons)}"
+            assert editor._links.get("addCReadings") is not None, "addCReadings link missing"
+            assert editor._links.get("removeFormatting") is not None, "removeFormatting link missing"
+            assert editor._addButton.call_count == 2
+
+    @pytest.mark.parametrize("anki_session", [_ANKI_SESSION_PARAMS], indirect=True)
+    def test_editor_shortcuts_registered(self, anki_session: AnkiSession) -> None:
+        """editor_did_init_shortcuts adds F9 and F10 shortcuts."""
+        anki_session.load_addon(ADDON_NAME)
+        with anki_session.profile_loaded():
+            from aqt import gui_hooks
+
+            cuts: list = []
+            from unittest.mock import MagicMock
+
+            editor = MagicMock()
+            gui_hooks.editor_did_init_shortcuts(cuts, editor)
+
+            keys = [c[0] for c in cuts]
+            assert "F9" in keys, f"F9 shortcut not registered. Keys: {keys}"
+            assert "F10" in keys, f"F10 shortcut not registered. Keys: {keys}"
+
+    @pytest.mark.parametrize("anki_session", [_ANKI_SESSION_PARAMS], indirect=True)
+    def test_bridge_cmd_wrapped(self, anki_session: AnkiSession) -> None:
+        """Editor.onBridgeCmd must be wrapped by the addon's bridgeReroute."""
+        anki_session.load_addon(ADDON_NAME)
+        with anki_session.profile_loaded():
+            import aqt.editor
+
+            wrapped = aqt.editor.Editor.onBridgeCmd
+            assert wrapped.__name__ == "bridgeReroute", (
+                f"Editor.onBridgeCmd was not wrapped. Got {wrapped.__name__} instead of bridgeReroute"
+            )
+            addon_main = sys.modules[f"{ADDON_NAME}.main"]
+            assert addon_main.ogReroute is not None, "main.ogReroute was not set"
+
+    @pytest.mark.parametrize("anki_session", [_ANKI_SESSION_PARAMS], indirect=True)
+    def test_config_editor_accept_wrapped(self, anki_session: AnkiSession) -> None:
+        """ConfigEditor.accept must be wrapped by the addon's supportAccept."""
+        anki_session.load_addon(ADDON_NAME)
+        with anki_session.profile_loaded():
+            import aqt.addons
+
+            wrapped = aqt.addons.ConfigEditor.accept
+            assert wrapped.__name__ == "supportAccept", (
+                f"ConfigEditor.accept was not wrapped. Got {wrapped.__name__} instead of supportAccept"
+            )
+            addon_main = sys.modules[f"{ADDON_NAME}.main"]
+            assert addon_main.ogAccept is not None, "main.ogAccept was not set"
+
+    @pytest.mark.parametrize("anki_session", [_ANKI_SESSION_PARAMS], indirect=True)
+    def test_profile_did_open_hook(self, anki_session: AnkiSession) -> None:
+        """_init_profile and _rebuild_catalog must be registered on profile_did_open."""
+        anki_session.load_addon(ADDON_NAME)
+        with anki_session.profile_loaded():
+            from aqt import gui_hooks
+
+            hook_names = [fn.__name__ for fn in gui_hooks.profile_did_open._hooks]
+            assert "_init_profile" in hook_names, f"_init_profile not in profile_did_open hooks. Found: {hook_names}"
+            assert "_rebuild_catalog" in hook_names, (
+                f"_rebuild_catalog not in profile_did_open hooks. Found: {hook_names}"
+            )
+
+    @pytest.mark.parametrize("anki_session", [_ANKI_SESSION_PARAMS], indirect=True)
+    def test_browser_menu_hook(self, anki_session: AnkiSession) -> None:
+        """browser_menus_did_init must have setupMenu registered."""
+        anki_session.load_addon(ADDON_NAME)
+        with anki_session.profile_loaded():
+            from aqt import gui_hooks
+
+            hook_names = [fn.__name__ for fn in gui_hooks.browser_menus_did_init._hooks]
+            assert "setupMenu" in hook_names, f"setupMenu not in browser_menus_did_init hooks. Found: {hook_names}"
 
 
 class TestConfigAndCatalog:
