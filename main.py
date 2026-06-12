@@ -131,6 +131,8 @@ def openChineseSettings():
             openChineseSettings,
             config,
         )
+    else:
+        mw.chineseReadingSettings.config = config  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
     mw.chineseReadingSettings.show()  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
     if mw.chineseReadingSettings.windowState() == Qt.WindowState.WindowMinimized:  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
         mw.chineseReadingSettings.setWindowState(Qt.WindowState.WindowNoState)  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]

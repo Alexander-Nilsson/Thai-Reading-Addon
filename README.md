@@ -26,6 +26,14 @@
 
 Access settings via **Tools → Chinese Reading Settings** or through Anki's add-on config editor.
 
+<p align="center">
+  <img src="demo/tools-findingthesettings.png" alt="Finding the settings in Anki" width="70%">
+</p>
+
+<p align="center">
+  <img src="demo/Settings-OptionsMenu.png" alt="Options tab" width="70%">
+</p>
+
 ### Active Fields
 
 Configure processing rules per note type/card type/field/side via the **Active Fields** tab. Each entry is a semicolon-delimited string:
@@ -41,6 +49,10 @@ display_type;profile;note_type;card_type;field;side;reading_type
 - `reading_type`: `pinyin`, `bopomofo`, or `jyutping`
 
 Fields with an ActiveFields entry on at least one side get a default `hanzi` wrapper on the other side. Fields with no entry are left untouched.
+
+<p align="center">
+  <img src="demo/Settings-activeFieldsMenu.png" alt="Active Fields tab" width="70%">
+</p>
 
 ### File References Mode
 

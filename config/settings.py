@@ -344,254 +344,189 @@ class SettingsGui(QWidget):
         scroll.setWidgetResizable(True)
         return scroll
 
-    def sizeOptionsWidgets(self):
-        self.profileCB.setMinimumWidth(120)
-        self.addRemProfile.setMinimumWidth(80)
-        self.defaultReading.setMinimumWidth(100)
-        self.fontSize.setMinimumWidth(80)
-
     def getOptionsLayout(self):
-        self.sizeOptionsWidgets()
-        ol = QVBoxLayout()  # options layout
-        ol.setContentsMargins(10, 10, 10, 10)
-        ol.setSpacing(10)
+        _M = 5
+        ol = QVBoxLayout()
+        ol.setContentsMargins(_M, _M, _M, _M)
+        ol.setSpacing(_M)
 
-        pgb = QGroupBox()  # profile group box
+        pgb = QGroupBox("Profiles")
         pgbv = QVBoxLayout()
-        pgbv.setContentsMargins(10, 10, 10, 10)
-        pgbv.setSpacing(10)
-        pgbt = QLabel("<b>Profiles</b>")
+        pgbv.setContentsMargins(_M, _M, _M, _M)
+        pgbv.setSpacing(_M)
         pgbh = QHBoxLayout()
-        pgbh.setSpacing(10)
+        pgbh.setSpacing(_M)
         pgbh.addWidget(self.profileCB)
         pgbh.addWidget(self.addRemProfile)
+        pgbh.addWidget(QLabel("Current:"))
+        pgbh.addWidget(self.currentProfiles)
         pgbh.addStretch()
-        pgbh2 = QHBoxLayout()
-        pgbh2.setSpacing(10)
-        l1 = QLabel("Current Profiles:")
-        l1.setMinimumWidth(100)
-        pgbh2.addWidget(l1)
-        pgbh2.addWidget(self.currentProfiles)
-        pgbh2.addStretch()
-        pgbv.addWidget(pgbt)
         pgbv.addLayout(pgbh)
-        pgbv.addLayout(pgbh2)
         pgb.setLayout(pgbv)
         ol.addWidget(pgb)
 
-        ggb = QGroupBox()  # generation group box
-        ggb2 = QGroupBox("Field Settings")
+        ggb = QGroupBox("Generation")
         ggbv = QVBoxLayout()
-        ggbv2 = QVBoxLayout()
-        ggbt = QLabel("<b>Generation</b>")
+        ggbv.setContentsMargins(_M, _M, _M, _M)
+        ggbv.setSpacing(_M)
         ggbh = QHBoxLayout()
+        ggbh.setSpacing(_M)
         ggbh.addWidget(QLabel("Default Reading Type:"))
         ggbh.addWidget(self.defaultReading)
         ggbh.addWidget(QLabel("Bopomofo Tones To Numbers:"))
         ggbh.addWidget(self.bopo2Number)
         ggbh.addStretch()
-
-        ggbh2 = QVBoxLayout()
-        l2 = QLabel("Alternate Field:")
-        l2.setMinimumWidth(100)
-        h2 = QHBoxLayout()
-        h2.addWidget(self.altCB)
-        h2.addWidget(self.addRemAlt)
-        h2.addWidget(self.altOW)
-        h2.addWidget(QLabel("Overwrite"))
-        h2.addWidget(self.altIfE)
-        h2.addWidget(QLabel("If Empty"))
-        h2.addWidget(self.altWithSep)
-        h2.addWidget(QLabel("Add with Separator"))
-        h2.addWidget(self.altSep)
-        h2.addStretch()
-        ggbh2.addWidget(l2)
-        ggbh2.addLayout(h2)
-        ggbh2.setContentsMargins(0, 0, 0, 0)
-        self.altLayout.setLayout(ggbh2)
-
-        ggbh4 = QVBoxLayout()
-        l3 = QLabel("Simplified Field:")
-        l3.setMinimumWidth(100)
-        h4 = QHBoxLayout()
-        h4.addWidget(self.simpCB)
-        h4.addWidget(self.addRemSimp)
-        h4.addWidget(self.simpOW)
-        h4.addWidget(QLabel("Overwrite"))
-        h4.addWidget(self.simpIfE)
-        h4.addWidget(QLabel("If Empty"))
-        h4.addWidget(self.simpWithSep)
-        h4.addWidget(QLabel("Add with Separator"))
-        h4.addWidget(self.simpSep)
-        h4.addStretch()
-        ggbh4.addWidget(l3)
-        ggbh4.addLayout(h4)
-        ggbh4.setContentsMargins(0, 0, 0, 0)
-        self.simpLayout.setLayout(ggbh4)
-
-        ggbh6 = QVBoxLayout()
-        l4 = QLabel("Traditional Field:")
-        l4.setMinimumWidth(100)
-        h6 = QHBoxLayout()
-        h6.addWidget(self.tradCB)
-        h6.addWidget(self.addRemTrad)
-        h6.addWidget(self.tradOW)
-        h6.addWidget(QLabel("Overwrite"))
-        h6.addWidget(self.tradIfE)
-        h6.addWidget(QLabel("If Empty"))
-        h6.addWidget(self.tradWithSep)
-        h6.addWidget(QLabel("Add with Separator"))
-        h6.addWidget(self.tradSep)
-        h6.addStretch()
-        ggbh6.addWidget(l4)
-        ggbh6.addLayout(h6)
-        ggbh6.setContentsMargins(0, 0, 0, 0)
-        self.tradLayout.setLayout(ggbh6)
-
-        ggbh3 = QHBoxLayout()
-        ggbh3.addWidget(QLabel("Current Alternate Fields:"))
-        ggbh3.addWidget(self.currentAlt)
-        ggbh3.addStretch()
-
-        ggbh5 = QHBoxLayout()
-        ggbh5.addWidget(QLabel("Current Simplified Fields:"))
-        ggbh5.addWidget(self.currentSimp)
-        ggbh5.addStretch()
-
-        ggbh7 = QHBoxLayout()
-        ggbh7.addWidget(QLabel("Current Traditional Fields:"))
-        ggbh7.addWidget(self.currentTrad)
-        ggbh7.addStretch()
-
-        ggbv2.addWidget(self.altLayout)
-        ggbv2.addLayout(ggbh3)
-        ggbv2.addWidget(self.simpLayout)
-        ggbv2.addLayout(ggbh5)
-        ggbv2.addWidget(self.tradLayout)
-        ggbv2.addLayout(ggbh7)
-        ggbv2.setSpacing(5)
-        ggb2.setLayout(ggbv2)
-
-        ggbv.addWidget(ggbt)
         ggbv.addLayout(ggbh)
-        ggbv.addWidget(ggb2)
+
+        fsg = QGroupBox("Field Settings")
+        fsv = QVBoxLayout()
+        fsv.setContentsMargins(_M, _M, _M, _M)
+        fsv.setSpacing(_M)
+        for label, cb, addBtn, ow, ife, sep, sepEdit, curLabel in [
+            (
+                "Alternate:",
+                self.altCB,
+                self.addRemAlt,
+                self.altOW,
+                self.altIfE,
+                self.altWithSep,
+                self.altSep,
+                self.currentAlt,
+            ),
+            (
+                "Simplified:",
+                self.simpCB,
+                self.addRemSimp,
+                self.simpOW,
+                self.simpIfE,
+                self.simpWithSep,
+                self.simpSep,
+                self.currentSimp,
+            ),
+            (
+                "Traditional:",
+                self.tradCB,
+                self.addRemTrad,
+                self.tradOW,
+                self.tradIfE,
+                self.tradWithSep,
+                self.tradSep,
+                self.currentTrad,
+            ),
+        ]:
+            row = QHBoxLayout()
+            row.setSpacing(_M)
+            row.addWidget(cb)
+            row.addWidget(addBtn)
+            row.addWidget(ow)
+            row.addWidget(QLabel("Overwrite"))
+            row.addWidget(ife)
+            row.addWidget(QLabel("If Empty"))
+            row.addWidget(sep)
+            row.addWidget(QLabel("Add with Separator"))
+            row.addWidget(sepEdit)
+            row.addStretch()
+            fsv.addLayout(row)
+            curRow = QHBoxLayout()
+            curRow.setSpacing(_M)
+            curRow.addWidget(QLabel(label))
+            curRow.addWidget(curLabel)
+            curRow.addStretch()
+            fsv.addLayout(curRow)
+        fsg.setLayout(fsv)
+        ggbv.addWidget(fsg)
         ggb.setLayout(ggbv)
         ol.addWidget(ggb)
 
-        cgb = QGroupBox()  # colors group box
+        cgb = QGroupBox("Colors")
         cgbv = QVBoxLayout()
-        cgbv.addWidget(QLabel("<b>Colors</b>"))
+        cgbv.setContentsMargins(_M, _M, _M, _M)
+        cgbv.setSpacing(_M)
+
+        def _tone_row(triples):
+            row = QHBoxLayout()
+            row.setSpacing(_M * 2)
+            for label, color, btn in triples:
+                row.addWidget(QLabel(label))
+                row.addWidget(color)
+                btn.setFixedWidth(80)
+                row.addWidget(btn)
+            row.addStretch()
+            return row
+
         mcgb = QGroupBox("Mandarin Tones")
-        mcv = QVBoxLayout()
-        mch1 = QHBoxLayout()
-        mch2 = QHBoxLayout()
-        ml1 = QLabel("1st:")
-        ml2 = QLabel("2nd:")
-        ml3 = QLabel("3rd:")
-        ml4 = QLabel("4th:")
-        ml5 = QLabel("Neutral:")
-        ml1.setMinimumWidth(25)
-        ml2.setMinimumWidth(45)
-        ml3.setMinimumWidth(25)
-        ml4.setMinimumWidth(25)
-        ml5.setMinimumWidth(45)
-        mch1.addWidget(ml1)
-        mch1.addWidget(self.m1color)
-        mch1.addWidget(self.m1pb)
+        mv = QVBoxLayout()
+        mv.setSpacing(_M)
+        mv.addLayout(
+            _tone_row(
+                [
+                    ("1st:", self.m1color, self.m1pb),
+                    ("2nd:", self.m2color, self.m2pb),
+                    ("3rd:", self.m3color, self.m3pb),
+                ]
+            )
+        )
+        mv.addLayout(
+            _tone_row(
+                [
+                    ("4th:", self.m4color, self.m4pb),
+                    ("Neutral:", self.m5color, self.m5pb),
+                ]
+            )
+        )
+        mcgb.setLayout(mv)
 
-        mch1.addWidget(ml2)
-        mch1.addWidget(self.m2color)
-        mch1.addWidget(self.m2pb)
-
-        mch1.addWidget(ml3)
-        mch1.addWidget(self.m3color)
-        mch1.addWidget(self.m3pb)
-
-        mch2.addWidget(ml4)
-        mch2.addWidget(self.m4color)
-        mch2.addWidget(self.m4pb)
-
-        mch2.addWidget(ml5)
-        mch2.addWidget(self.m5color)
-        mch2.addWidget(self.m5pb)
-
-        mch1.addStretch()
-        mch2.addStretch()
-        mcv.addLayout(mch1)
-        mcv.addLayout(mch2)
-        mcgb.setLayout(mcv)
-
-        ccgb = QGroupBox("Cantonese Tones")  # canto
-        ccv = QVBoxLayout()
-        cch1 = QHBoxLayout()
-        cch2 = QHBoxLayout()
-        cl1 = QLabel("1st:")
-        cl2 = QLabel("2nd:")
-        cl3 = QLabel("3rd:")
-        cl4 = QLabel("4th:")
-        cl5 = QLabel("5th:")
-        cl6 = QLabel("6th:")
-        cl1.setMinimumWidth(25)
-        cl2.setMinimumWidth(45)
-        cl3.setMinimumWidth(25)
-        cl4.setMinimumWidth(25)
-        cl5.setMinimumWidth(45)
-        cl6.setMinimumWidth(25)
-        cch1.addWidget(cl1)
-        cch1.addWidget(self.c1color)
-        cch1.addWidget(self.c1pb)
-
-        cch1.addWidget(cl2)
-        cch1.addWidget(self.c2color)
-        cch1.addWidget(self.c2pb)
-
-        cch1.addWidget(cl3)
-        cch1.addWidget(self.c3color)
-        cch1.addWidget(self.c3pb)
-
-        cch2.addWidget(cl4)
-        cch2.addWidget(self.c4color)
-        cch2.addWidget(self.c4pb)
-
-        cch2.addWidget(cl5)
-        cch2.addWidget(self.c5color)
-        cch2.addWidget(self.c5pb)
-
-        cch2.addWidget(cl6)
-        cch2.addWidget(self.c6color)
-        cch2.addWidget(self.c6pb)
-
-        cch1.addStretch()
-        cch2.addStretch()
-        ccv.addLayout(cch1)
-        ccv.addLayout(cch2)
-        ccgb.setLayout(ccv)
+        ccgb = QGroupBox("Cantonese Tones")
+        cv = QVBoxLayout()
+        cv.setSpacing(_M)
+        cv.addLayout(
+            _tone_row(
+                [
+                    ("1st:", self.c1color, self.c1pb),
+                    ("2nd:", self.c2color, self.c2pb),
+                    ("3rd:", self.c3color, self.c3pb),
+                ]
+            )
+        )
+        cv.addLayout(
+            _tone_row(
+                [
+                    ("4th:", self.c4color, self.c4pb),
+                    ("5th:", self.c5color, self.c5pb),
+                    ("6th:", self.c6color, self.c6pb),
+                ]
+            )
+        )
+        ccgb.setLayout(cv)
 
         cgbv.addWidget(mcgb)
         cgbv.addWidget(ccgb)
         cgb.setLayout(cgbv)
         ol.addWidget(cgb)
 
-        bgb = QGroupBox()  # profile group box
+        bgb = QGroupBox("Behavior")
         bgbv = QVBoxLayout()
-        bgbt = QLabel("<b>Behavior</b>")
+        bgbv.setContentsMargins(_M, _M, _M, _M)
+        bgbv.setSpacing(_M)
         bgbh = QHBoxLayout()
+        bgbh.setSpacing(_M)
         bgbh.addWidget(QLabel("Hanzi/Reading Conversion:"))
         bgbh.addWidget(self.hanziConversion)
         bgbh.addWidget(self.readingConversion)
-        bgbh.addStretch()
+        bgbh.addSpacing(12)
         bgbh.addWidget(QLabel("Reading Font Size:"))
         bgbh.addWidget(self.fontSize)
         bgbh.addWidget(QLabel("%"))
         bgbh.addStretch()
+        bgbv.addLayout(bgbh)
         bgbh2 = QHBoxLayout()
+        bgbh2.setSpacing(_M)
         bgbh2.addWidget(QLabel("Traditional Icons:"))
         bgbh2.addWidget(self.tradIcons)
-        bgbh2.addStretch()
+        bgbh2.addSpacing(12)
         bgbh2.addWidget(QLabel("File Refs for CSS/JS:"))
         bgbh2.addWidget(self.useFileRefs)
-        bgbv.addWidget(bgbt)
-        bgbv.addLayout(bgbh)
+        bgbh2.addStretch()
         bgbv.addLayout(bgbh2)
         bgb.setLayout(bgbv)
         ol.addWidget(bgb)
@@ -1165,8 +1100,11 @@ class SettingsGui(QWidget):
         separator = False
         if len(fieldList) > 2:
             fields, addMode, separator = fieldList
-        else:
+        elif len(fieldList) == 2:
             fields, addMode = fieldList
+        else:
+            fields = fieldList[0]
+            addMode = "overwrite"
         fields = fields.split(",")
         for idx, field in enumerate(fields):
             if field == "clipboard":
@@ -1390,9 +1328,12 @@ class SettingsGui(QWidget):
             active_fields=afs,
         )
         config = self.mutation.save_config(delta)
+        self.config = config
         self.cssJSHandler.refreshConfig(config)
         self.cssJSHandler.injectWrapperElements()
         self.mw.ChineseReading.refreshConfig(config)
+        self.mw.ChineseReadingConfig = config
+        self.mw.updateChineseReadingConfig()
         self.hide()
 
     def openDialogColor(self, lineEd):
