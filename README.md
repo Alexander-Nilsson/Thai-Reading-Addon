@@ -18,6 +18,10 @@
 - **Masked Hanzi mode**: Display readings while hiding the original characters
 - **Exportable configuration**: Supports profiles for different reading workflows
 
+<p align="center">
+  <img src="demo/ChineseReadings.png" alt="Demo of all 8 display types" width="100%">
+</p>
+
 ## Configuration
 
 Access settings via **Tools → Chinese Reading Settings** or through Anki's add-on config editor.
