@@ -22,6 +22,7 @@ from PyQt6.QtWidgets import (
     QLineEdit,
     QPushButton,
     QRadioButton,
+    QScrollArea,
     QSpinBox,
     QTableWidget,
     QTableWidgetItem,
@@ -338,7 +339,10 @@ class SettingsGui(QWidget):
 
         optionsTab = QWidget(self)
         optionsTab.setLayout(self.getOptionsLayout())
-        return optionsTab
+        scroll = QScrollArea()
+        scroll.setWidget(optionsTab)
+        scroll.setWidgetResizable(True)
+        return scroll
 
     def sizeOptionsWidgets(self):
         self.profileCB.setMinimumWidth(120)
@@ -692,7 +696,10 @@ class SettingsGui(QWidget):
 
         afTab = QWidget(self)
         afTab.setLayout(self.getAFLayout())
-        return afTab
+        scroll = QScrollArea()
+        scroll.setWidget(afTab)
+        scroll.setWidgetResizable(True)
+        return scroll
 
     def initTooltips(self):
         self.profileCB.setToolTip(
