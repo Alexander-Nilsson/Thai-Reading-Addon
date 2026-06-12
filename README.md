@@ -36,19 +36,12 @@ Access settings via **Tools → Chinese Reading Settings** or through Anki's add
 
 ### Active Fields
 
-Configure processing rules per note type/card type/field/side via the **Active Fields** tab. Each entry is a semicolon-delimited string:
+Configure processing rules per note type/card type/field/side via the **Active Fields** tab. 
 
-```
-display_type;profile;note_type;card_type;field;side;reading_type
-```
-
-- `display_type`: `hanzi`, `reading`, or `masked`
-- `profile`: profile name or `all`
-- `note_type`, `card_type`, `field`: target identifiers (use `All` for wildcard)
-- `side`: `front` or `back`
+- `display_type`: one of the 8 display types
+- `note_type`, `card_type`, `field`: target identifiers
+- `side`: `front` or `back`, or `all`
 - `reading_type`: `pinyin`, `bopomofo`, or `jyutping`
-
-Fields with an ActiveFields entry on at least one side get a default `hanzi` wrapper on the other side. Fields with no entry are left untouched.
 
 <p align="center">
   <img src="demo/Settings-activeFieldsMenu.png" alt="Active Fields tab" width="70%">
@@ -73,8 +66,6 @@ python dev.py test        # full test suite (needs Anki)
 python dev.py build       # .ankiaddon package
 python dev.py ci          # full CI pipeline
 ```
-
-See [AGENTS.md](AGENTS.md) for architecture details and [docs/](docs/) for ADRs and testing docs.
 
 ## License
 
