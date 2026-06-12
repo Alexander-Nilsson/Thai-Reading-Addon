@@ -7,6 +7,9 @@
 
 > An Anki add-on for Chinese learners. Generates tone-coloured readings (pinyin, bopomofo, jyutping), simplified/traditional variants, and injects CSS/JS into card templates.
 
+<p align="center">
+  <img src="demo/demo.gif" alt="Demo reading generation" width="100%">
+</p>
 ---
 
 ## Features

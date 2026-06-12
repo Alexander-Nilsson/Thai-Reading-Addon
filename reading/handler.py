@@ -357,6 +357,8 @@ class ChineseHandler:
 
     def addSimpTrad(self, text, note, editor=False):
         varAr = self.config.simp_trad_field.split(";")
+        if len(varAr) < 2:
+            varAr.append("overwrite")
         fields = self.anki.field_names(note.model())
         altFields = varAr[0].split(",")
         for altField in altFields:
