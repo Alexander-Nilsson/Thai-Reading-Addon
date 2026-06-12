@@ -9,6 +9,8 @@ dependencies = []
 dev = [
     "ruff>=0.15.0",
     "pytest>=8.0.0",
+]
+integration = [
     "pytest-anki2[anki-2509,qt6-pypi]>=2.0.0",
 ]
 

@@ -143,8 +143,10 @@ source = { virtual = "." }
 [package.dev-dependencies]
 dev = [
     { name = "pytest" },
-    { name = "pytest-anki2", extra = ["anki-2509", "qt6-pypi"] },
     { name = "ruff" },
+]
+integration = [
+    { name = "pytest-anki2", extra = ["anki-2509", "qt6-pypi"] },
 ]
 
 [package.metadata]
@@ -152,9 +154,9 @@ dev = [
 [package.metadata.requires-dev]
 dev = [
     { name = "pytest", specifier = ">=8.0.0" },
-    { name = "pytest-anki2", extras = ["anki-2509", "qt6-pypi"], specifier = ">=2.0.0" },
     { name = "ruff", specifier = ">=0.15.0" },
 ]
+integration = [{ name = "pytest-anki2", extras = ["anki-2509", "qt6-pypi"], specifier = ">=2.0.0" }]
 
 [[package]]
 name = "click"

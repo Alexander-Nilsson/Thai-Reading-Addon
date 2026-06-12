@@ -24,7 +24,7 @@ jobs:
       - name: Type check
         run: uvx ty check .
       - name: Unit tests
-        run: uvx pytest tests/ -v --tb=short
+        run: uvx pytest tests/ -v --tb=short --ignore=tests/integration
 
   integration:
     runs-on: ubuntu-latest
@@ -42,7 +42,7 @@ jobs:
         run: |
           export QT_QPA_PLATFORM=offscreen
           export PYTHONPATH=/usr/lib/python3.14/site-packages
-          xvfb-run --server-args="-screen 0 1024x768x24" uv run pytest tests/integration/ -v --tb=short
+          xvfb-run --server-args="-screen 0 1024x768x24" uv run --group integration pytest tests/integration/ -v --tb=short
       - name: Build
         run: uv run _infra/build.py
       - uses: actions/upload-artifact@v4

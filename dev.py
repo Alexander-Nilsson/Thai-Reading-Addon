@@ -30,7 +30,7 @@ def run_integration_tests():
     env = os.environ.copy()
     env["QT_QPA_PLATFORM"] = "offscreen"
     env["PYTHONPATH"] = "/usr/lib/python3.14/site-packages"
-    cmd = ["uv", "run", "pytest", "tests/integration/", "-v"]
+    cmd = ["uv", "run", "--group", "integration", "pytest", "tests/integration/", "-v"]
     result = subprocess.run(cmd, env=env)
     return result.returncode in (0, 5, 139)
 
