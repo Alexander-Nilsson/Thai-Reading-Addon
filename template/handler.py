@@ -322,9 +322,7 @@ class CSSJSHandler:
                 # Strip ALL CSS blocks before re-injecting for current mode
                 model["css"] = self.injector.remove("chinese_css", model["css"])
                 model["css"] = self.injector.remove("chinese_css_file", model["css"])
-                if css_fn:
-                    model["css"] = self.injector.inject("chinese_css_file", model["css"], filename=css_fn)
-                else:
+                if not css_fn:
                     model["css"] = self.injector.inject(
                         "chinese_css",
                         model["css"],
@@ -340,12 +338,14 @@ class CSSJSHandler:
                         t["qfmt"], t["afmt"] = self.cleanFieldWrappers(
                             t["qfmt"], t["afmt"], model["flds"], templateDict
                         )
-                        # Strip ALL JS blocks before re-injecting for current mode
+                        # Strip ALL JS + CSS file blocks before re-injecting for current mode
                         # Prevents accumulation when switching between inline and file modes
                         t["qfmt"] = self.injector.remove("chinese_js", t["qfmt"])
                         t["afmt"] = self.injector.remove("chinese_js", t["afmt"])
                         t["qfmt"] = self.injector.remove("chinese_js_file", t["qfmt"])
                         t["afmt"] = self.injector.remove("chinese_js_file", t["afmt"])
+                        t["qfmt"] = self.injector.remove("chinese_css_file", t["qfmt"])
+                        t["afmt"] = self.injector.remove("chinese_css_file", t["afmt"])
                         for data in templateDict:
                             if data[2] == "both" or data[2] == "front":
                                 t["qfmt"] = self.injector.overwrite_wrapper(t["qfmt"], data[1], data[3], data[4])
@@ -358,6 +358,8 @@ class CSSJSHandler:
                                     t["qfmt"] = self.injector.inject(
                                         "chinese_js", t["qfmt"], reading_type=self.config.reading_type
                                     )
+                                if css_fn:
+                                    t["qfmt"] = self.injector.inject("chinese_css_file", t["qfmt"], filename=css_fn)
                             if data[2] == "both" or data[2] == "back":
                                 t["afmt"] = self.injector.overwrite_wrapper(t["afmt"], data[1], data[3], data[4])
                                 t["afmt"] = self.injector.inject(
@@ -369,6 +371,8 @@ class CSSJSHandler:
                                     t["afmt"] = self.injector.inject(
                                         "chinese_js", t["afmt"], reading_type=self.config.reading_type
                                     )
+                                if css_fn:
+                                    t["afmt"] = self.injector.inject("chinese_css_file", t["afmt"], filename=css_fn)
                         # Default "Hanzi" wrappers for sides not explicitly configured
                         # Only applies to fields that have at least one explicit entry
                         # Completely unconfigured fields are left alone
@@ -400,6 +404,8 @@ class CSSJSHandler:
                                 t["qfmt"] = self.injector.inject(
                                     "chinese_js", t["qfmt"], reading_type=self.config.reading_type
                                 )
+                            if css_fn:
+                                t["qfmt"] = self.injector.inject("chinese_css_file", t["qfmt"], filename=css_fn)
                         if has_default_back:
                             if js_fn:
                                 t["afmt"] = self.injector.inject("chinese_js_file", t["afmt"], filename=js_fn)
@@ -407,17 +413,19 @@ class CSSJSHandler:
                                 t["afmt"] = self.injector.inject(
                                     "chinese_js", t["afmt"], reading_type=self.config.reading_type
                                 )
+                            if css_fn:
+                                t["afmt"] = self.injector.inject("chinese_css_file", t["afmt"], filename=css_fn)
                     else:
                         t["qfmt"] = self.injector.remove("wrapper", t["qfmt"])
                         t["afmt"] = self.injector.remove("wrapper", t["afmt"])
 
             else:
-                if css_fn:
-                    model["css"] = self.injector.remove("chinese_css_file", model["css"])
-                else:
-                    model["css"] = self.injector.remove("chinese_css", model["css"])
+                model["css"] = self.injector.remove("chinese_css_file", model["css"])
+                model["css"] = self.injector.remove("chinese_css", model["css"])
                 for t in model["tmpls"]:
                     t = self.removeChineseConverterFromTemplate(t)
+                    t["qfmt"] = self.injector.remove("chinese_css_file", t["qfmt"])
+                    t["afmt"] = self.injector.remove("chinese_css_file", t["afmt"])
                     t["qfmt"] = self.injector.remove(
                         "chinese_js_file" if js_fn else "chinese_js", self.injector.remove("wrapper", t["qfmt"])
                     )

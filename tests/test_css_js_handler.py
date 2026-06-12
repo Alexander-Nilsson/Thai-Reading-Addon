@@ -514,7 +514,7 @@ class TestMediaFileInjection:
         js_files = [f for f in files if f.startswith("_chinese_reading_") and f.endswith(".js")]
         assert len(js_files) == 1
 
-    def test_injects_css_link_in_model_css(self, tmpdir, CSSJSHandler):
+    def test_injects_css_link_in_template(self, tmpdir, CSSJSHandler):
         svc = _MediaMockServices(str(tmpdir))
         handler = CSSJSHandler(
             mw=svc,
@@ -533,8 +533,10 @@ class TestMediaFileInjection:
 
         handler.injectWrapperElements(use_file_references=True)
         model = svc._models[0]
-        assert "###CHINESE READING CSS FILE START###" in model["css"]
-        assert '<link rel="stylesheet" href="_chinese_reading_' in model["css"]
+        tmpl = model["tmpls"][0]
+        assert "###CHINESE READING CSS FILE START###" not in model["css"]
+        assert "###CHINESE READING CSS FILE START###" in tmpl["qfmt"]
+        assert '<link rel="stylesheet" href="_chinese_reading_' in tmpl["qfmt"]
 
     def test_injects_script_ref_in_template(self, tmpdir, CSSJSHandler):
         svc = _MediaMockServices(str(tmpdir))
