@@ -12,6 +12,7 @@ Commands:
     format      Format code with ruff
     typecheck   Run ty type checker
     build       Build .ankiaddon package
+    bump        Bump patch version in pyproject.toml
     clean       Clean build artifacts
     ci          Run full CI pipeline (lint -> format-check -> typecheck -> test -> build)
 """
@@ -59,6 +60,10 @@ def build_addon():
     return subprocess.run(["uv", "run", "_infra/build.py"]).returncode == 0
 
 
+def bump_version():
+    return subprocess.run(["uv", "run", "_infra/build.py", "bump"]).returncode == 0
+
+
 def clean_build():
     return subprocess.run(["uv", "run", "_infra/build.py", "clean"]).returncode == 0
 
@@ -76,6 +81,7 @@ def main():
         print("  format     - Format code with ruff")
         print("  typecheck  - Run ty type checker")
         print("  build      - Build .ankiaddon package")
+        print("  bump       - Bump patch version in pyproject.toml")
         print("  clean      - Clean build artifacts")
         print("  ci         - Run full CI pipeline")
         return 0
@@ -94,6 +100,8 @@ def main():
         success = type_check()
     elif command == "build":
         success = build_addon()
+    elif command == "bump":
+        success = bump_version()
     elif command == "clean":
         success = clean_build()
     elif command == "ci":

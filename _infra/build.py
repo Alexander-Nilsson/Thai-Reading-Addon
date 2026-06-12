@@ -11,6 +11,7 @@ Usage:
 
 import json
 import os
+import re
 import shutil
 import zipfile
 from pathlib import Path
@@ -83,8 +84,8 @@ def build_addon():
     # Generate fresh manifest with version
     manifest_path = addon_dir / "manifest.json"
     with open(manifest_path, "w") as f:
-        json.dump({"package": "Chinese Reading", "name": "Chinese Reading"}, f, indent=2)
-    print("  ✓ Generated manifest.json")
+        json.dump({"package": "Chinese Reading", "name": "Chinese Reading", "version": version}, f, indent=2)
+    print(f"  ✓ Generated manifest.json (version {version})")
 
     return addon_dir
 
@@ -110,6 +111,19 @@ def create_package():
     return package_path
 
 
+def bump():
+    version = get_version()
+    new_version = bump_version(version)
+
+    path = Path("pyproject.toml")
+    content = path.read_text()
+    content = re.sub(r'^version = ".*"', f'version = "{new_version}"', content, flags=re.MULTILINE)
+    path.write_text(content)
+
+    print(f"  ✓ Version bumped: {version} \u2192 {new_version}")
+    return new_version
+
+
 def main():
     import sys
 
@@ -122,6 +136,8 @@ def main():
     elif cmd == "package":
         build_addon()
         create_package()
+    elif cmd == "bump":
+        bump()
     elif cmd == "all":
         clean()
         build_addon()
