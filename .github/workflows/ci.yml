@@ -42,7 +42,7 @@ jobs:
         run: |
           export QT_QPA_PLATFORM=offscreen
           export PYTHONPATH=/usr/lib/python3.14/site-packages
-          xvfb-run --server-args="-screen 0 1024x768x24" uv run --group integration pytest tests/integration/ -v --tb=short; e=$?; [ $e -eq 139 ] && exit 0 || exit $e
+          xvfb-run --server-args="-screen 0 1024x768x24" uv run --group integration pytest tests/integration/ -v --tb=short || test $? -eq 139
       - name: Build
         run: uv run _infra/build.py
       - uses: actions/upload-artifact@v4
