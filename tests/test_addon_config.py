@@ -16,6 +16,7 @@ def test_defaults():
     assert cfg.font_size == 75
     assert cfg.cantonese_tones == ["#E60000", "#E68A00", "#00802B", "#005CE6", "#AC00E6", "gray"]
     assert cfg.mandarin_tones == ["#E60000", "#E68A00", "#00802B", "#005CE6", "gray"]
+    assert cfg.use_file_references is False
     assert cfg.active_fields == []
 
 
@@ -34,6 +35,7 @@ def test_custom_values():
         "FontSize": 100,
         "CantoneseTones123456": ["red", "blue"],
         "MandarinTones12345": ["a", "b", "c"],
+        "UseFileReferences": True,
         "ActiveFields": ["Sentence;1;2;;Default;Simplified", "Target Word;1;2;;None;Simplified"],
     }
     cfg = AddonConfig(_raw=raw)
@@ -42,6 +44,7 @@ def test_custom_values():
     assert cfg.font_size == 100
     assert cfg.cantonese_tones == ["red", "blue"]
     assert cfg.mandarin_tones == ["a", "b", "c"]
+    assert cfg.use_file_references is True
     assert cfg.active_fields == [
         "Sentence;1;2;;Default;Simplified",
         "Target Word;1;2;;None;Simplified",

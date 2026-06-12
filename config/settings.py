@@ -22,7 +22,6 @@ from PyQt6.QtWidgets import (
     QLineEdit,
     QPushButton,
     QRadioButton,
-    QScrollArea,
     QSpinBox,
     QTableWidget,
     QTableWidgetItem,
@@ -171,6 +170,7 @@ class SettingsGui(QWidget):
         self.loadHanziReadingConversion()
         self.loadColors()
         self.loadTradIcons()
+        self.loadUseFileRefs()
         self.initActiveFieldsCB()
         self.loadAutoCSSJS()
         self.loadActiveFields()
@@ -207,6 +207,9 @@ class SettingsGui(QWidget):
 
     def loadTradIcons(self):
         self.tradIcons.setChecked(self.config.traditional_icons)
+
+    def loadUseFileRefs(self):
+        self.useFileRefs.setChecked(self.config.use_file_references)
 
     def loadBopoNumbers(self):
         self.bopo2Number.setChecked(self.config.bopomofo_tones_to_number)
@@ -327,6 +330,7 @@ class SettingsGui(QWidget):
         self.hanziConversion = QComboBox()
         self.readingConversion = QComboBox()
         self.tradIcons = QCheckBox()
+        self.useFileRefs = QCheckBox()
 
         self.fontSize = QSpinBox()
         self.fontSize.setMinimum(1)
@@ -580,6 +584,8 @@ class SettingsGui(QWidget):
         bgbh2.addWidget(QLabel("Traditional Icons:"))
         bgbh2.addWidget(self.tradIcons)
         bgbh2.addStretch()
+        bgbh2.addWidget(QLabel("File Refs for CSS/JS:"))
+        bgbh2.addWidget(self.useFileRefs)
         bgbv.addWidget(bgbt)
         bgbv.addLayout(bgbh)
         bgbv.addLayout(bgbh2)
@@ -961,7 +967,7 @@ class SettingsGui(QWidget):
             if (
                 (afList.item(i, 0).text() == profile or afList.item(i, 0).text() == "All" or profile == "All")
                 and afList.item(i, 1).text() == nt
-                and afList.item(i, 2).text() == ct
+                and (afList.item(i, 2).text() == ct or afList.item(i, 2).text() == "All" or ct == "All")
                 and afList.item(i, 3).text() == field
                 and (afList.item(i, 4).text() == side or afList.item(i, 4).text() == "Both" or side == "Both")
             ):
@@ -1074,7 +1080,10 @@ class SettingsGui(QWidget):
         for i in range(self.noteTypeAF.count()):
             if self.noteTypeAF.itemText(i).startswith(nt):
                 self.noteTypeAF.setCurrentIndex(i)
-                ci = self.cardTypeAF.findText(ct, Qt.MatchFlag.MatchFixedString)
+                if ct.lower() == "all":
+                    ci = 0  # "All" is always the first item
+                else:
+                    ci = self.cardTypeAF.findText(ct, Qt.MatchFlag.MatchFixedString)
                 if ci >= 0:
                     fi = self.fieldAF.findText(field, Qt.MatchFlag.MatchFixedString)
                     if fi >= 0:
@@ -1353,6 +1362,7 @@ class SettingsGui(QWidget):
         hc = self.hanziConversion.currentText()
         rc = self.readingConversion.currentText()
         fontSize = self.fontSize.value()
+        useFileRefs = self.useFileRefs.isChecked()
         afs = tuple(self.saveActiveFields())
 
         delta = ConfigDelta(
@@ -1367,6 +1377,7 @@ class SettingsGui(QWidget):
             simp_trad_field=alt,
             traditional_icons=tradIcons,
             font_size=fontSize,
+            use_file_references=useFileRefs,
             cantonese_tones=cColors,
             mandarin_tones=mColors,
             active_fields=afs,
@@ -1462,6 +1473,8 @@ class SettingsGui(QWidget):
 
     def loadCardTypesFields(self):
         curProf, curNote = self.noteTypeAF.itemData(self.noteTypeAF.currentIndex()).split(":pN:")
+        self.cardTypeAF.addItem("All")
+        self.cardTypeAF.setItemData(self.cardTypeAF.count() - 1, "All", Qt.ItemDataRole.ToolTipRole)
         for cardType in self.catalog.card_type_names(curProf, curNote):
             self.cardTypeAF.addItem(cardType)
             self.cardTypeAF.setItemData(self.cardTypeAF.count() - 1, cardType, Qt.ItemDataRole.ToolTipRole)
@@ -1483,10 +1496,13 @@ class SettingsGui(QWidget):
                 if prof == "all":
                     prof = "All"
                 rt_display = self.rtTranslation.get(rt, rt.title())
+                ct = parsed.card_type
+                if ct.lower() == "all":
+                    ct = "All"
                 self.addToList(
                     prof,
                     parsed.note_type,
-                    parsed.card_type,
+                    ct,
                     parsed.field,
                     parsed.side[0].upper() + parsed.side[1:].lower(),
                     self.displayTranslation[dt],

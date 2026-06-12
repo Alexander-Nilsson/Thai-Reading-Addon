@@ -29,6 +29,24 @@ PINBOPO_CONVERTER_HEADER = (
 )
 PINBOPO_CONVERTER_FOOTER = "<!--###CHINESE READING PINYIN BOPOMOFO CONVERTER JS ENDS###-->"
 
+# ── Media file markers ─────────────────────────────────────────
+
+CHINESE_CSS_FILE_HEADER = "<!--###CHINESE READING CSS FILE START###-->"
+CHINESE_CSS_FILE_FOOTER = "<!--###CHINESE READING CSS FILE ENDS###-->"
+CHINESE_CSS_FILE_PATTERN = (
+    r"<!--###CHINESE READING CSS FILE START###-->\s*"
+    r'<link rel="stylesheet" href="([^"]+)"[^>]*>\s*'
+    r"<!--###CHINESE READING CSS FILE ENDS###-->"
+)
+
+CHINESE_JS_FILE_HEADER = "<!--###CHINESE READING JS FILE START###-->"
+CHINESE_JS_FILE_FOOTER = "<!--###CHINESE READING JS FILE ENDS###-->"
+CHINESE_JS_FILE_PATTERN = (
+    r"<!--###CHINESE READING JS FILE START###-->\s*"
+    r'<script src="([^"]+)"[^>]*>.*?</script>\s*'
+    r"<!--###CHINESE READING JS FILE ENDS###-->"
+)
+
 
 # ── Helpers ─────────────────────────────────────────────────────
 
@@ -55,6 +73,8 @@ COMPONENTS = frozenset(
         "wrapper",
         "hanzi_converter",
         "pinyin_bopomo_converter",
+        "chinese_css_file",
+        "chinese_js_file",
     }
 )
 
@@ -78,6 +98,10 @@ class TemplateInjector:
                 return self._inject_hanzi_converter(template, **kwargs)
             case "pinyin_bopomo_converter":
                 return self._inject_pinbopo_converter(template, **kwargs)
+            case "chinese_css_file":
+                return self._inject_chinese_css_file(template, **kwargs)
+            case "chinese_js_file":
+                return self._inject_chinese_js_file(template, **kwargs)
         raise AssertionError("unreachable")
 
     def remove(self, component: str, template: str) -> str:
@@ -93,6 +117,10 @@ class TemplateInjector:
                 return self._remove_hanzi_converter(template)
             case "pinyin_bopomo_converter":
                 return self._remove_pinbopo_converter(template)
+            case "chinese_css_file":
+                return self._remove_chinese_css_file(template)
+            case "chinese_js_file":
+                return self._remove_chinese_js_file(template)
         raise AssertionError("unreachable")
 
     @staticmethod
@@ -103,30 +131,31 @@ class TemplateInjector:
 
     @staticmethod
     def get_chinese_css(
-        mandarin_tones: tuple[str, ...],
-        cantonese_tones: tuple[str, ...],
+        mandarin_tones: tuple[str, ...] | list[str],
+        cantonese_tones: tuple[str, ...] | list[str],
         font_size: int,
     ) -> str:
         css = (
-            ".nightMode .unhovered-word .hanzi-ruby{color:white !important;}"
-            ".unhovered-word .hanzi-ruby{color:inherit !important;}"
             ".unhovered-word .pinyin-ruby{visibility:hidden  !important;}"
             f".pinyin-ruby{{font-size:{font_size}% !important;}}"
         )
-        count = 1
-        for tone in mandarin_tones:
-            css += (
-                f".tone{count!s}{{color:{tone};}}"
-                f".ankidroid_dark_mode .tone{count!s}, .nightMode .tone{count!s}{{color:{tone};}}"
-            )
-            count += 1
-        count = 1
-        for tone in cantonese_tones:
-            css += (
-                f".canTone{count!s}{{color:{tone};}}"
-                f".ankidroid_dark_mode .canTone{count!s}, .nightMode .canTone{count!s}{{color:{tone};}}"
-            )
-            count += 1
+        all_mandarin_same = len(set(mandarin_tones)) == 1
+        all_cantonese_same = len(set(cantonese_tones)) == 1
+        if not (all_mandarin_same and all_cantonese_same):
+            count = 1
+            for tone in mandarin_tones:
+                css += (
+                    f".tone{count!s}{{color:{tone};}}"
+                    f".ankidroid_dark_mode .tone{count!s}, .nightMode .tone{count!s}{{color:{tone};}}"
+                )
+                count += 1
+            count = 1
+            for tone in cantonese_tones:
+                css += (
+                    f".canTone{count!s}{{color:{tone};}}"
+                    f".ankidroid_dark_mode .canTone{count!s}, .nightMode .canTone{count!s}{{color:{tone};}}"
+                )
+                count += 1
         return CHINESE_CSS_HEADER + "\n" + css + "\n" + CHINESE_CSS_FOOTER
 
     def _inject_chinese_css(self, style: str, **kwargs: Any) -> str:
@@ -158,6 +187,16 @@ class TemplateInjector:
         )
         return CHINESE_PARSER_HEADER + js + CHINESE_PARSER_FOOTER
 
+    def get_bare_chinese_js(self, reading_type: str) -> str:
+        """Returns pure JS (no HTML wrappers) suitable for writing to a .js file."""
+        return (
+            '(function(){const CHINESE_READING_TYPE ="'
+            + reading_type
+            + '";'
+            + self._js.load("chineseparser.js")
+            + "})();"
+        )
+
     def _inject_chinese_js(self, text: str, **kwargs: Any) -> str:
         reading_type = kwargs.get("reading_type", "pinyin")
         new_block = self.get_chinese_js(reading_type)
@@ -183,17 +222,15 @@ class TemplateInjector:
         reading_type = kwargs.get("reading_type", "default")
         if not field:
             return text
+        # Match {{FieldName}} or {{filter:FieldName}} — anywhere a filter prefix may appear
+        tmpl_ref = r"(?:{{(?:[^:}]+:)?)" + re.escape(field) + r"}}"
         repl = (
-            '<div reading-type="'
-            + reading_type
-            + '" display-type="'
-            + display_type
-            + '" class="wrapped-chinese">{{'
-            + field
-            + "}}</div>"
+            '<div reading-type="' + reading_type + '" display-type="' + display_type + '" class="wrapped-chinese">'
+            "\\g<0>"
+            "</div>"
         )
         # Negative lookbehind prevents double-wrapping an already-wrapped field
-        pat = r'(?<!(?:class="wrapped-chinese">))({{' + re.escape(field) + r"}})"
+        pat = r'(?<!(?:class="wrapped-chinese">))' + tmpl_ref
         return re.sub(pat, repl, text)
 
     @staticmethod
@@ -252,6 +289,50 @@ class TemplateInjector:
     def _remove_pinbopo_converter(self, text: str) -> str:
         return _remove_block(text, PINBOPO_CONVERTER_HEADER, PINBOPO_CONVERTER_FOOTER)
 
+    # ── Media file references ────────────────────────────────
+
+    @staticmethod
+    def get_chinese_css_file_ref(filename: str) -> str:
+        return CHINESE_CSS_FILE_HEADER + '\n<link rel="stylesheet" href="' + filename + '">\n' + CHINESE_CSS_FILE_FOOTER
+
+    @staticmethod
+    def get_chinese_js_file_ref(filename: str) -> str:
+        return CHINESE_JS_FILE_HEADER + '\n<script src="' + filename + '"></script>\n' + CHINESE_JS_FILE_FOOTER
+
+    def _inject_chinese_css_file(self, text: str, **kwargs: Any) -> str:
+        filename = kwargs.get("filename", "")
+        if not filename:
+            return text
+        new_block = self.get_chinese_css_file_ref(filename)
+        if not text:
+            return new_block
+        match = re.search(CHINESE_CSS_FILE_PATTERN, text, flags=re.DOTALL)
+        if match:
+            if match.group() != new_block:
+                return text.replace(match.group(), new_block)
+            return text
+        return text + "\n" + new_block
+
+    def _remove_chinese_css_file(self, text: str) -> str:
+        return re.sub(CHINESE_CSS_FILE_PATTERN, "", text, flags=re.DOTALL)
+
+    def _inject_chinese_js_file(self, text: str, **kwargs: Any) -> str:
+        filename = kwargs.get("filename", "")
+        if not filename:
+            return text
+        new_block = self.get_chinese_js_file_ref(filename)
+        if not text:
+            return new_block
+        match = re.search(CHINESE_JS_FILE_PATTERN, text, flags=re.DOTALL)
+        if match:
+            if match.group() != new_block:
+                return text.replace(match.group(), new_block)
+            return text
+        return text + "\n" + new_block
+
+    def _remove_chinese_js_file(self, text: str) -> str:
+        return re.sub(CHINESE_JS_FILE_PATTERN, "", text, flags=re.DOTALL)
+
 
 # ── Module-level helpers ────────────────────────────────────────
 
@@ -264,29 +345,29 @@ def _validate_component(component: str) -> None:
 
 def _overwrite_wrapper_element(text: str, field: str, display_type: str, reading_type: str = "default") -> str:
     pat = (
-        r'<div reading-type="([^>]+?)" display-type="([^>]+?)" class="wrapped-chinese">{{'
-        + re.escape(field)
-        + r"}}</div>"
+        r'<div reading-type="([^>]+?)" display-type="([^>]+?)" class="wrapped-chinese">'
+        r"({{(?:[^:}]+:)?" + re.escape(field) + r"}})"
+        r"</div>"
     )
-    for old_reading, old_display in re.findall(pat, text):
+    for old_reading, old_display, inner_ref in re.findall(pat, text):
         if display_type.lower() != old_display.lower() or reading_type.lower() != old_reading.lower():
             old = (
                 '<div reading-type="'
                 + old_reading
                 + '" display-type="'
                 + old_display
-                + '" class="wrapped-chinese">{{'
-                + field
-                + "}}</div>"
+                + '" class="wrapped-chinese">'
+                + inner_ref
+                + "</div>"
             )
             new = (
                 '<div reading-type="'
                 + reading_type
                 + '" display-type="'
                 + display_type
-                + '" class="wrapped-chinese">{{'
-                + field
-                + "}}</div>"
+                + '" class="wrapped-chinese">'
+                + inner_ref
+                + "</div>"
             )
             text = text.replace(old, new)
     return text

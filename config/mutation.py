@@ -89,6 +89,7 @@ _KEY_MAP: dict[str, str] = {
     "font_size": "FontSize",
     "cantonese_tones": "CantoneseTones123456",
     "mandarin_tones": "MandarinTones12345",
+    "use_file_references": "UseFileReferences",
     "active_fields": "ActiveFields",
 }
 
@@ -106,6 +107,7 @@ class ConfigDelta:
     simp_trad_field: str | None = None
     traditional_icons: bool | None = None
     font_size: int | None = None
+    use_file_references: bool | None = None
     cantonese_tones: tuple[str, ...] | None = None
     mandarin_tones: tuple[str, ...] | None = None
     active_fields: tuple[str, ...] | None = None

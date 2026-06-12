@@ -86,6 +86,10 @@ class AddonConfig:
         return self._raw.get("MandarinTones12345", ["#E60000", "#E68A00", "#00802B", "#005CE6", "gray"])
 
     @property
+    def use_file_references(self) -> bool:
+        return self._raw.get("UseFileReferences", False)
+
+    @property
     def active_fields(self) -> list[str]:
         return self._raw.get("ActiveFields", [])
 
