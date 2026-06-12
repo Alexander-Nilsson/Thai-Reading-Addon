@@ -10,15 +10,12 @@ dev = [
     "ruff>=0.15.0",
     "pytest>=8.0.0",
     "pytest-anki2[anki-2509,qt6-pypi]>=2.0.0",
-    "playwright>=1.40.0",
-    "requests>=2.0.0",
-    "websockets>=16.0",
 ]
 
 [tool.ruff]
 target-version = "py314"
 line-length = 120
-exclude = ["lib", "urllib3", "Pyperclip.py", "_infra", "repro_duplication.py"]
+exclude = ["lib", "_infra"]
 extend-exclude = ["__pycache__", "*.pyc"]
 
 [tool.ruff.lint]
@@ -59,7 +56,7 @@ unsupported-operator = "warn"
 no-matching-overload = "warn"
 
 [tool.ty.src]
-exclude = ["lib/**", "urllib3/**", "_infra/**", "tests/**", "repro_duplication.py"]
+exclude = ["lib/**", "_infra/**", "tests/**"]
 
 [tool.ty.analysis]
 allowed-unresolved-imports = [
@@ -81,6 +78,6 @@ allowed-unresolved-imports = [
 testpaths = ["tests"]
 pythonpath = [".."]
 python_files = ["test_*.py"]
-norecursedirs = ["lib", "urllib3", "build", ".venv", ".ruff_cache"]
+norecursedirs = ["lib", "build", ".venv", ".ruff_cache"]
 filterwarnings = ["ignore::DeprecationWarning"]
 addopts = "-ra -q"

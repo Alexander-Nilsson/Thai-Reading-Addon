@@ -50,7 +50,6 @@ def get_includes():
         "js",
         "db",
         "lib",
-        "urllib3",
     ]
 
 

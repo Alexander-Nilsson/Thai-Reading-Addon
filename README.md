@@ -9,26 +9,57 @@
 
 ---
 
-## Active Fields
+## Features
 
-Configure which note types, card types, fields, and card sides get processed via the **Active Fields** tab in add-on settings.
+- **Tone-coloured readings**: Pinyin, Bopomofo, and Jyutping with configurable tone colours
+- **Simplified/Traditional variants**: Auto-generate character variants via the browser
+- **Card template injection**: Auto-injects CSS and JavaScript into card templates for tone colouring
+- **Active Fields system**: Configure which note types, card types, fields, and card sides get processed
+- **Masked Hanzi mode**: Display readings while hiding the original characters
+- **Exportable configuration**: Supports profiles for different reading workflows
 
-Each entry is a semicolon-delimited string:
+## Configuration
+
+Access settings via **Tools → Chinese Reading Settings** or through Anki's add-on config editor.
+
+### Active Fields
+
+Configure processing rules per note type/card type/field/side via the **Active Fields** tab. Each entry is a semicolon-delimited string:
 
 ```
 display_type;profile;note_type;card_type;field;side;reading_type
 ```
 
-### Card type: `All`
+- `display_type`: `hanzi`, `reading`, or `masked`
+- `profile`: profile name or `all`
+- `note_type`, `card_type`, `field`: target identifiers (use `All` for wildcard)
+- `side`: `front` or `back`
+- `reading_type`: `pinyin`, `bopomofo`, or `jyutping`
 
-When set to `All`, the entry applies to every card template of the given note type. This removes the need to create one entry per card type when the same field should be processed identically across all cards.
+Fields with an ActiveFields entry on at least one side get a default `hanzi` wrapper on the other side. Fields with no entry are left untouched.
 
-### Default hanzi wrapping
+### File References Mode
 
-Fields that have an ActiveFields entry on at least one side will automatically get a default `hanzi` wrapper on their unconfigured sides. This means configuring a field for the **back** only will still get it wrapped as hanzi on the **front**, and vice versa.
+When enabled, CSS/JS are written to `collection.media/` as standalone files referenced via `<link>`/`<script src>` instead of inline.
 
-Fields with **no** ActiveFields entry at all are left completely untouched — no wrappers are added, no JavaScript is injected for them. This prevents non-Chinese fields (Sound, Image, Keyword, etc.) from being unnecessarily processed.
+## Development
 
-### File references mode
+```bash
+uv venv --python /usr/bin/python3.14 .venv
+source .venv/bin/activate
+uv sync
 
-When enabled (via the Options tab), CSS and JavaScript are written to `collection.media/` as standalone files and referenced via `<link>` and `<script src>` tags instead of being inlined into card templates. This keeps card templates smaller and avoids issues with Anki's inline script handling.
+# Run checks
+python dev.py lint        # ruff linter
+python dev.py typecheck   # ty type checker
+python dev.py test-unit   # fast unit tests (no Anki)
+python dev.py test        # full test suite (needs Anki)
+python dev.py build       # .ankiaddon package
+python dev.py ci          # full CI pipeline
+```
+
+See [AGENTS.md](AGENTS.md) for architecture details and [docs/](docs/) for ADRs and testing docs.
+
+## License
+
+GNU AGPLv3 — see [LICENSE](LICENSE).

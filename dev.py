@@ -6,7 +6,8 @@ Usage:
     python dev.py [command]
 
 Commands:
-    test        Run test suite (unit + integration)
+    test        Run all tests (unit + integration)
+    test-unit   Run unit tests only (fast, no Anki needed)
     lint        Run ruff linter
     format      Format code with ruff
     typecheck   Run ty type checker
@@ -20,29 +21,22 @@ import subprocess
 import sys
 
 
-def run_tests():
-    is_ci = os.environ.get("GITHUB_ACTIONS") == "true"
+def run_unit_tests():
+    cmd = ["uvx", "pytest", "tests/", "-v", "--ignore=tests/integration"]
+    return subprocess.run(cmd).returncode == 0
+
+
+def run_integration_tests():
     env = os.environ.copy()
     env["QT_QPA_PLATFORM"] = "offscreen"
-
-    unit_cmd = ["uvx", "pytest", "tests/", "-v"]
-    if is_ci:
-        unit_cmd.extend(["--tb=short"])
-
-    result = subprocess.run(unit_cmd, env=env)
-    if result.returncode != 0:
-        return False
-
     env["PYTHONPATH"] = "/usr/lib/python3.14/site-packages"
-    int_cmd = ["uv", "run", "pytest", "tests/integration/", "-v"]
-    if is_ci:
-        int_cmd.extend(["--tb=short"])
+    cmd = ["uv", "run", "pytest", "tests/integration/", "-v"]
+    result = subprocess.run(cmd, env=env)
+    return result.returncode in (0, 5, 139)
 
-    result = subprocess.run(int_cmd, env=env)
-    if result.returncode not in (0, 5, 139):
-        return False
 
-    return True
+def run_all_tests():
+    return run_unit_tests() and run_integration_tests()
 
 
 def lint_code():
@@ -76,7 +70,8 @@ def main():
         print("Usage: python dev.py [command]")
         print()
         print("Commands:")
-        print("  test       - Run test suite (unit + integration)")
+        print("  test       - Run all tests (unit + integration)")
+        print("  test-unit  - Run unit tests only (fast, no Anki)")
         print("  lint       - Run ruff linter")
         print("  format     - Format code with ruff")
         print("  typecheck  - Run ty type checker")
@@ -88,7 +83,9 @@ def main():
     command = sys.argv[1]
 
     if command == "test":
-        success = run_tests()
+        success = run_all_tests()
+    elif command == "test-unit":
+        success = run_unit_tests()
     elif command == "lint":
         success = lint_code()
     elif command == "format":
@@ -104,7 +101,8 @@ def main():
             ("Lint", lint_code),
             ("Format check", format_check),
             ("Type check", type_check),
-            ("Tests", run_tests),
+            ("Unit tests", run_unit_tests),
+            ("Integration tests", run_integration_tests),
             ("Build", build_addon),
         ]
         success = True
