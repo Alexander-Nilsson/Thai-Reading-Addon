@@ -17,12 +17,12 @@ class TestGetAltFayin:
         result = test_db.getAltFayin("一")
         assert result is not None
         assert len(result) > 0
-        assert result[0][0] == "yī"
+        assert result[0][0] == "yi1"
 
     def test_returns_pinyin_for_traditional(self, test_db):
         result = test_db.getAltFayin("在")
         assert result is not None
-        assert result[0][0] == "zài"
+        assert result[0][0] == "zai4"
 
     def test_returns_empty_for_missing(self, test_db):
         result = test_db.getAltFayin("XYZNOTACHAR")

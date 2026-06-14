@@ -239,7 +239,7 @@ def onRegenerate(browser):
     if notes:
         fields = anki.find.fieldNamesForNotes(mw.col, notes)
         generateWidget = QDialog(None, Qt.WindowType.Window)
-        generateWidget.setWindowTitle("Generate Chinese Readings")
+        generateWidget.setWindowTitle("Generate Readings for Selected Cards")
         generateWidget.setWindowIcon(QIcon(join(addonPath, "icons", "chinese-reading.svg")))
         generateWidget.setMinimumWidth(480)
         generateWidget.resize(520, 220)
@@ -308,7 +308,7 @@ def setupMenu(browser):
         return
     try:
         submenu = browser.form.menuEdit.addMenu("Chinese Reading")
-        a = QAction("Generate Chinese Readings", browser)
+        a = QAction("Generate Readings for Selected Cards", browser)
         a.triggered.connect(lambda: onRegenerate(browser))
         submenu.addAction(a)
         _log.debug("setupMenu: submenu added successfully")

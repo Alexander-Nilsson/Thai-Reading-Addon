@@ -185,9 +185,9 @@ def _populate_test_db(path):
     c.executemany(
         "INSERT INTO altDict (traditional, simplified, pinyin) VALUES (?, ?, ?)",
         [
-            ("一", "一", "yī"),
-            ("在", "在", "zài"),
-            ("你好", "你好", "nǐ hǎo"),
+            ("一", "一", "yi1"),
+            ("在", "在", "zai4"),
+            ("你好", "你好", "ni3 hao3"),
         ],
     )
     c.executemany(

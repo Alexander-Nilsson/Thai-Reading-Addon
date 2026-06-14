@@ -70,6 +70,16 @@ class TestSegmentAndLookup:
         assert "[" in result
         assert "]" in result
 
+    def test_pinyin_format_numbered(self, test_generator):
+        result = test_generator._segment_and_lookup("你好", "pinyin")
+        reading = result.split("[")[1].split("]")[0]
+        assert reading == "ni3 hao3", f"expected numbered pinyin, got {reading!r}"
+
+    def test_pinyin_format_numbered_single_char(self, test_generator):
+        result = test_generator._segment_and_lookup("一", "pinyin")
+        reading = result.split("[")[1].split("]")[0]
+        assert reading == "yi1", f"expected numbered pinyin, got {reading!r}"
+
     def test_mixed_text_and_chinese(self, test_generator):
         result = test_generator._segment_and_lookup("hello 你好 world", "pinyin")
         assert result.startswith("hello ")
@@ -87,8 +97,8 @@ class TestSegmentAndLookup:
         assert result == "hello"
 
     def test_brackets_stripped_from_input(self, test_generator):
-        result = test_generator._segment_and_lookup("你好[nǐhǎo]", "pinyin")
-        assert "nǐhǎo" not in result
+        result = test_generator._segment_and_lookup("你好[old]", "pinyin")
+        assert "old" not in result
 
 
 # ── Generate ────────────────────────────────────────────────────

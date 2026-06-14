@@ -58,13 +58,21 @@ class ChineseHandler:
         _log.debug("massGenerate called: og=%s, dest=%s, om=%s, rt=%s, notes_count=%d", og, dest, om, rt, len(notes))
         self.anki.checkpoint("Chinese Reading Generation")
         if not show_ask(
-            'Are you sure you want to generate from the "' + og + '" field into  the "' + dest + '" field?.'
+            "Generate readings for " + str(len(notes)) + ' selected cards from "' + og + '" into "' + dest + '"?'
         ):
             return
         generateWidget.close()
         _progWid, bar = self.getProgressWidget()
         bar.setMinimum(0)
         bar.setMaximum(len(notes))
+
+        has_simplified = self.config.simplified_field.split(";")[0].strip().lower() != "none"
+        has_traditional = self.config.traditional_field.split(";")[0].strip().lower() != "none"
+        has_simp_trad = self.config.simp_trad_field.split(";")[0].strip().lower() != "none"
+        do_variants = has_simplified or has_traditional
+
+        progress_interval = max(1, len(notes) // 100) if len(notes) > 1 else 1
+
         val = 0
         for nid in notes:
             note = self.anki.get_note(nid)
@@ -72,14 +80,18 @@ class ChineseHandler:
             if og in fields and dest in fields:
                 text = note[og]
                 _log.debug("massGenerate: processing note %d, text length=%d", nid, len(text) if text else 0)
-                newText = self.finalizeReadings(text, og, note, rType=rt)
+                cleaned = self.removeBrackets(text)
+                newText = self.finalizeReadings(cleaned, og, note, rType=rt)
                 note[dest] = self.applyOM(om, note[dest], newText)
-                self.addVariants(self.removeBrackets(text), note)
-                self.addSimpTrad(self.removeBrackets(text), note)
+                if do_variants:
+                    self.addVariants(cleaned, note)
+                if has_simp_trad:
+                    self.addSimpTrad(cleaned, note)
                 self.anki.col.update_note(note)
             val += 1
-            bar.setValue(val)
-            self.anki.process_events()
+            if val % progress_interval == 0 or val == len(notes):
+                bar.setValue(val)
+                self.anki.process_events()
         self.anki.progress_finish()
         self.anki.reset()
 

@@ -3,6 +3,7 @@
 
 import os.path
 import sqlite3
+from functools import cache
 
 
 class DictDB:
@@ -30,11 +31,13 @@ class DictDB:
     def pushToAltDict(self, trad, simp, pinyin):
         self.c.execute("INSERT INTO altDict (traditional, simplified, pinyin) VALUES (?, ?, ?);", (trad, simp, pinyin))
 
+    @cache
     def _get_char_pinyin(self, c):
         self.c.execute("select kMandarin from hanzi where cp = ?;", (c,))
         row = self.c.fetchone()
         return row[0] if row else None
 
+    @cache
     def _get_word_pinyin(self, w, taiwan=False):
         self.c.execute("select pinyin, pinyin_taiwan from cidian where traditional=? or simplified=?;", (w, w))
         row = self.c.fetchone()
@@ -45,16 +48,19 @@ class DictDB:
             return taiwan_pinyin
         return pinyin
 
+    @cache
     def _get_char_traditional(self, c):
         self.c.execute("select kTraditionalVariant from hanzi where cp = ?;", (c,))
         row = self.c.fetchone()
         return row[0] if row else None
 
+    @cache
     def _get_word_traditional(self, w):
         self.c.execute("select traditional from cidian where simplified=? or traditional=?;", (w, w))
         row = self.c.fetchone()
         return row[0] if row else None
 
+    @cache
     def get_traditional(self, w, wl=4):
         """Returns the full traditional form of a string.
         Use CEDICT wherever possible. Use Unihan to fill in.
@@ -95,16 +101,19 @@ class DictDB:
 
         return traditional.replace("U+5F8C", "").replace("U+4F75", "")
 
+    @cache
     def _get_char_simplified(self, c):
         self.c.execute("select kSimplifiedVariant from hanzi where cp = ?;", (c,))
         row = self.c.fetchone()
         return row[0] if row else None
 
+    @cache
     def _get_word_simplified(self, w):
         self.c.execute("select simplified from cidian where traditional=? or simplified=?;", (w, w))
         row = self.c.fetchone()
         return row[0] if row else None
 
+    @cache
     def get_simplified(self, w, wl=4):
         """Returns the full traditional form of a string.
         Use CEDICT wherever possible. Use Unihan to fill in.
@@ -149,14 +158,17 @@ class DictDB:
         self.c.execute("select traditional, simplified, pinyin from altDict;")
         return self.c.fetchall() or None
 
+    @cache
     def getAltFayin(self, w):
         self.c.execute("select distinct pinyin from altDict where (traditional=? or simplified=?) limit 1;", (w, w))
         return self.c.fetchall() or None
 
+    @cache
     def getFayin(self, w):
         self.c.execute("select distinct pinyin from cidian where (traditional=? or simplified=?) limit 1;", (w, w))
         return self.c.fetchall() or None
 
+    @cache
     def getJyutping(self, w):
         self.c.execute("select distinct jyutping from cantonese where (traditional=? or simplified=?) limit 1;", (w, w))
         return self.c.fetchall() or None
