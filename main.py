@@ -15,9 +15,11 @@ from PyQt6.QtGui import QAction, QIcon
 from PyQt6.QtWidgets import (
     QComboBox,
     QDialog,
+    QFormLayout,
     QHBoxLayout,
     QLabel,
     QPushButton,
+    QVBoxLayout,
 )
 
 from .reading import dictdb  # ty: ignore[unresolved-import]
@@ -237,19 +239,45 @@ def onRegenerate(browser):
     if notes:
         fields = anki.find.fieldNamesForNotes(mw.col, notes)
         generateWidget = QDialog(None, Qt.WindowType.Window)
-        layout = QHBoxLayout()
+        generateWidget.setWindowTitle("Generate Chinese Readings")
+        generateWidget.setWindowIcon(QIcon(join(addonPath, "icons", "chinese-reading.svg")))
+        generateWidget.setMinimumWidth(480)
+        generateWidget.resize(520, 220)
+
+        layout = QVBoxLayout()
+        layout.setSpacing(8)
+        layout.setContentsMargins(16, 16, 16, 16)
+
+        fm = QFormLayout()
+        fm.setSpacing(6)
+        fm.setLabelAlignment(Qt.AlignmentFlag.AlignRight)
+
         og = QLabel("Origin:")
         cb = QComboBox()
         cb.addItems(fields)
+        fm.addRow(og, cb)
+
         dest = QLabel("Destination:")
         destCB = QComboBox()
         destCB.addItems(fields)
+        fm.addRow(dest, destCB)
+
         om = QLabel("Output Mode:")
         omCB = QComboBox()
         omCB.addItems(["Add", "Overwrite", "If Empty"])
+        fm.addRow(om, omCB)
+
         rt = QLabel("Reading Type:")
         rtCB = QComboBox()
         rtCB.addItems(["Pinyin", "Bopomofo", "Jyutping"])
+        fm.addRow(rt, rtCB)
+
+        layout.addLayout(fm)
+        layout.addStretch()
+
+        btnLayout = QHBoxLayout()
+        btnLayout.setSpacing(8)
+        btnLayout.addStretch()
         b4 = QPushButton("Add Readings")
         b4.clicked.connect(
             lambda: mw.ChineseReading.massGenerate(  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
@@ -261,20 +289,13 @@ def onRegenerate(browser):
                 generateWidget,
             )
         )
+        b4.setDefault(True)
+        btnLayout.addWidget(b4)
         b5 = QPushButton("Remove Readings")
         b5.clicked.connect(lambda: mw.ChineseReading.massRemove(cb.currentText(), notes, generateWidget))  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
-        layout.addWidget(og)
-        layout.addWidget(cb)
-        layout.addWidget(dest)
-        layout.addWidget(destCB)
-        layout.addWidget(om)
-        layout.addWidget(omCB)
-        layout.addWidget(rt)
-        layout.addWidget(rtCB)
-        layout.addWidget(b4)
-        layout.addWidget(b5)
-        generateWidget.setWindowTitle("Generate Chinese Readings")
-        generateWidget.setWindowIcon(QIcon(join(addonPath, "icons", "chinese-reading.svg")))
+        btnLayout.addWidget(b5)
+        layout.addLayout(btnLayout)
+
         generateWidget.setLayout(layout)
         generateWidget.exec()
     else:
