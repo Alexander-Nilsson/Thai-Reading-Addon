@@ -125,98 +125,92 @@ class ChineseHandler:
         self.anki.progress_finish()
         self.anki.reset()
 
-    def editorText(self, editor):
-        text = editor.web.selectedText()
-        _log.debug("editorText: got text=%s", repr(text[:50]) if text and len(text) > 50 else repr(text))
-        if not text:
-            return False
-        else:
-            return text
-
     def cleanField(self, editor):
-        if self.editorText(editor):
-            editor.web.eval(self.commonJS + self.bracketsFromSelJS)
+        _log.debug("cleanField called, editor=%s", editor)
+        note = editor.note
+        if not note:
+            aqt.utils.showInfo("Chinese Reading: No note loaded")
             return
 
-        note = editor.note
         configured_field_name = None
 
-        if note is not None:
-            note_type_name = note.model()["name"]
-            wrapper = self.cssJSHandler.wrapperDict.get(note_type_name)
-            if wrapper:
-                configured_field_name = wrapper[0][1]
+        # Step 1: Try note-type config first (Active Field)
+        note_type_name = note.model()["name"]
+        wrapper = self.cssJSHandler.wrapperDict.get(note_type_name)
+        if wrapper:
+            configured_field_name = wrapper[0][1]
 
-        if configured_field_name and note and configured_field_name in note:
+        if configured_field_name and configured_field_name in note:
             text = note[configured_field_name]
             cleaned_text = self.removeBrackets(text)
             if text != cleaned_text:
-                _log.debug("cleanField: bypassing JS, removing brackets directly for field %s", configured_field_name)
+                _log.debug("cleanField: using configured field %s", configured_field_name)
                 note[configured_field_name] = cleaned_text
                 self.anki.col.update_note(note)
-                # Find ordinal to update the UI
-                ordinal = self.getFieldOrdinal(note, configured_field_name)
-                if ordinal is not False:
-                    safe_text = cleaned_text.replace('"', '\\"')
-                    js = self.commonJS + self.insertToFieldJS % (safe_text, str(ordinal))
-                    editor.web.eval(js)
-
-                # Always trigger a reload as a fallback to ensure the UI matches the DB
                 editor.loadNoteKeepingFocus()
+            else:
+                _log.debug("cleanField: no brackets found in field %s", configured_field_name)
             return
 
-        editor.web.eval(self.commonJS + self.removeBracketsJS)
+        # Step 2: Fallback to last focused field
+        ordinal = getattr(self.mw, "_lastFocusedFieldOrdinal", None) if self.mw else None
+        if ordinal is not None:
+            field_name = note.keys()[ordinal]
+            text = note[field_name]
+            cleaned_text = self.removeBrackets(text)
+            if text != cleaned_text:
+                _log.debug("cleanField: using tracked field %s (ordinal=%d)", field_name, ordinal)
+                note[field_name] = cleaned_text
+                self.anki.col.update_note(note)
+                editor.loadNoteKeepingFocus()
+            else:
+                _log.debug("cleanField: no brackets found in field %s", field_name)
+            return
+
+        # Step 3: No field could be determined
+        _log.warning("cleanField: no field could be resolved")
+        aqt.utils.showInfo("Chinese Reading: Please click inside a field and try again.")
 
     def addCReadings(self, editor):
         _log.debug("addCReadings called, editor=%s", editor)
-        text = self.editorText(editor)
-        if text:
-            _log.debug("addCReadings: text selected, calling fetchTextJS")
-            editor.web.eval(self.commonJS + self.fetchTextJS)
+        note = editor.note
+        if not note:
+            aqt.utils.showInfo("Chinese Reading: No note loaded")
             return
 
-        _log.debug("addCReadings: no text selected, resolving field")
-        ordinal = None
-        note = editor.note
-        note_id = note.id if note else 0
         configured_field_name = None
 
-        # Try note-type config first
-        if note is not None:
-            note_type_name = note.model()["name"]
-            wrapper = self.cssJSHandler.wrapperDict.get(note_type_name)
-            if wrapper:
-                configured_field_name = wrapper[0][1]
-                ordinal = self.getFieldOrdinal(note, configured_field_name)
-                _log.debug(
-                    "addCReadings: note type config found: field=%s ordinal=%s",
-                    configured_field_name,
-                    ordinal,
-                )
+        # Step 1: Try note-type config first (Active Field)
+        note_type_name = note.model()["name"]
+        wrapper = self.cssJSHandler.wrapperDict.get(note_type_name)
+        if wrapper:
+            configured_field_name = wrapper[0][1]
+            _log.debug("addCReadings: note type config found: field=%s", configured_field_name)
 
-        # If we have a configured field, we can bypass the DOM and use the note data directly
-        if configured_field_name and note and configured_field_name in note:
+        if configured_field_name and configured_field_name in note:
             text = note[configured_field_name]
-            # IDEMPOTENCY: Remove existing readings before adding new ones
             cleaned_text = self.removeBrackets(text)
-            _log.debug("addCReadings: bypassing JS, finalizing directly for field %s", configured_field_name)
+            _log.debug("addCReadings: using configured field %s", configured_field_name)
             self.finalizeReadings(cleaned_text, configured_field_name, note, editor)
-            # Ensure the note is saved and UI is updated
             self.anki.col.update_note(note)
             editor.loadNoteKeepingFocus()
             return
 
-        # Fallback for unconfigured fields: try to find focused field via JS
-        if ordinal is None and self.mw and getattr(self.mw, "_lastFocusedFieldOrdinal", None) is not None:
-            ordinal = self.mw._lastFocusedFieldOrdinal
-            _log.debug("addCReadings: using tracked ordinal=%d", ordinal)
-
+        # Step 2: Fallback to last focused field (tracked via editor_did_focus_field)
+        ordinal = getattr(self.mw, "_lastFocusedFieldOrdinal", None) if self.mw else None
         if ordinal is not None:
-            js_set_field = f"var currentField = get_field_by_ordinal({ordinal}); var currentNoteId = '{note_id}';"
-        else:
-            js_set_field = "console.log('Chinese Reading: No field could be resolved');"
+            field_name = note.keys()[ordinal]
+            text = note[field_name]
+            cleaned_text = self.removeBrackets(text)
+            _log.debug("addCReadings: using tracked field %s (ordinal=%d)", field_name, ordinal)
+            self.finalizeReadings(cleaned_text, field_name, note, editor)
+            self.anki.col.update_note(note)
+            editor.loadNoteKeepingFocus()
+            return
 
-        editor.web.eval(self.commonJS + js_set_field + self.fetchTextJS)
+        # Step 3: No field could be determined
+        _log.warning("addCReadings: no field could be resolved")
+        aqt.utils.showInfo("Chinese Reading: Please click inside a field and try again.")
 
     def finalizeReadings(self, text, field, note, editor=False, rType=False):
         _log.debug(
@@ -393,9 +387,6 @@ class ChineseHandler:
 
         _log.debug("addToNote: updating field %s", field)
         note[field] = text
-
-        if ordinal is not False and editor is not False:
-            editor.web.eval(self.commonJS + self.insertToFieldJS % (text.replace('"', '\\"'), str(ordinal)))
 
     def reloadEditor(self):
         browser = aqt.DialogManager._dialogs["Browser"][1]

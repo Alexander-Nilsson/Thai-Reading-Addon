@@ -38,6 +38,7 @@ from .reading.handler import ChineseHandler  # ty: ignore[unresolved-import]
 from .template.handler import CSSJSHandler  # ty: ignore[unresolved-import]
 
 addonPath = dirname(__file__)
+ADDON_MODULE = __name__.partition(".")[0]
 
 _log = logging.getLogger("chinese_reading")
 _log.setLevel(logging.DEBUG)
@@ -66,32 +67,59 @@ defaults: dict[str, object] | None = None
 
 def _init_profile():
     from aqt import mw
+    from aqt.utils import showInfo
 
     global config, anki_services, autoCssJs, defaults
 
-    anki_services = LiveAnkiServices(mw)
-    config = AddonConfig.from_anki(mw)
+    try:
+        anki_services = LiveAnkiServices(mw)
+        config = AddonConfig.from_anki(mw, ADDON_MODULE)
+        _log.info("_init_profile: config profiles=%s", config.profiles)
+    except Exception as e:
+        _log.error("_init_profile: failed at step 1 (config): %s", e, exc_info=True)
+        showInfo("Chinese Reading init error (step 1): " + str(e))
+        return
 
-    mw.chineseReadingSettings = False  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
-    autoCssJs = CSSJSHandler(mw, anki_services, addonPath, config)
-    mw.ChineseReading = ChineseHandler(mw, anki_services, addonPath, db, autoCssJs, config)  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
-    mw.ChineseReadingConfig = config  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
-    mw.updateChineseReadingConfig = updateChineseReadingConfig  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
+    try:
+        mw.chineseReadingSettings = False  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
+        autoCssJs = CSSJSHandler(mw, anki_services, addonPath, config)
+        mw.ChineseReading = ChineseHandler(mw, anki_services, addonPath, db, autoCssJs, config)  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
+        mw.ChineseReadingConfig = config  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
+        mw.updateChineseReadingConfig = updateChineseReadingConfig  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
+    except Exception as e:
+        _log.error("_init_profile: failed at step 2 (handlers): %s", e, exc_info=True)
+        showInfo("Chinese Reading init error (step 2): " + str(e))
+        return
 
-    defaults = mw.addonManager.addonConfigDefaults(addonPath)
+    try:
+        defaults = mw.addonManager.addonConfigDefaults(addonPath)
+    except Exception as e:
+        _log.error("_init_profile: failed at step 3 (defaults): %s", e, exc_info=True)
+        showInfo("Chinese Reading init error (step 3): " + str(e))
+        return
 
-    mw.ChineseReadingCatalog = LiveModelCatalog(mw)  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
-    mw.ChineseReadingMutation = LiveConfigMutation(  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
-        anki_services,
-        __name__,
-        config,
-        defaults,
-        mw.ChineseReadingCatalog,  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
-    )
+    try:
+        mw.ChineseReadingCatalog = LiveModelCatalog(mw)  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
+        mw.ChineseReadingMutation = LiveConfigMutation(  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
+            anki_services,
+            ADDON_MODULE,
+            config,
+            defaults,
+            mw.ChineseReadingCatalog,  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
+        )
+    except Exception as e:
+        _log.error("_init_profile: failed at step 4 (catalog): %s", e, exc_info=True)
+        showInfo("Chinese Reading init error (step 4): " + str(e))
+        return
 
-    autoCssJs.injectWrapperElements()
-    autoCssJs.updateWrapperDict()
-    setupGuiMenu()
+    try:
+        autoCssJs.injectWrapperElements()
+        autoCssJs.updateWrapperDict()
+        setupGuiMenu()
+    except Exception as e:
+        _log.error("_init_profile: failed at step 5 (inject+menu): %s", e, exc_info=True)
+        showInfo("Chinese Reading init error (step 5): " + str(e))
+        return
 
 
 def _rebuild_catalog():
@@ -101,7 +129,7 @@ def _rebuild_catalog():
     mw.ChineseReadingCatalog = LiveModelCatalog(mw)  # type: ignore[attr-defined]
     mw.ChineseReadingMutation = LiveConfigMutation(  # type: ignore[attr-defined]
         anki_services,
-        __name__,
+        ADDON_MODULE,
         config,
         defaults,
         mw.ChineseReadingCatalog,  # type: ignore[attr-defined]
@@ -112,7 +140,7 @@ def updateChineseReadingConfig():
     global config
     from aqt import mw
 
-    config = AddonConfig.from_anki(mw)
+    config = AddonConfig.from_anki(mw, ADDON_MODULE)
     mw.ChineseReadingConfig = config  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
 
 
@@ -254,12 +282,17 @@ def onRegenerate(browser):
 
 
 def setupMenu(browser):
+    _log.debug("setupMenu called, checkProfile=%s", checkProfile())
     if not checkProfile():
         return
-    a = QAction("Generate Chinese Readings", browser)
-    a.triggered.connect(lambda: onRegenerate(browser))
-    browser.form.menuEdit.addSeparator()
-    browser.form.menuEdit.addAction(a)
+    try:
+        submenu = browser.form.menuEdit.addMenu("Chinese Reading")
+        a = QAction("Generate Chinese Readings", browser)
+        a.triggered.connect(lambda: onRegenerate(browser))
+        submenu.addAction(a)
+        _log.debug("setupMenu: submenu added successfully")
+    except Exception as e:
+        _log.error("setupMenu: failed: %s", e, exc_info=True)
 
 
 current_path = os.path.abspath(".")
@@ -309,7 +342,7 @@ def supportAccept(self):
 ogAccept = aqt.addons.ConfigEditor.accept
 aqt.addons.ConfigEditor.accept = supportAccept  # type: ignore[assignment]  # ty:ignore[invalid-assignment]
 
-gui_hooks.browser_menus_did_init.append(setupMenu)
+addHook("browser.setupMenus", setupMenu)
 addHook("setupEditorButtons", setupButtons)
 gui_hooks.editor_did_init_shortcuts.append(setupShortcuts)
 

@@ -70,7 +70,7 @@ def test_from_anki_missing_mw():
             def getConfig(name):
                 return {"ReadingType": "jyutping"}
 
-    cfg = AddonConfig.from_anki(FakeMW())
+    cfg = AddonConfig.from_anki(FakeMW(), "test_addon")
     assert cfg.reading_type == "jyutping"
 
 

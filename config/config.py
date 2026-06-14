@@ -103,8 +103,8 @@ class AddonConfig:
         return self._raw.keys()
 
     @classmethod
-    def from_anki(cls, mw):
-        raw = mw.addonManager.getConfig(__name__) or {}
+    def from_anki(cls, mw, addon_module_name: str):
+        raw = mw.addonManager.getConfig(addon_module_name) or {}
         return cls(_raw=raw)
 
 

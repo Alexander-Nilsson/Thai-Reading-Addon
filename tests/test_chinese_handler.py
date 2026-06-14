@@ -166,21 +166,6 @@ class TestCleanSpaces:
         assert clean_spaces("hello world") == "hello world"
 
 
-class TestEditorText:
-    def test_returns_false_when_empty(self, ChineseHandler):
-        handler = _make_handler(ChineseHandler)
-        mock_editor = MagicMock()
-        mock_editor.web.selectedText.return_value = ""
-        assert handler.editorText(mock_editor) is False
-
-    def test_returns_text_when_selected(self, ChineseHandler):
-        handler = _make_handler(ChineseHandler)
-        mock_editor = MagicMock()
-        mock_editor.web.selectedText.return_value = "selected text"
-        result = handler.editorText(mock_editor)
-        assert result == "selected text"
-
-
 class TestStripBrackets:
     def test_simple_bracket_removal(self):
         assert strip_brackets("你好[nǐ hǎo]") == "你好"

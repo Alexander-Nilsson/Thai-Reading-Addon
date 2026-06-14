@@ -340,13 +340,12 @@ class TestHookRegistration:
 
     @pytest.mark.parametrize("anki_session", [_ANKI_SESSION_PARAMS], indirect=True)
     def test_browser_menu_hook(self, anki_session: AnkiSession) -> None:
-        """browser_menus_did_init must have setupMenu registered."""
+        """browser.setupMenus must have setupMenu registered."""
         anki_session.load_addon(ADDON_NAME)
         with anki_session.profile_loaded():
-            from aqt import gui_hooks
+            from anki.hooks import findHook
 
-            hook_names = [fn.__name__ for fn in gui_hooks.browser_menus_did_init._hooks]
-            assert "setupMenu" in hook_names, f"setupMenu not in browser_menus_did_init hooks. Found: {hook_names}"
+            assert findHook("browser.setupMenus", "setupMenu"), "setupMenu not in browser.setupMenus hooks"
 
 
 class TestConfigAndCatalog:

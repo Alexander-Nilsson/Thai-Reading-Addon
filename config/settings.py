@@ -2,7 +2,7 @@
 #
 import platform
 from operator import itemgetter
-from os.path import dirname, join
+from os.path import join
 from typing import Any
 
 from anki.utils import is_win
@@ -193,7 +193,7 @@ class SettingsGui(QWidget):
 
     def resetDefaults(self):
         if show_ask("Are you sure you would like to restore the default settings? This cannot be undone."):
-            defaults = self.mw.addonManager.addonConfigDefaults(dirname(__file__))
+            defaults = self.mw.addonManager.addonConfigDefaults(self.addonPath)
             delta = ConfigDelta.from_dict(defaults)
             self.mutation.save_config(delta)
             self.close()
