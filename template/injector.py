@@ -1,3 +1,4 @@
+import json
 import re
 from typing import Any
 
@@ -46,6 +47,35 @@ CHINESE_JS_FILE_PATTERN = (
     r'<script src="([^"]+)"[^>]*>.*?</script>\s*'
     r"<!--###CHINESE READING JS FILE ENDS###-->"
 )
+
+
+# ── Combined JS bundle template ─────────────────────────────────
+
+_COMBINED_JS_TEMPLATE = """\
+(function(){
+var c=%(config)s;
+var s=document.createElement('style');
+var css='.unhovered-word .pinyin-ruby{visibility:hidden !important;}'+
+'.pinyin-ruby{font-size:'+c.font_size+'%% !important;}';
+var ms=c.mandarin_tones,cs=c.cantonese_tones;
+if(!(ms.every(function(t){return t===ms[0]})&&cs.every(function(t){return t===cs[0]}))){
+ms.forEach(function(t,i){
+var n='tone'+(i+1);
+css+='.'+n+'{color:'+t+';}'+
+'.ankidroid_dark_mode .'+n+',.nightMode .'+n+'{color:'+t+';}';
+});
+cs.forEach(function(t,i){
+var n='canTone'+(i+1);
+css+='.'+n+'{color:'+t+';}'+
+'.ankidroid_dark_mode .'+n+',.nightMode .'+n+'{color:'+t+';}';
+});
+}
+s.textContent=css;
+document.head.appendChild(s);
+var CHINESE_READING_TYPE=c.reading_type;
+%(parser)s
+})();
+"""
 
 
 # ── Helpers ─────────────────────────────────────────────────────
@@ -196,6 +226,27 @@ class TemplateInjector:
             + self._js.load("chineseparser.js")
             + "})();"
         )
+
+    def get_combined_js(
+        self,
+        reading_type: str,
+        mandarin_tones: tuple[str, ...] | list[str],
+        cantonese_tones: tuple[str, ...] | list[str],
+        font_size: int,
+    ) -> str:
+        """Return combined JS with baked config + CSS injection + chineseparser.js."""
+        config = json.dumps(
+            {
+                "reading_type": reading_type,
+                "font_size": font_size,
+                "mandarin_tones": list(mandarin_tones),
+                "cantonese_tones": list(cantonese_tones),
+            }
+        )
+        return _COMBINED_JS_TEMPLATE % {
+            "config": config,
+            "parser": self._js.load("chineseparser.js"),
+        }
 
     def _inject_chinese_js(self, text: str, **kwargs: Any) -> str:
         reading_type = kwargs.get("reading_type", "pinyin")

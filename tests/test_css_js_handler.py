@@ -467,7 +467,7 @@ def _make_media_config(**overrides):
 
 
 class TestMediaFileInjection:
-    def test_writes_css_file(self, tmpdir, CSSJSHandler):
+    def test_writes_bundle_file(self, tmpdir, CSSJSHandler):
         svc = _MediaMockServices(str(tmpdir))
         handler = CSSJSHandler(
             mw=svc,
@@ -484,14 +484,12 @@ class TestMediaFileInjection:
             }
         ]
 
-        result = handler.injectWrapperElements(use_file_references=True)
+        result = handler.injectWrapperElements()
         assert result is True
-        # CSS file should exist
-        files = os.listdir(str(tmpdir))
-        css_files = [f for f in files if f.startswith("_chinese_reading_") and f.endswith(".css")]
-        assert len(css_files) == 1
+        # Combined bundle file should exist
+        assert os.path.isfile(os.path.join(str(tmpdir), "_chinese_reading_bundle.js"))
 
-    def test_writes_js_file(self, tmpdir, CSSJSHandler):
+    def test_bundle_contains_config(self, tmpdir, CSSJSHandler):
         svc = _MediaMockServices(str(tmpdir))
         handler = CSSJSHandler(
             mw=svc,
@@ -508,13 +506,16 @@ class TestMediaFileInjection:
             }
         ]
 
-        result = handler.injectWrapperElements(use_file_references=True)
-        assert result is True
-        files = os.listdir(str(tmpdir))
-        js_files = [f for f in files if f.startswith("_chinese_reading_") and f.endswith(".js")]
-        assert len(js_files) == 1
+        handler.injectWrapperElements()
+        bundle_path = os.path.join(str(tmpdir), "_chinese_reading_bundle.js")
+        with open(bundle_path) as f:
+            content = f.read()
+        assert "pinyin" in content
+        assert "font_size" in content
+        assert "mandarin_tones" in content
+        assert "#E60000" in content
 
-    def test_injects_css_link_in_template(self, tmpdir, CSSJSHandler):
+    def test_no_css_in_model_css(self, tmpdir, CSSJSHandler):
         svc = _MediaMockServices(str(tmpdir))
         handler = CSSJSHandler(
             mw=svc,
@@ -531,12 +532,32 @@ class TestMediaFileInjection:
             }
         ]
 
-        handler.injectWrapperElements(use_file_references=True)
+        handler.injectWrapperElements()
         model = svc._models[0]
-        tmpl = model["tmpls"][0]
-        assert "###CHINESE READING CSS FILE START###" not in model["css"]
-        assert "###CHINESE READING CSS FILE START###" in tmpl["qfmt"]
-        assert '<link rel="stylesheet" href="_chinese_reading_' in tmpl["qfmt"]
+        assert "CHINESE READING CSS" not in model["css"]
+        assert "tone1" not in model["css"]
+
+    def test_no_css_link_in_template(self, tmpdir, CSSJSHandler):
+        svc = _MediaMockServices(str(tmpdir))
+        handler = CSSJSHandler(
+            mw=svc,
+            anki_services=svc,
+            path=HERE,
+            config=_make_media_config(),
+        )
+        svc._models = [
+            {
+                "name": "Basic",
+                "flds": [{"name": "Front"}],
+                "tmpls": [{"name": "Card 1", "qfmt": "{{Front}}", "afmt": "{{BackSide}}"}],
+                "css": "",
+            }
+        ]
+
+        handler.injectWrapperElements()
+        tmpl = svc._models[0]["tmpls"][0]
+        assert "CHINESE READING CSS" not in tmpl["qfmt"]
+        assert "stylesheet" not in tmpl["qfmt"]
 
     def test_injects_script_ref_in_template(self, tmpdir, CSSJSHandler):
         svc = _MediaMockServices(str(tmpdir))
@@ -555,12 +576,12 @@ class TestMediaFileInjection:
             }
         ]
 
-        handler.injectWrapperElements(use_file_references=True)
+        handler.injectWrapperElements()
         tmpl = svc._models[0]["tmpls"][0]
         assert "###CHINESE READING JS FILE START###" in tmpl["qfmt"]
-        assert '<script src="_chinese_reading_' in tmpl["qfmt"]
+        assert "_chinese_reading_bundle.js" in tmpl["qfmt"]
 
-    def test_wrapper_still_injected_in_file_mode(self, tmpdir, CSSJSHandler):
+    def test_wrapper_injected(self, tmpdir, CSSJSHandler):
         svc = _MediaMockServices(str(tmpdir))
         handler = CSSJSHandler(
             mw=svc,
@@ -577,12 +598,12 @@ class TestMediaFileInjection:
             }
         ]
 
-        handler.injectWrapperElements(use_file_references=True)
+        handler.injectWrapperElements()
         tmpl = svc._models[0]["tmpls"][0]
         assert 'class="wrapped-chinese"' in tmpl["qfmt"]
         assert 'display-type="hover"' in tmpl["qfmt"]
 
-    def test_file_mode_handles_edit_filter(self, tmpdir, CSSJSHandler):
+    def test_handles_edit_filter(self, tmpdir, CSSJSHandler):
         svc = _MediaMockServices(str(tmpdir))
         handler = CSSJSHandler(
             mw=svc,
@@ -599,7 +620,7 @@ class TestMediaFileInjection:
             }
         ]
 
-        handler.injectWrapperElements(use_file_references=True)
+        handler.injectWrapperElements()
         tmpl = svc._models[0]["tmpls"][0]
         assert 'class="wrapped-chinese"' in tmpl["qfmt"]
         assert "{{edit:Front}}" in tmpl["qfmt"]
@@ -627,10 +648,12 @@ class TestMediaFileInjection:
         with open(os.path.join(str(tmpdir), "_chinese_reading_orphan.js"), "w") as f:
             f.write("// orphan")
 
-        handler.injectWrapperElements(use_file_references=True)
+        handler.injectWrapperElements()
 
         files = os.listdir(str(tmpdir))
         orphan_css = [f for f in files if f == "_chinese_reading_orphan.css"]
         orphan_js = [f for f in files if f == "_chinese_reading_orphan.js"]
         assert len(orphan_css) == 0
         assert len(orphan_js) == 0
+        # Bundle file should exist
+        assert "_chinese_reading_bundle.js" in files

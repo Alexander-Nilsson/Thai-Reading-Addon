@@ -352,8 +352,14 @@ def supportAccept(self):
         act = self.mgr.configUpdatedAction(self.addon)
         if act:
             act(new_conf)
-        if not autoCssJs.injectWrapperElements():
-            return
+
+        # Only rewrite templates if active-fields or converter options changed
+        TEMPLATE_AFFECTING_KEYS = {"ActiveFields", "hanziConversion", "readingConversion"}
+        if any(new_conf.get(k) != self.conf.get(k) for k in TEMPLATE_AFFECTING_KEYS):
+            if not autoCssJs.injectWrapperElements():
+                return
+        else:
+            autoCssJs.write_js_file()
 
     saveGeom(self, "addonconf")
     saveSplitter(self.form.splitter, "addonconf")
