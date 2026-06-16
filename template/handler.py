@@ -8,7 +8,6 @@ sys.path.append(join(dirname(__file__), "..", "lib"))
 from .._infra import show_info  # ty: ignore[unresolved-import]
 from ..config.config import parse_active_field  # ty: ignore[unresolved-import]
 from .injector import TemplateInjector, newline_reduce
-from .js_registry import JsRegistry
 
 _MEDIA_PREFIX = "_chinese_reading_"
 _BUNDLE_FILENAME = "_chinese_reading_bundle.js"
@@ -20,7 +19,7 @@ class CSSJSHandler:
         self.anki = anki_services
         self.path = path
         self.config = config
-        self.injector = TemplateInjector(JsRegistry(join(path, "js")))
+        self.injector = TemplateInjector(join(path, "js"))
         self.wrapperDict: dict = {}
         self._current_media_files: list[str] = []
 

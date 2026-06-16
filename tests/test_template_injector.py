@@ -10,14 +10,13 @@ from template.injector import (
     TemplateInjector,
     newline_reduce,
 )
-from template.js_registry import JsRegistry
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 @pytest.fixture
 def injector():
-    return TemplateInjector(JsRegistry(os.path.join(ROOT, "js")))
+    return TemplateInjector(os.path.join(ROOT, "js"))
 
 
 MANDARIN_TONES = ("#E60000", "#E68A00", "#00802B", "#005CE6", "gray")

@@ -12,7 +12,6 @@ from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QLabel, QProgressBar, QVBoxLayout, QWidget
 
 from .._infra import show_ask  # ty: ignore[unresolved-import]
-from ..template.js_registry import JsRegistry  # ty: ignore[unresolved-import]
 from .generator import ReadingGenerator
 from .text_utils import strip_brackets
 
@@ -28,13 +27,6 @@ class ChineseHandler:
         self.db = db
         self.config = config
         self.reading_generator = ReadingGenerator(db, config)
-        self.js = JsRegistry(join(path, "js"))
-        self.commonJS = self.js.load("common.js")
-        self.insertHTMLJS = self.js.load("insertHTML.js")
-        self.insertToFieldJS = self.js.load("insertHTMLToField.js")
-        self.fetchTextJS = self.js.load("fetchText.js")
-        self.bracketsFromSelJS = self.js.load("bracketsFromSel.js")
-        self.removeBracketsJS = self.js.load("removeBrackets.js")
 
     def refreshConfig(self, config=None):
         if config is not None:

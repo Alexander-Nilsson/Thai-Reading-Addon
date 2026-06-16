@@ -216,8 +216,6 @@ class TestAddCReadingsNoTextSelected:
     def test_no_main_import_error_when_no_text_selected(self, ChineseHandler, test_db):
         """addCReadings should not fail with ModuleNotFoundError when no text selected."""
         handler = _make_handler(ChineseHandler, db=test_db)
-        handler.commonJS = ""
-        handler.fetchTextJS = ""
 
         mock_editor = MagicMock()
         mock_editor.web.selectedText.return_value = ""
