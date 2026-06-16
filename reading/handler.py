@@ -11,7 +11,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QLabel, QProgressBar, QVBoxLayout, QWidget
 
-from .._infra.utils import show_ask  # ty: ignore[unresolved-import]
+from .._infra import show_ask  # ty: ignore[unresolved-import]
 from ..template.js_registry import JsRegistry  # ty: ignore[unresolved-import]
 from .generator import ReadingGenerator
 from .text_utils import strip_brackets

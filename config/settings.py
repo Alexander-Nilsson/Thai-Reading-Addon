@@ -31,7 +31,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from .._infra.utils import show_ask, show_info  # ty: ignore[unresolved-import]
+from .._infra import show_ask, show_info  # ty: ignore[unresolved-import]
 from .config import ActiveField, parse_active_field, serialize_active_field
 from .mutation import ConfigDelta
 

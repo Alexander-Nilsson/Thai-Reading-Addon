@@ -13,7 +13,7 @@ def _import_utils():
             "PyQt6.QtGui": MagicMock(),
         },
     ):
-        from _infra.utils import show_ask, show_info
+        from _infra import show_ask, show_info
 
         return show_info, show_ask
 
@@ -71,7 +71,7 @@ class TestShowAsk:
                 "PyQt6.QtGui": MagicMock(),
             },
         ):
-            from _infra.utils import show_info
+            from _infra import show_info
 
             src = inspect.getsource(show_info)
             assert '"wrn"' in src

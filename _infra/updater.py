@@ -3,7 +3,7 @@ import time
 from anki.hooks import wrap
 from aqt import addons, mw
 
-from .utils import show_info
+from . import show_info
 
 addonId = 1051095155
 dledIds = []

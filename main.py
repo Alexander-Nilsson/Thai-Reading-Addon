@@ -28,7 +28,7 @@ sys.path.append(join(dirname(__file__), "lib"))
 import requests
 
 from ._infra.anki_services import LiveAnkiServices  # ty: ignore[unresolved-import]
-from ._infra.utils import show_info  # ty: ignore[unresolved-import]
+from ._infra import show_info  # ty: ignore[unresolved-import]
 from .config.config import AddonConfig  # ty: ignore[unresolved-import]
 from .config.mutation import (  # ty: ignore[unresolved-import]
     ConfigDelta,

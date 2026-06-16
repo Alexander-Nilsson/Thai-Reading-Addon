@@ -5,7 +5,7 @@ from os.path import dirname, join
 
 sys.path.append(join(dirname(__file__), "..", "lib"))
 
-from .._infra.utils import show_info  # ty: ignore[unresolved-import]
+from .._infra import show_info  # ty: ignore[unresolved-import]
 from ..config.config import parse_active_field  # ty: ignore[unresolved-import]
 from .injector import TemplateInjector, newline_reduce
 from .js_registry import JsRegistry
