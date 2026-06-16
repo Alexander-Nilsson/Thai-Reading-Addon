@@ -103,7 +103,6 @@ def _load_base_modules():
         ("config.config", "config/config.py", "config"),
         ("_infra", "_infra/__init__.py", "_infra"),
         ("reading.dictdb", "reading/dictdb.py", "reading"),
-        ("reading.text_utils", "reading/text_utils.py", "reading"),
     ]
     for name, relpath, subpkg in modules:
         filepath = os.path.join(ROOT, relpath)

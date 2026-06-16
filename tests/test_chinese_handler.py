@@ -4,8 +4,13 @@ import pytest
 
 from config.config import AddonConfig
 from conftest import import_chinese_handler
-from reading.generator import ReadingGenerator
-from reading.text_utils import clean_spaces, html_remove, replace_html, strip_brackets
+from reading.generator import (
+    ReadingGenerator,
+    clean_spaces,
+    html_remove,
+    replace_html,
+    strip_brackets,
+)
 
 
 def _make_config(**overrides):

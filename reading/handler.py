@@ -12,8 +12,7 @@ from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QLabel, QProgressBar, QVBoxLayout, QWidget
 
 from .._infra import show_ask  # ty: ignore[unresolved-import]
-from .generator import ReadingGenerator
-from .text_utils import strip_brackets
+from .generator import ReadingGenerator, strip_brackets
 
 _log = logging.getLogger("chinese_reading")
 
