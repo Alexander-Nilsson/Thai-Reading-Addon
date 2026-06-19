@@ -68,6 +68,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: addon-package
+          path: build/
       - name: Move artifact to root
         run: mv build/*.ankiaddon .
       - name: Create Release
