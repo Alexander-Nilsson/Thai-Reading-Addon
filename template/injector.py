@@ -1,7 +1,7 @@
+import json
+import os
 import re
 from typing import Any
-
-from .js_registry import JsRegistry
 
 # ── Marker constants ───────────────────────────────────────────
 
@@ -48,6 +48,35 @@ CHINESE_JS_FILE_PATTERN = (
 )
 
 
+# ── Combined JS bundle template ─────────────────────────────────
+
+_COMBINED_JS_TEMPLATE = """\
+(function(){
+var c=%(config)s;
+var s=document.createElement('style');
+var css='.unhovered-word .pinyin-ruby{visibility:hidden !important;}'+
+'.pinyin-ruby{font-size:'+c.font_size+'%% !important;}';
+var ms=c.mandarin_tones,cs=c.cantonese_tones;
+if(!(ms.every(function(t){return t===ms[0]})&&cs.every(function(t){return t===cs[0]}))){
+ms.forEach(function(t,i){
+var n='tone'+(i+1);
+css+='.'+n+'{color:'+t+';}'+
+'.ankidroid_dark_mode .'+n+',.nightMode .'+n+'{color:'+t+';}';
+});
+cs.forEach(function(t,i){
+var n='canTone'+(i+1);
+css+='.'+n+'{color:'+t+';}'+
+'.ankidroid_dark_mode .'+n+',.nightMode .'+n+'{color:'+t+';}';
+});
+}
+s.textContent=css;
+document.head.appendChild(s);
+var CHINESE_READING_TYPE=c.reading_type;
+%(parser)s
+})();
+"""
+
+
 # ── Helpers ─────────────────────────────────────────────────────
 
 
@@ -80,8 +109,16 @@ COMPONENTS = frozenset(
 
 
 class TemplateInjector:
-    def __init__(self, js_registry: JsRegistry):
-        self._js = js_registry
+    def __init__(self, js_dir: str):
+        self._js_dir = js_dir
+        self._js_cache: dict[str, str] = {}
+
+    def _load_js(self, name: str) -> str:
+        if name not in self._js_cache:
+            path = os.path.join(self._js_dir, name)
+            with open(path, encoding="utf-8") as f:
+                self._js_cache[name] = f.read()
+        return self._js_cache[name]
 
     # ── Public API ──────────────────────────────────────────
 
@@ -182,7 +219,7 @@ class TemplateInjector:
             '<script>(function(){const CHINESE_READING_TYPE ="'
             + reading_type
             + '";'
-            + self._js.load("chineseparser.js")
+            + self._load_js("chineseparser.js")
             + "})();</script>"
         )
         return CHINESE_PARSER_HEADER + js + CHINESE_PARSER_FOOTER
@@ -193,9 +230,30 @@ class TemplateInjector:
             '(function(){const CHINESE_READING_TYPE ="'
             + reading_type
             + '";'
-            + self._js.load("chineseparser.js")
+            + self._load_js("chineseparser.js")
             + "})();"
         )
+
+    def get_combined_js(
+        self,
+        reading_type: str,
+        mandarin_tones: tuple[str, ...] | list[str],
+        cantonese_tones: tuple[str, ...] | list[str],
+        font_size: int,
+    ) -> str:
+        """Return combined JS with baked config + CSS injection + chineseparser.js."""
+        config = json.dumps(
+            {
+                "reading_type": reading_type,
+                "font_size": font_size,
+                "mandarin_tones": list(mandarin_tones),
+                "cantonese_tones": list(cantonese_tones),
+            }
+        )
+        return _COMBINED_JS_TEMPLATE % {
+            "config": config,
+            "parser": self._load_js("chineseparser.js"),
+        }
 
     def _inject_chinese_js(self, text: str, **kwargs: Any) -> str:
         reading_type = kwargs.get("reading_type", "pinyin")
@@ -244,13 +302,13 @@ class TemplateInjector:
             '<script>const CHINESE_CONVERSION_TYPE ="'
             + conversion_type.lower()
             + '";'
-            + self._js.load("tongwen_core.js")
-            + self._js.load("tongwen_table_ps2t.js")
-            + self._js.load("tongwen_table_pt2s.js")
-            + self._js.load("tongwen_table_s2t.js")
-            + self._js.load("tongwen_table_ss2t.js")
-            + self._js.load("tongwen_table_st2s.js")
-            + self._js.load("tongwen_table_t2s.js")
+            + self._load_js("tongwen_core.js")
+            + self._load_js("tongwen_table_ps2t.js")
+            + self._load_js("tongwen_table_pt2s.js")
+            + self._load_js("tongwen_table_s2t.js")
+            + self._load_js("tongwen_table_ss2t.js")
+            + self._load_js("tongwen_table_st2s.js")
+            + self._load_js("tongwen_table_t2s.js")
             + '"simplified"===CHINESE_CONVERSION_TYPE'
             "?TongWen.trans2Simp(document)"
             ':"traditional"===CHINESE_CONVERSION_TYPE&&TongWen.trans2Trad(document);</script>'
@@ -272,7 +330,7 @@ class TemplateInjector:
 
     def get_pinbopo_converter_js(self, reading_conversion: str) -> str:
         js_src = (
-            self._js.load("bopoToPinyin.js") if reading_conversion == "Pinyin" else self._js.load("pinyinToBopo.js")
+            self._load_js("bopoToPinyin.js") if reading_conversion == "Pinyin" else self._load_js("pinyinToBopo.js")
         )
         return PINBOPO_CONVERTER_HEADER + "<script>" + js_src + "</script>" + PINBOPO_CONVERTER_FOOTER
 

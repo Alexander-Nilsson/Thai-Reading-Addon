@@ -31,7 +31,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from .._infra.utils import show_ask, show_info  # ty: ignore[unresolved-import]
+from .._infra import show_ask, show_info  # ty: ignore[unresolved-import]
 from .config import ActiveField, parse_active_field, serialize_active_field
 from .mutation import ConfigDelta
 
@@ -210,7 +210,8 @@ class SettingsGui(QWidget):
         self.tradIcons.setChecked(self.config.traditional_icons)
 
     def loadUseFileRefs(self):
-        self.useFileRefs.setChecked(self.config.use_file_references)
+        self.useFileRefs.setChecked(True)
+        self.useFileRefs.setEnabled(False)
 
     def loadBopoNumbers(self):
         self.bopo2Number.setChecked(self.config.bopomofo_tones_to_number)
@@ -524,7 +525,7 @@ class SettingsGui(QWidget):
         bgbh2.addWidget(QLabel("Traditional Icons:"))
         bgbh2.addWidget(self.tradIcons)
         bgbh2.addSpacing(12)
-        bgbh2.addWidget(QLabel("File Refs for CSS/JS:"))
+        bgbh2.addWidget(QLabel("Use JS bundle file:"))
         bgbh2.addWidget(self.useFileRefs)
         bgbh2.addStretch()
         bgbv.addLayout(bgbh2)
@@ -1307,7 +1308,6 @@ class SettingsGui(QWidget):
         hc = self.hanziConversion.currentText()
         rc = self.readingConversion.currentText()
         fontSize = self.fontSize.value()
-        useFileRefs = self.useFileRefs.isChecked()
         afs = tuple(self.saveActiveFields())
 
         delta = ConfigDelta(
@@ -1322,7 +1322,7 @@ class SettingsGui(QWidget):
             simp_trad_field=alt,
             traditional_icons=tradIcons,
             font_size=fontSize,
-            use_file_references=useFileRefs,
+            use_file_references=True,
             cantonese_tones=cColors,
             mandarin_tones=mColors,
             active_fields=afs,

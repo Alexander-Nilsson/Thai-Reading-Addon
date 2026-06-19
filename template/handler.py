@@ -1,4 +1,3 @@
-import hashlib
 import os
 import re
 import sys
@@ -6,12 +5,12 @@ from os.path import dirname, join
 
 sys.path.append(join(dirname(__file__), "..", "lib"))
 
-from .._infra.utils import show_info  # ty: ignore[unresolved-import]
+from .._infra import show_info  # ty: ignore[unresolved-import]
 from ..config.config import parse_active_field  # ty: ignore[unresolved-import]
 from .injector import TemplateInjector, newline_reduce
-from .js_registry import JsRegistry
 
 _MEDIA_PREFIX = "_chinese_reading_"
+_BUNDLE_FILENAME = "_chinese_reading_bundle.js"
 
 
 class CSSJSHandler:
@@ -20,7 +19,7 @@ class CSSJSHandler:
         self.anki = anki_services
         self.path = path
         self.config = config
-        self.injector = TemplateInjector(JsRegistry(join(path, "js")))
+        self.injector = TemplateInjector(join(path, "js"))
         self.wrapperDict: dict = {}
         self._current_media_files: list[str] = []
 
@@ -242,22 +241,6 @@ class CSSJSHandler:
             return self.mw.col.media.dir()
         return None
 
-    def _write_media_file(self, content: str, ext: str) -> str | None:
-        """Write content to collection.media/ with content-addressed name.
-        Returns the filename (e.g. _chinese_reading_abc123.css) or None."""
-        media_dir = self._media_dir()
-        if not media_dir:
-            return None
-        h = hashlib.sha256(content.encode("utf-8")).hexdigest()[:12]
-        filename = f"{_MEDIA_PREFIX}{h}.{ext}"
-        filepath = os.path.join(media_dir, filename)
-        if not os.path.exists(filepath):
-            with open(filepath, "w", encoding="utf-8") as f:
-                f.write(content)
-        if filename not in self._current_media_files:
-            self._current_media_files.append(filename)
-        return filename
-
     def _clean_orphaned_media_files(self, keep: set[str]) -> None:
         """Remove media files prefixed with _MEDIA_PREFIX that aren't in `keep`."""
         media_dir = self._media_dir()
@@ -274,37 +257,35 @@ class CSSJSHandler:
         except OSError:
             pass
 
-    def _write_css_js_files(self) -> tuple[str | None, str | None]:
-        """Pre-write CSS and JS to media files.
-        Returns (css_filename, js_filename) or (None, None) if media not available."""
+    def _write_combined_js_file(self) -> str | None:
+        """Write combined JS bundle to collection.media/ with fixed filename.
+        Returns the filename or None if media dir not available."""
         media_dir = self._media_dir()
         if not media_dir:
-            return None, None
+            return None
 
-        keep: set[str] = set()
-
-        css_content = self.injector.get_chinese_css(
-            self.config.mandarin_tones,
-            self.config.cantonese_tones,
-            self.config.font_size,
+        content = self.injector.get_combined_js(
+            reading_type=self.config.reading_type,
+            mandarin_tones=self.config.mandarin_tones,
+            cantonese_tones=self.config.cantonese_tones,
+            font_size=self.config.font_size,
         )
-        css_fn = self._write_media_file(css_content, "css")
-        if css_fn:
-            keep.add(css_fn)
+        filepath = os.path.join(media_dir, _BUNDLE_FILENAME)
+        with open(filepath, "w", encoding="utf-8") as f:
+            f.write(content)
 
-        js_content = self.injector.get_bare_chinese_js(self.config.reading_type)
-        js_fn = self._write_media_file(js_content, "js")
-        if js_fn:
-            keep.add(js_fn)
+        self._clean_orphaned_media_files({_BUNDLE_FILENAME})
+        return _BUNDLE_FILENAME
 
-        self._clean_orphaned_media_files(keep)
-        return css_fn, js_fn
+    def write_js_file(self) -> str | None:
+        """Write combined JS file with current config. No template modification."""
+        return self._write_combined_js_file()
 
     # ── Main injection ────────────────────────────────────
 
-    def injectWrapperElements(self, use_file_references: bool | None = None):
-        if use_file_references is None:
-            use_file_references = self.config.use_file_references
+    def injectWrapperElements(self):
+        """Full template injection. Writes combined JS file, then injects
+        wrappers and JS file ref into all configured note types."""
         if not self.checkProfile():
             return
         if not self.config.auto_css_js_generation:
@@ -312,24 +293,16 @@ class CSSJSHandler:
         readingCheck = self.checkReadingType()
         self.wrapperDict, wrapperCheck = self.getWrapperDict()
 
-        css_fn = js_fn = None
-        if use_file_references:
-            css_fn, js_fn = self._write_css_js_files()
+        # Always write the combined JS bundle first
+        js_fn = self._write_combined_js_file()
 
         models = self.anki.all_models()
         for model in models:
+            # Strip old inline CSS and CSS file refs from model CSS (migration)
+            model["css"] = self.injector.remove("chinese_css", model["css"])
+            model["css"] = self.injector.remove("chinese_css_file", model["css"])
+
             if model["name"] in self.wrapperDict:
-                # Strip ALL CSS blocks before re-injecting for current mode
-                model["css"] = self.injector.remove("chinese_css", model["css"])
-                model["css"] = self.injector.remove("chinese_css_file", model["css"])
-                if not css_fn:
-                    model["css"] = self.injector.inject(
-                        "chinese_css",
-                        model["css"],
-                        mandarin_tones=self.config.mandarin_tones,
-                        cantonese_tones=self.config.cantonese_tones,
-                        font_size=self.config.font_size,
-                    )
                 for idx, t in enumerate(model["tmpls"]):
                     modelDict = self.wrapperDict[model["name"]]
                     t = self.injectChineseConverterToTemplate(t)
@@ -338,8 +311,7 @@ class CSSJSHandler:
                         t["qfmt"], t["afmt"] = self.cleanFieldWrappers(
                             t["qfmt"], t["afmt"], model["flds"], templateDict
                         )
-                        # Strip ALL JS + CSS file blocks before re-injecting for current mode
-                        # Prevents accumulation when switching between inline and file modes
+                        # Strip old inline JS, JS file refs, CSS file refs (migration)
                         t["qfmt"] = self.injector.remove("chinese_js", t["qfmt"])
                         t["afmt"] = self.injector.remove("chinese_js", t["afmt"])
                         t["qfmt"] = self.injector.remove("chinese_js_file", t["qfmt"])
@@ -352,30 +324,12 @@ class CSSJSHandler:
                                 t["qfmt"] = self.injector.inject(
                                     "wrapper", t["qfmt"], field=data[1], display_type=data[3], reading_type=data[4]
                                 )
-                                if js_fn:
-                                    t["qfmt"] = self.injector.inject("chinese_js_file", t["qfmt"], filename=js_fn)
-                                else:
-                                    t["qfmt"] = self.injector.inject(
-                                        "chinese_js", t["qfmt"], reading_type=self.config.reading_type
-                                    )
-                                if css_fn:
-                                    t["qfmt"] = self.injector.inject("chinese_css_file", t["qfmt"], filename=css_fn)
                             if data[2] == "both" or data[2] == "back":
                                 t["afmt"] = self.injector.overwrite_wrapper(t["afmt"], data[1], data[3], data[4])
                                 t["afmt"] = self.injector.inject(
                                     "wrapper", t["afmt"], field=data[1], display_type=data[3], reading_type=data[4]
                                 )
-                                if js_fn:
-                                    t["afmt"] = self.injector.inject("chinese_js_file", t["afmt"], filename=js_fn)
-                                else:
-                                    t["afmt"] = self.injector.inject(
-                                        "chinese_js", t["afmt"], reading_type=self.config.reading_type
-                                    )
-                                if css_fn:
-                                    t["afmt"] = self.injector.inject("chinese_css_file", t["afmt"], filename=css_fn)
                         # Default "Hanzi" wrappers for sides not explicitly configured
-                        # Only applies to fields that have at least one explicit entry
-                        # Completely unconfigured fields are left alone
                         has_default_front = False
                         has_default_back = False
                         for field_info in model["flds"]:
@@ -397,41 +351,26 @@ class CSSJSHandler:
                                 if new_a != t["afmt"]:
                                     has_default_back = True
                                     t["afmt"] = new_a
-                        if has_default_front:
-                            if js_fn:
+
+                        # Inject JS file ref once per side (only if templates were modified)
+                        has_front = len(templateDict) > 0 or has_default_front
+                        has_back = len(templateDict) > 0 or has_default_back
+                        if js_fn:
+                            if has_front:
                                 t["qfmt"] = self.injector.inject("chinese_js_file", t["qfmt"], filename=js_fn)
-                            else:
-                                t["qfmt"] = self.injector.inject(
-                                    "chinese_js", t["qfmt"], reading_type=self.config.reading_type
-                                )
-                            if css_fn:
-                                t["qfmt"] = self.injector.inject("chinese_css_file", t["qfmt"], filename=css_fn)
-                        if has_default_back:
-                            if js_fn:
+                            if has_back:
                                 t["afmt"] = self.injector.inject("chinese_js_file", t["afmt"], filename=js_fn)
-                            else:
-                                t["afmt"] = self.injector.inject(
-                                    "chinese_js", t["afmt"], reading_type=self.config.reading_type
-                                )
-                            if css_fn:
-                                t["afmt"] = self.injector.inject("chinese_css_file", t["afmt"], filename=css_fn)
                     else:
                         t["qfmt"] = self.injector.remove("wrapper", t["qfmt"])
                         t["afmt"] = self.injector.remove("wrapper", t["afmt"])
 
             else:
-                model["css"] = self.injector.remove("chinese_css_file", model["css"])
-                model["css"] = self.injector.remove("chinese_css", model["css"])
                 for t in model["tmpls"]:
                     t = self.removeChineseConverterFromTemplate(t)
                     t["qfmt"] = self.injector.remove("chinese_css_file", t["qfmt"])
                     t["afmt"] = self.injector.remove("chinese_css_file", t["afmt"])
-                    t["qfmt"] = self.injector.remove(
-                        "chinese_js_file" if js_fn else "chinese_js", self.injector.remove("wrapper", t["qfmt"])
-                    )
-                    t["afmt"] = self.injector.remove(
-                        "chinese_js_file" if js_fn else "chinese_js", self.injector.remove("wrapper", t["afmt"])
-                    )
+                    t["qfmt"] = self.injector.remove("chinese_js_file", self.injector.remove("wrapper", t["qfmt"]))
+                    t["afmt"] = self.injector.remove("chinese_js_file", self.injector.remove("wrapper", t["afmt"]))
             self.anki.save_model(model)
         return readingCheck and wrapperCheck
 

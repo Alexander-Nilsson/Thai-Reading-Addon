@@ -12,6 +12,10 @@ def _mock_anki_deps():
         "anki.collection": MagicMock(),
         "anki.models": MagicMock(),
         "anki.notes": MagicMock(),
+        "aqt": MagicMock(),
+        "PyQt6": MagicMock(),
+        "PyQt6.QtGui": MagicMock(),
+        "PyQt6.QtWidgets": MagicMock(),
     }
     with pytest.MonkeyPatch.context() as m:
         m.setattr(sys, "modules", {**sys.modules, **mocks})

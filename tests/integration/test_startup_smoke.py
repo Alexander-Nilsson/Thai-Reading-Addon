@@ -76,8 +76,8 @@ def test_profile_load_raises_no_error_dialogs(anki_session: AnkiSession) -> None
     an error the user would see as a modal dialog)."""
     anki_session.load_addon(ADDON_NAME)
     with (
-        patch(f"{ADDON_NAME}._infra.utils.show_info") as mock_info,
-        patch(f"{ADDON_NAME}._infra.utils.show_ask") as mock_ask,
+        patch(f"{ADDON_NAME}._infra.show_info") as mock_info,
+        patch(f"{ADDON_NAME}._infra.show_ask") as mock_ask,
     ):
         with anki_session.profile_loaded():
             pass
