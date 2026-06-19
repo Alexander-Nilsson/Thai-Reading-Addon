@@ -948,6 +948,7 @@ class SettingsGui(QWidget):
 
         self.config = config
         self.cssJsHandler.refreshConfig(config)
+        self.mw.ThaiReading.refreshConfig(config)
         self.reboot()
 
     def openDialogColor(self, lineEdit):

@@ -25,6 +25,7 @@ class ThaiHandler:
     def refreshConfig(self, config=None):
         if config is not None:
             self.config = config
+            self.reading_generator._config = config
 
     def getProgressWidget(self):
         progressWidget = QWidget(None)
