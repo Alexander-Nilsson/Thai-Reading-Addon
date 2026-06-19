@@ -20,6 +20,32 @@ A demo page showing all display types, reading types, and tone colours is availa
 
 Access settings via **Tools → Thai Reading Settings** or through Anki's add-on config editor.
 
+## Dependencies
+
+### Pronunciation dictionary (reading generation)
+
+These are needed to build `db/thai_dict.sqlite` — the SQLite dictionary that powers all reading lookups:
+
+| Dependency | Role |
+|---|---|
+| [`thaiphon`](https://pypi.org/project/thaiphon/) ≥0.6.0 | Thai phonetic transcription engine — RTGS and IPA rendering, syllable analysis, tone detection |
+| [`thaiphon-data-volubilis`](https://pypi.org/project/thaiphon-data-volubilis/) ≥0.2.0 | ~84k word Thai pronunciation lexicon (optional but recommended for best coverage) |
+
+Run `uv run python db/populate_dict.py` to populate the dictionary from these.
+
+### Runtime
+
+The addon runs inside Anki and has no additional pip dependencies at runtime. It uses PyQt6, `aqt`, and `anki` — all provided by the Anki environment. Bare `thaiphon` calls are only made during dictionary population, not during card review or editing.
+
+### Development tooling
+
+| Tool | Purpose |
+|---|---|
+| `ruff` | Linter and formatter |
+| `pytest` | Unit test runner |
+| `pytest-anki2` | Anki integration test fixtures |
+| `ty` | Static type checker |
+
 ## Development
 
 ```bash
