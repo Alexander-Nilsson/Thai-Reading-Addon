@@ -66,6 +66,57 @@ autoCssJs: ThaiCssJsHandler
 defaults: dict[str, object] | None = None
 
 
+_VALID_READING_TYPES = frozenset({"rtgs", "ipa"})
+
+_DISPLAY_OPTIONS = frozenset(
+    {
+        "hover",
+        "coloredhover",
+        "thai",
+        "coloredthai",
+        "reading",
+        "coloredreading",
+        "thaithai",
+        "coloredthaithai",
+    }
+)
+
+
+def _sanitize_config(mw, config):
+    from .config.config import parse_active_field
+
+    raw = config._raw
+    changed = False
+
+    rt = raw.get("ReadingType", "rtgs")
+    if rt not in _VALID_READING_TYPES:
+        raw["ReadingType"] = "rtgs"
+        changed = True
+        _log.warning("sanitized ReadingType: %r -> rtgs", rt)
+
+    cleaned = []
+    for entry in raw.get("ActiveFields", []):
+        try:
+            parsed = parse_active_field(entry)
+            if parsed.reading_type not in _VALID_READING_TYPES and parsed.reading_type != "default":
+                _log.warning("sanitized active_field reading_type: %r in %s", parsed.reading_type, entry)
+                continue
+            cleaned.append(entry)
+        except ValueError:
+            _log.warning("sanitized invalid active_field: %s", entry)
+            changed = True
+    if len(cleaned) != len(raw.get("ActiveFields", [])):
+        raw["ActiveFields"] = cleaned
+        changed = True
+
+    if changed:
+        try:
+            mw.addonManager.writeConfig(ADDON_MODULE, raw)
+            _log.info("sanitized config saved")
+        except Exception:
+            _log.exception("failed to save sanitized config")
+
+
 def _init_profile():
     from aqt import mw
     from aqt.utils import showInfo
@@ -76,6 +127,7 @@ def _init_profile():
         anki_services = LiveAnkiServices(mw)
         config = AddonConfig.from_anki(mw, ADDON_MODULE)
         _log.info("_init_profile: config profiles=%s", config.profiles)
+        _sanitize_config(mw, config)
     except Exception as e:
         _log.error("_init_profile: failed at step 1 (config): %s", e, exc_info=True)
         showInfo("Thai Reading init error (step 1): " + str(e))
