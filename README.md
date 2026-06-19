@@ -18,12 +18,12 @@ A demo page showing all display types, reading types, and tone colours is availa
 
 ## Tone Display
 
-The addon's dictionary stores RTGS readings in a digit-suffix format (`sa2 wat2 di1`), where each digit indicates the Thai tone of that syllable (1=mid, 2=low, 3=falling, 4=high, 5=rising). Readings can be displayed in two styles:
+The addon's dictionary stores RTGS readings in a digit-suffix format (`sa2 wat2 di1`), where each digit maps to a Thai tone class (1=mid, 2=low, 3=falling, 4=high, 5=rising). Readings can be displayed in two styles:
 
-| Style | Example | How it works |
+| Style | Example (`ฉันชอบกินข้าวผัดมากครับ`) | How it works |
 |---|---|---|
-| **Marks** (default) | `sà wàt di` | Digits are replaced with conventional tone diacritics on the syllable's vowel (`ˋ`=low, `ˉ`=mid, `ˊ`=high, `ˆ`=falling, no mark=rising) |
-| **Numbers** | `sa2 wat2 di1` | Raw digit suffix per syllable, as stored in the dictionary |
+| **Marks** (default) | `chǎn chóp kin khâao phàt mâak khráp` | Digits replaced with conventional tone diacritics on the syllable's vowel |
+| **Numbers** | `chan5 chop3 kin1 khao3 phat2 mak3 khrap4` | Raw digit suffix per syllable, as stored in the dictionary |
 
 The tone colours (configured in settings) always work from the underlying tone number, so coloured readings use the correct colour regardless of which display style is selected.
 

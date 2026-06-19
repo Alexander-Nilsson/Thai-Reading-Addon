@@ -361,17 +361,19 @@ var TONES = [
 ];
 
 // Real pronunciation data from the addon's database (db/thai_dict.sqlite)
-// Sentence: "สวัสดีครับ ผมเรียนภาษาไทยทุกวัน" — "Hello, I study Thai every day"
+// Sentence: "ฉันชอบกินข้าวผัดมากครับ" — "I like eating fried rice a lot"
+// Tones: 5(R)·3(F)·1(M)·3(F)·2(L)·3(F)·4(H) — all five Thai tones displayed
 // RTGS is stored as digit-suffix format: "sa2 wat2 di1" (tone digit per syllable)
 // IPA is stored with tone letters: "/sa˨˩.wat̚˨˩.diː˧/"
 // The RTGS display on this page converts digit-suffix to conventional tone marks (sà wàt di)
 var WORDS = [
-  { thai: "สวัสดี",   rtgs: "sa2 wat2 di1",   ipa: "/sa˨˩.wat̚˨˩.diː˧/", tones: [2,2,1] },
-  { thai: "ครับ",     rtgs: "khrap4",          ipa: "/kʰrap̚˦˥/",        tones: [4] },
-  { thai: "ผม",       rtgs: "phom5",           ipa: "/pʰom˩˩˦/",         tones: [5] },
-  { thai: "เรียน",    rtgs: "rian1",           ipa: "/riən˧/",           tones: [1] },
-  { thai: "ภาษาไทย",  rtgs: "pha1 sa5 thai1", ipa: "/pʰaː˧.saː˩˩˦.tʰaj˧/", tones: [1,5,1] },
-  { thai: "ทุกวัน",   rtgs: "thuk4 wan1",      ipa: "/tʰuk̚˦˥.wan˧/",    tones: [4,1] },
+  { thai: "ฉัน",    rtgs: "chan5",    ipa: "/tɕʰan˩˩˦/",      tones: [5] },
+  { thai: "ชอบ",    rtgs: "chop3",    ipa: "/tɕʰɔːp̚˥˩/",    tones: [3] },
+  { thai: "กิน",    rtgs: "kin1",     ipa: "/kin˧/",           tones: [1] },
+  { thai: "ข้าว",   rtgs: "khao3",    ipa: "/kʰaːw˥˩/",       tones: [3] },
+  { thai: "ผัด",    rtgs: "phat2",    ipa: "/pʰat̚˨˩/",       tones: [2] },
+  { thai: "มาก",    rtgs: "mak3",     ipa: "/maːk̚˥˩/",       tones: [3] },
+  { thai: "ครับ",   rtgs: "khrap4",   ipa: "/kʰrap̚˦˥/",      tones: [4] },
 ];
 
 // --- RTGS display conversion ---
