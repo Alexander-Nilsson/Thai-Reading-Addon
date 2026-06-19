@@ -227,6 +227,7 @@ class ThaiCssJsHandler:
             reading_type=self.config.reading_type,
             thai_tones=self.config.thai_tones,
             font_size=self.config.font_size,
+            rtgs_tone_style=self.config.rtgs_tone_style,
         )
         filepath = os.path.join(media_dir, _BUNDLE_FILENAME)
         with open(filepath, "w", encoding="utf-8") as f:

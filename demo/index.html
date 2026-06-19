@@ -228,6 +228,11 @@
     <button class="toggle-btn active" data-rt="rtgs">RTGS</button>
     <button class="toggle-btn" data-rt="ipa">IPA</button>
   </div>
+  <div class="reading-bar">
+    <label>Tone style:</label>
+    <button class="toggle-btn active" data-ts="marks">Marks (sà)</button>
+    <button class="toggle-btn" data-ts="numbers">Numbers (sa2)</button>
+  </div>
   <div class="comparison-row">
     <div class="comparison-box">
       <h3>RTGS <span style="font-weight:400;font-size:0.8rem;color:#78716c;">(Royal Thai General System)</span></h3>
@@ -285,6 +290,12 @@
         <td>Colours for tones 1–5 (Mid, Low, Falling, High, Rising)</td>
       </tr>
       <tr>
+        <td><code>RtgsToneStyle</code></td>
+        <td><code>"marks"</code> | <code>"numbers"</code></td>
+        <td><code>"marks"</code></td>
+        <td>RTGS tone display: tone marks on vowels (<code>sà</code>) or digit suffix (<code>sa2</code>)</td>
+      </tr>
+      <tr>
         <td><code>AutoCssJsGeneration</code></td>
         <td><code>bool</code></td>
         <td><code>true</code></td>
@@ -340,7 +351,8 @@
 </div>
 
 <script>
-const TONES = [
+// Thai tones colour palette (matches addon config defaults)
+var TONES = [
   { num: 1, name: "Mid",    thai: "สามัญ",    hex: "#78716C", cls: "thTone1" },
   { num: 2, name: "Low",    thai: "เอก",      hex: "#0F766E", cls: "thTone2" },
   { num: 3, name: "Falling",thai: "โท",       hex: "#B91C1C", cls: "thTone3" },
@@ -348,77 +360,105 @@ const TONES = [
   { num: 5, name: "Rising", thai: "จัตวา",    hex: "#7C3AED", cls: "thTone5" },
 ];
 
-const WORDS = [
-  { thai: "สวัสดี", rtgs: "sà-wàt-dee",   ipa: "sà.wàt.diː", tones: [2,2,1] },
-  { thai: "ครับ",   rtgs: "khráp",        ipa: "kʰráp",      tones: [4] },
-  { thai: "สบาย",   rtgs: "sà-baai",      ipa: "sà.baːj",    tones: [2,1] },
-  { thai: "ไม่",     rtgs: "mâi",          ipa: "mâj",        tones: [3] },
-  { thai: "ดี",      rtgs: "dee",          ipa: "diː",        tones: [1] },
-  { thai: "มาก",     rtgs: "mâak",         ipa: "mâːk",       tones: [3] },
-  { thai: "ใช่",     rtgs: "châi",         ipa: "tɕʰâj",      tones: [3] },
-  { thai: "ไหม",     rtgs: "măi",          ipa: "măj",        tones: [5] },
-  { thai: "หนึ่ง",    rtgs: "nèung",        ipa: "nɯ̂ŋ",       tones: [3] },
-  { thai: "ห้า",      rtgs: "hâa",          ipa: "hâː",        tones: [3] },
-  { thai: "ไป",      rtgs: "bpai",         ipa: "paj",        tones: [1] },
-  { thai: "กิน",      rtgs: "gin",          ipa: "kin",        tones: [1] },
-  { thai: "มา",      rtgs: "maa",          ipa: "maː",        tones: [1] },
-  { thai: "วัน",      rtgs: "wan",          ipa: "wan",        tones: [1] },
-  { thai: "นี้",      rtgs: "née",          ipa: "níː",        tones: [4] },
-  { thai: "เดือน",    rtgs: "deuuan",       ipa: "dɯan",      tones: [1] },
-  { thai: "ปี",       rtgs: "bpii",         ipa: "piː",        tones: [1] },
-  { thai: "ใจ",      rtgs: "jai",          ipa: "tɕaj",       tones: [1] },
+// Real pronunciation data from the addon's database (db/thai_dict.sqlite)
+// Sentence: "สวัสดีครับ ผมเรียนภาษาไทยทุกวัน" — "Hello, I study Thai every day"
+// RTGS is stored as digit-suffix format: "sa2 wat2 di1" (tone digit per syllable)
+// IPA is stored with tone letters: "/sa˨˩.wat̚˨˩.diː˧/"
+// The RTGS display on this page converts digit-suffix to conventional tone marks (sà wàt di)
+var WORDS = [
+  { thai: "สวัสดี",   rtgs: "sa2 wat2 di1",   ipa: "/sa˨˩.wat̚˨˩.diː˧/", tones: [2,2,1] },
+  { thai: "ครับ",     rtgs: "khrap4",          ipa: "/kʰrap̚˦˥/",        tones: [4] },
+  { thai: "ผม",       rtgs: "phom5",           ipa: "/pʰom˩˩˦/",         tones: [5] },
+  { thai: "เรียน",    rtgs: "rian1",           ipa: "/riən˧/",           tones: [1] },
+  { thai: "ภาษาไทย",  rtgs: "pha1 sa5 thai1", ipa: "/pʰaː˧.saː˩˩˦.tʰaj˧/", tones: [1,5,1] },
+  { thai: "ทุกวัน",   rtgs: "thuk4 wan1",      ipa: "/tʰuk̚˦˥.wan˧/",    tones: [4,1] },
 ];
 
-function toneSpan(text, toneNum) {
-  if (toneNum >= 1 && toneNum <= 5) {
-    return `<span class="${TONES[toneNum-1].cls}">${text}</span>`;
+// --- RTGS display conversion ---
+// Addon stores:  sa2 wat2 di1  (digit suffix per syllable)
+// We display:    sà wàt di     (conventional RTGS tone marks)
+
+var TONE_VOWELS = {
+  2: { a: "à", e: "è", i: "ì", o: "ò", u: "ù" },
+  3: { a: "â", e: "ê", i: "î", o: "ô", u: "û" },
+  4: { a: "á", e: "é", i: "í", o: "ó", u: "ú" },
+  5: { a: "ǎ", e: "ě", i: "ǐ", o: "ǒ", u: "ǔ" },
+};
+
+function applyToneMark(syl, toneNum) {
+  if (currentTs !== "marks") return syl;
+  if (toneNum <= 1) return syl;
+  var map = TONE_VOWELS[toneNum];
+  if (!map) return syl;
+  for (var i = 0; i < syl.length; i++) {
+    var ch = syl[i];
+    if (map[ch]) return syl.slice(0, i) + map[ch] + syl.slice(i + 1);
   }
-  return text;
+  return syl;
 }
 
-function colorizeSyllables(reading, tones) {
-  var syls = reading.split(" ");
-  var out = [];
-  for (var i = 0; i < syls.length; i++) {
-    out.push(toneSpan(syls[i], tones[i] || 0));
+// Parse "sa2 wat2 di1" into array of {text, tone} with conventional tone marks
+function parseRTGS(reading) {
+  return reading.split(" ").map(function(syl) {
+    var tone = 0, m = syl.match(/(\d)$/);
+    if (m) { tone = parseInt(m[1], 10); syl = syl.slice(0, -1); }
+    return { text: applyToneMark(syl, tone), tone: tone };
+  });
+}
+
+// Plain text RTGS display
+function displayRTGS(reading) {
+  if (currentTs !== "marks") return reading;  // show digit suffixes
+  return parseRTGS(reading).map(function(s) { return s.text; }).join(" ");
+}
+
+// Colored RTGS display
+function coloredRTGS(reading) {
+  return parseRTGS(reading).map(function(s) {
+    return s.tone >= 1 && s.tone <= 5
+      ? '<span class="' + TONES[s.tone - 1].cls + '">' + s.text + '</span>'
+      : s.text;
+  }).join(" ");
+}
+
+// Colour Thai text by distributing tones across characters
+function colorizeThaiWord(word, tones) {
+  var chars = [...word];
+  if (chars.length === 0) return "";
+  if (tones.length === 1) {
+    var t = tones[0];
+    return t >= 1 && t <= 5
+      ? '<span class="' + TONES[t - 1].cls + '">' + word + '</span>'
+      : word;
   }
-  return out.join(" ");
+  var out = "";
+  for (var i = 0; i < chars.length; i++) {
+    var ti = Math.floor(i * tones.length / chars.length);
+    var t = tones[ti];
+    out += t >= 1 && t <= 5
+      ? '<span class="' + TONES[t - 1].cls + '">' + chars[i] + '</span>'
+      : chars[i];
+  }
+  return out;
 }
 
 function renderThaiDisplay(thaiSentences, rt, displayType) {
-  var html = "";
-  var readingKey = rt === "ipa" ? "ipa" : "rtgs";
+  var html = "", readingKey = rt === "ipa" ? "ipa" : "rtgs";
   for (var w of thaiSentences) {
-    var word = w.thai;
-    var reading = w[readingKey];
-    var colored = colorizeSyllables(reading, w.tones);
+    var word = w.thai, reading = w[readingKey];
+    var isIpa = readingKey === "ipa";
+    var displayRd = isIpa ? reading : displayRTGS(reading);
+    var coloredRd = isIpa ? reading : coloredRTGS(reading);
     switch (displayType) {
-      case "thai":
-        html += word;
-        break;
-      case "coloredthai":
-        html += colorizeSyllables(word, w.tones);
-        break;
-      case "hover":
-        html += `<ruby class="unhovered-word"><rb>${word}</rb><rt class="pinyin-ruby">${reading}</rt></ruby>`;
-        break;
-      case "coloredhover":
-        html += `<ruby class="unhovered-word"><rb>${colorizeSyllables(word, w.tones)}</rb><rt class="pinyin-ruby">${colored}</rt></ruby>`;
-        break;
-      case "thaithai":
-        html += `<ruby><rb>${word}</rb><rt class="pinyin-ruby">${reading}</rt></ruby>`;
-        break;
-      case "coloredthaithai":
-        html += `<ruby><rb>${colorizeSyllables(word, w.tones)}</rb><rt class="pinyin-ruby">${colored}</rt></ruby>`;
-        break;
-      case "reading":
-        html += reading;
-        break;
-      case "coloredreading":
-        html += colored;
-        break;
-      default:
-        html += word;
+      case "thai":          html += word; break;
+      case "coloredthai":   html += colorizeThaiWord(word, w.tones); break;
+      case "hover":         html += '<ruby class="unhovered-word"><rb>' + word + '</rb><rt class="pinyin-ruby">' + displayRd + '</rt></ruby>'; break;
+      case "coloredhover":  html += '<ruby class="unhovered-word"><rb>' + colorizeThaiWord(word, w.tones) + '</rb><rt class="pinyin-ruby">' + coloredRd + '</rt></ruby>'; break;
+      case "thaithai":      html += '<ruby><rb>' + word + '</rb><rt class="pinyin-ruby">' + displayRd + '</rt></ruby>'; break;
+      case "coloredthaithai": html += '<ruby><rb>' + colorizeThaiWord(word, w.tones) + '</rb><rt class="pinyin-ruby">' + coloredRd + '</rt></ruby>'; break;
+      case "reading":       html += displayRd; break;
+      case "coloredreading": html += coloredRd; break;
+      default:              html += word;
     }
     html += " ";
   }
@@ -437,6 +477,7 @@ var displayTypes = [
 ];
 
 var currentRt = "rtgs";
+var currentTs = "marks";
 
 function renderAll() {
   var grid = document.getElementById("display-grid");
@@ -474,11 +515,20 @@ function renderAll() {
   document.getElementById("ipa-sample").innerHTML = renderThaiDisplay(WORDS, "ipa", "reading");
 }
 
-document.querySelectorAll(".toggle-btn").forEach(function(btn) {
+document.querySelectorAll(".toggle-btn[data-rt]").forEach(function(btn) {
   btn.addEventListener("click", function() {
-    document.querySelectorAll(".toggle-btn").forEach(function(b) { b.classList.remove("active"); });
+    document.querySelectorAll(".toggle-btn[data-rt]").forEach(function(b) { b.classList.remove("active"); });
     btn.classList.add("active");
     currentRt = btn.dataset.rt;
+    renderAll();
+  });
+});
+
+document.querySelectorAll(".toggle-btn[data-ts]").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    document.querySelectorAll(".toggle-btn[data-ts]").forEach(function(b) { b.classList.remove("active"); });
+    btn.classList.add("active");
+    currentTs = btn.dataset.ts;
     renderAll();
   });
 });

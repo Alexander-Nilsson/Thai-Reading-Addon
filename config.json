@@ -2,6 +2,7 @@
   "Profiles": ["all"],
   "AutoCssJsGeneration": true,
   "ReadingType": "rtgs",
+  "RtgsToneStyle": "marks",
   "FontSize": 75,
   "ThaiTones": ["#78716C", "#0F766E", "#B91C1C", "#D97706", "#7C3AED"],
   "ActiveFields": [],

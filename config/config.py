@@ -54,6 +54,10 @@ class AddonConfig:
         return self._raw.get("ThaiTones", ["#78716C", "#0F766E", "#B91C1C", "#D97706", "#7C3AED"])
 
     @property
+    def rtgs_tone_style(self) -> str:
+        return self._raw.get("RtgsToneStyle", "marks")
+
+    @property
     def use_file_references(self) -> bool:
         return self._raw.get("UseFileReferences", False)
 

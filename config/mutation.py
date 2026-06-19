@@ -66,6 +66,7 @@ _KEY_MAP: dict[str, str] = {
     "auto_css_js_generation": "AutoCssJsGeneration",
     "font_size": "FontSize",
     "thai_tones": "ThaiTones",
+    "rtgs_tone_style": "RtgsToneStyle",
     "use_file_references": "UseFileReferences",
     "active_fields": "ActiveFields",
 }
@@ -79,6 +80,7 @@ class ConfigDelta:
     font_size: int | None = None
     use_file_references: bool | None = None
     thai_tones: tuple[str, ...] | None = None
+    rtgs_tone_style: str | None = None
     active_fields: tuple[str, ...] | None = None
 
     def to_dict(self) -> dict[str, Any]:
@@ -126,6 +128,7 @@ class ConfigMutation(Protocol):
 
 
 _VALID_READING_TYPES = frozenset({"rtgs", "ipa"})
+_VALID_RTGS_TONE_STYLES = frozenset({"marks", "numbers"})
 
 
 class LiveConfigMutation:
@@ -173,6 +176,14 @@ class LiveConfigMutation:
                 ValidationError(
                     "font_size",
                     f"must be between 1 and 200, got {delta.font_size}",
+                )
+            )
+        if delta.rtgs_tone_style is not None and delta.rtgs_tone_style not in _VALID_RTGS_TONE_STYLES:
+            errors.append(
+                ValidationError(
+                    "rtgs_tone_style",
+                    f"invalid rtgs_tone_style: {delta.rtgs_tone_style!r}; "
+                    f"must be one of {sorted(_VALID_RTGS_TONE_STYLES)}",
                 )
             )
         if delta.thai_tones is not None and len(delta.thai_tones) != 5:

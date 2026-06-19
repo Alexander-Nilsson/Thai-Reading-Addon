@@ -151,6 +151,7 @@ class SettingsGui(QWidget):
         self.loadFontSize()
         self.loadProfilesList()
         self.loadDefaultReadingCB()
+        self.loadRTGSToneStyle()
         self.loadColors()
         self.loadUseFileRefs()
         self.initActiveFieldsCB()
@@ -196,6 +197,13 @@ class SettingsGui(QWidget):
         r = self.config.reading_type
         self.defaultReading.setCurrentText(self.rtTranslation.get(r, "RTGS"))
 
+    def loadRTGSToneStyle(self):
+        style = self.config.rtgs_tone_style
+        if style == "marks":
+            self.rtgsToneStyle.setCurrentIndex(0)
+        else:
+            self.rtgsToneStyle.setCurrentIndex(1)
+
     def getAllFields(self):
         fieldList = []
         for prof in self.catalog.profile_names():
@@ -239,6 +247,10 @@ class SettingsGui(QWidget):
         self.fontSize = QSpinBox()
         self.fontSize.setMinimum(1)
         self.fontSize.setMaximum(200)
+
+        self.rtgsToneStyle = QComboBox()
+        self.rtgsToneStyle.addItem("Marks (sà wàt di)")
+        self.rtgsToneStyle.addItem("Numbers (sa2 wat2 di1)")
 
         optionsTab = QWidget(self)
         optionsTab.setLayout(self.getOptionsLayout())
@@ -345,6 +357,14 @@ class SettingsGui(QWidget):
         bgbh.addWidget(QLabel("%"))
         bgbh.addStretch()
         bgbv.addLayout(bgbh)
+
+        tsh = QHBoxLayout()
+        tsh.setSpacing(_M)
+        tsh.addWidget(QLabel("RTGS Tone Style:"))
+        tsh.addWidget(self.rtgsToneStyle)
+        tsh.addStretch()
+        bgbv.addLayout(tsh)
+
         bgb.setLayout(bgbv)
         ol.addWidget(bgb)
 
@@ -475,6 +495,11 @@ class SettingsGui(QWidget):
         )
         self.useFileRefs.setToolTip(
             "When enabled, CSS and JS will be written to collection.media/ as standalone files."
+        )
+        self.rtgsToneStyle.setToolTip(
+            "Choose how tone is indicated in RTGS transcriptions.\n"
+            "Marks: sà wàt di (tone marks on vowels, conventional style)\n"
+            "Numbers: sa2 wat2 di1 (digit suffix per syllable)"
         )
         self.profileAF.setToolTip("Profile: Select the profile.")
         self.noteTypeAF.setToolTip("Note Type: Select the note type.")
@@ -911,6 +936,7 @@ class SettingsGui(QWidget):
             ),
             active_fields=tuple(afList) if afList else tuple(),
             auto_css_js_generation=self.autoCSSJS.isChecked(),
+            rtgs_tone_style="marks" if self.rtgsToneStyle.currentIndex() == 0 else "numbers",
         )
 
         try:

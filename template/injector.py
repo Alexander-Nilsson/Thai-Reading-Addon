@@ -41,6 +41,7 @@ css+='.'+n+'{color:'+t+';}'+
 s.textContent=css;
 document.head.appendChild(s);
 var THAI_READING_TYPE=c.reading_type;
+var THAI_RTGS_TONE_STYLE=c.rtgs_tone_style;
 %(parser)s
 })();
 """
@@ -147,30 +148,42 @@ class TemplateInjector:
     def _remove_thai_css(self, style: str) -> str:
         return re.sub(THAI_CSS_PATTERN, "", style)
 
-    def get_thai_js(self, reading_type: str) -> str:
+    def get_thai_js(self, reading_type: str, rtgs_tone_style: str = "marks") -> str:
         js = (
             '<script>(function(){const THAI_READING_TYPE ="'
             + reading_type
+            + '";const THAI_RTGS_TONE_STYLE="'
+            + rtgs_tone_style
             + '";'
             + self._load_js("thaiparser.js")
             + "})();</script>"
         )
         return THAI_PARSER_HEADER + js + THAI_PARSER_FOOTER
 
-    def get_bare_thai_js(self, reading_type: str) -> str:
-        return '(function(){const THAI_READING_TYPE ="' + reading_type + '";' + self._load_js("thaiparser.js") + "})();"
+    def get_bare_thai_js(self, reading_type: str, rtgs_tone_style: str = "marks") -> str:
+        return (
+            '(function(){const THAI_READING_TYPE ="'
+            + reading_type
+            + '";const THAI_RTGS_TONE_STYLE="'
+            + rtgs_tone_style
+            + '";'
+            + self._load_js("thaiparser.js")
+            + "})();"
+        )
 
     def get_combined_js(
         self,
         reading_type: str,
         thai_tones: tuple[str, ...] | list[str],
         font_size: int,
+        rtgs_tone_style: str = "marks",
     ) -> str:
         config = json.dumps(
             {
                 "reading_type": reading_type,
                 "font_size": font_size,
                 "thai_tones": list(thai_tones),
+                "rtgs_tone_style": rtgs_tone_style,
             }
         )
         return _COMBINED_JS_TEMPLATE % {
@@ -180,7 +193,8 @@ class TemplateInjector:
 
     def _inject_thai_js(self, text: str, **kwargs: Any) -> str:
         reading_type = kwargs.get("reading_type", "rtgs")
-        new_block = self.get_thai_js(reading_type)
+        rtgs_tone_style = kwargs.get("rtgs_tone_style", "marks")
+        new_block = self.get_thai_js(reading_type, rtgs_tone_style)
         if not text:
             return new_block
         pattern = re.escape(THAI_PARSER_HEADER) + r".*?" + re.escape(THAI_PARSER_FOOTER)
