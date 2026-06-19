@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thai Reading Addon — Display Options Demo</title>
+<style>
+  :root {
+    --mid: #78716C;
+    --low: #0F766E;
+    --falling: #B91C1C;
+    --high: #D97706;
+    --rising: #7C3AED;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: #f5f5f4;
+    color: #1c1917;
+    line-height: 1.6;
+    padding: 2rem;
+  }
+  .container { max-width: 1100px; margin: 0 auto; }
+  h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+  }
+  .subtitle {
+    color: #78716c;
+    margin-bottom: 2rem;
+    font-size: 0.95rem;
+  }
+  h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 2px solid #d6d3d1;
+  }
+  section { margin-bottom: 2.5rem; }
+
+  /* Reading type toggle */
+  .reading-bar {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    align-items: center;
+  }
+  .reading-bar label { font-weight: 500; }
+  .toggle-btn {
+    padding: 0.4rem 1rem;
+    border: 2px solid #a8a29e;
+    border-radius: 6px;
+    background: #fff;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+  .toggle-btn.active {
+    background: #0F766E;
+    color: #fff;
+    border-color: #0F766E;
+  }
+
+  /* Grid of display-type cards */
+  .display-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1rem;
+  }
+  .card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    border: 1px solid #e7e5e4;
+  }
+  .card h3 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #44403c;
+    margin-bottom: 0.15rem;
+  }
+  .card .tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-family: monospace;
+    background: #e7e5e4;
+    padding: 0.1rem 0.45rem;
+    border-radius: 4px;
+    color: #57534e;
+    margin-bottom: 0.6rem;
+  }
+  .card .desc {
+    font-size: 0.8rem;
+    color: #78716c;
+    margin-bottom: 0.75rem;
+  }
+  .sample {
+    font-size: 1.4rem;
+    padding: 0.6rem 0.8rem;
+    background: #fafaf9;
+    border-radius: 6px;
+    border: 1px dashed #d6d3d1;
+    min-height: 3rem;
+  }
+
+  /* Tone-colour classes (same as addon) */
+  .thTone1 { color: var(--mid); }
+  .thTone2 { color: var(--low); }
+  .thTone3 { color: var(--falling); }
+  .thTone4 { color: var(--high); }
+  .thTone5 { color: var(--rising); }
+  .ankidroid_dark_mode .thTone1, .nightMode .thTone1 { color: var(--mid); }
+  .ankidroid_dark_mode .thTone2, .nightMode .thTone2 { color: var(--low); }
+  .ankidroid_dark_mode .thTone3, .nightMode .thTone3 { color: var(--falling); }
+  .ankidroid_dark_mode .thTone4, .nightMode .thTone4 { color: var(--high); }
+  .ankidroid_dark_mode .thTone5, .nightMode .thTone5 { color: var(--rising); }
+
+  /* Ruby for reading display */
+  ruby { ruby-align: center; }
+  .pinyin-ruby {
+    font-size: 75%;
+    line-height: 1.2;
+  }
+  .unhovered-word .pinyin-ruby { visibility: hidden; }
+  .unhovered-word:hover .pinyin-ruby { visibility: visible; }
+  .coloredhover .unhovered-word .pinyin-ruby { visibility: hidden; }
+  .coloredhover .unhovered-word:hover .pinyin-ruby { visibility: visible; }
+
+  /* Tones palette */
+  .tones-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .tone-swatch {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: #fff;
+    padding: 0.5rem 1rem 0.5rem 0.5rem;
+    border-radius: 8px;
+    border: 1px solid #e7e5e4;
+  }
+  .tone-swatch .color-box {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    border: 1px solid #d6d3d1;
+  }
+  .tone-swatch .info {
+    display: flex;
+    flex-direction: column;
+  }
+  .tone-swatch .tone-name { font-weight: 600; font-size: 0.85rem; }
+  .tone-swatch .tone-thai { font-size: 0.75rem; color: #78716c; }
+  .tone-swatch .tone-hex  { font-family: monospace; font-size: 0.7rem; color: #a8a29e; }
+
+  /* Reading type samples */
+  .comparison-row {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+  .comparison-box {
+    flex: 1;
+    min-width: 250px;
+    background: #fff;
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    border: 1px solid #e7e5e4;
+  }
+  .comparison-box h3 { font-size: 0.95rem; margin-bottom: 0.5rem; }
+  .comparison-box .sample {
+    font-size: 1.3rem;
+  }
+
+  /* Config reference table */
+  table.config-ref {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #e7e5e4;
+  }
+  table.config-ref th {
+    background: #e7e5e4;
+    text-align: left;
+    padding: 0.5rem 0.75rem;
+    font-weight: 600;
+  }
+  table.config-ref td {
+    padding: 0.45rem 0.75rem;
+    border-top: 1px solid #f0efed;
+  }
+  table.config-ref tr:hover td { background: #fafaf9; }
+  table.config-ref code {
+    font-family: monospace;
+    background: #f0efed;
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+    font-size: 0.8rem;
+  }
+
+  hr { border: none; border-top: 1px solid #d6d3d1; margin: 2rem 0; }
+
+  @media (max-width: 700px) {
+    body { padding: 1rem; }
+    .display-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>Thai Reading Addon</h1>
+<p class="subtitle">Visual reference for all display and reading options</p>
+
+<!-- READING TYPE COMPARISON -->
+<section>
+  <h2>Reading Types</h2>
+  <div class="reading-bar">
+    <label>Compare:</label>
+    <button class="toggle-btn active" data-rt="rtgs">RTGS</button>
+    <button class="toggle-btn" data-rt="ipa">IPA</button>
+  </div>
+  <div class="comparison-row">
+    <div class="comparison-box">
+      <h3>RTGS <span style="font-weight:400;font-size:0.8rem;color:#78716c;">(Royal Thai General System)</span></h3>
+      <div class="sample" id="rtgs-sample">sà-wàt-dee khráp</div>
+    </div>
+    <div class="comparison-box">
+      <h3>IPA <span style="font-weight:400;font-size:0.8rem;color:#78716c;">(International Phonetic Alphabet)</span></h3>
+      <div class="sample" id="ipa-sample">sà.wàt.diː kʰráp</div>
+    </div>
+  </div>
+</section>
+
+<!-- DISPLAY TYPES -->
+<section>
+  <h2>Display Types</h2>
+  <p style="color:#78716c;margin-bottom:1rem;font-size:0.9rem;">
+    Each active-field entry chooses one display type. Hover cards show hover behaviour.
+  </p>
+  <div class="display-grid" id="display-grid"></div>
+</section>
+
+<!-- THAI TONES -->
+<section>
+  <h2>Thai Tones</h2>
+  <p style="color:#78716c;margin-bottom:1rem;font-size:0.9rem;">
+    Thai has 5 phonemic tones. Each is configurable via <code>ThaiTones</code> in config.
+  </p>
+  <div class="tones-grid" id="tones-grid"></div>
+</section>
+
+<!-- CONFIG QUICK-REF -->
+<section>
+  <h2>Configuration Reference</h2>
+  <table class="config-ref">
+    <thead>
+      <tr><th>Key</th><th>Type</th><th>Default</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>ReadingType</code></td>
+        <td><code>"rtgs"</code> | <code>"ipa"</code></td>
+        <td><code>"rtgs"</code></td>
+        <td>Default reading system for generation</td>
+      </tr>
+      <tr>
+        <td><code>FontSize</code></td>
+        <td><code>int</code> (1–200)</td>
+        <td><code>75</code></td>
+        <td>Reading font size as % of base text</td>
+      </tr>
+      <tr>
+        <td><code>ThaiTones</code></td>
+        <td><code>[str; 5]</code></td>
+        <td><code>["#78716C","#0F766E","#B91C1C","#D97706","#7C3AED"]</code></td>
+        <td>Colours for tones 1–5 (Mid, Low, Falling, High, Rising)</td>
+      </tr>
+      <tr>
+        <td><code>AutoCssJsGeneration</code></td>
+        <td><code>bool</code></td>
+        <td><code>true</code></td>
+        <td>Automatically inject CSS/JS into card templates</td>
+      </tr>
+      <tr>
+        <td><code>Profiles</code></td>
+        <td><code>[str]</code></td>
+        <td><code>["all"]</code></td>
+        <td>Anki profiles the addon is active on</td>
+      </tr>
+      <tr>
+        <td><code>UseFileReferences</code></td>
+        <td><code>bool</code></td>
+        <td><code>false</code></td>
+        <td>Write CSS/JS as standalone files in collection.media</td>
+      </tr>
+      <tr>
+        <td><code>ActiveFields</code></td>
+        <td><code>[str]</code></td>
+        <td><code>[]</code></td>
+        <td>Entries; each = <code>display;profile;noteType;cardType;field;side;readingType</code></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ACTIVE FIELD SYNTAX -->
+<section>
+  <h2>Active Field Syntax</h2>
+  <p style="margin-bottom:0.75rem;font-size:0.9rem;color:#57534e;">
+    Each active field entry is a single string separated by semicolons:
+  </p>
+  <pre style="background:#fff;border:1px solid #e7e5e4;border-radius:6px;padding:0.75rem 1rem;font-size:0.85rem;overflow-x:auto;">
+    <b>&lt;display_type&gt;</b>;<b>&lt;profile&gt;</b>;<b>&lt;note_type&gt;</b>;<b>&lt;card_type&gt;</b>;<b>&lt;field&gt;</b>;<b>&lt;side&gt;</b>;<b>&lt;reading_type&gt;</b>
+  </pre>
+  <table class="config-ref" style="margin-top:0.5rem;">
+    <thead>
+      <tr><th>Part</th><th>Values</th><th>Example</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>display_type</code></td><td><code>thai</code>, <code>coloredthai</code>, <code>hover</code>, <code>coloredhover</code>, <code>thaithai</code>, <code>coloredthaithai</code>, <code>reading</code>, <code>coloredreading</code></td><td><code>coloredthaithai</code></td></tr>
+      <tr><td><code>profile</code></td><td>profile name or <code>all</code></td><td><code>all</code></td></tr>
+      <tr><td><code>note_type</code></td><td>note type name</td><td><code>Thai Vocabulary</code></td></tr>
+      <tr><td><code>card_type</code></td><td>card type name or <code>all</code></td><td><code>Card 1</code></td></tr>
+      <tr><td><code>field</code></td><td>field name</td><td><code>Thai</code></td></tr>
+      <tr><td><code>side</code></td><td><code>front</code>, <code>back</code>, or <code>both</code></td><td><code>both</code></td></tr>
+      <tr><td><code>reading_type</code></td><td><code>default</code>, <code>rtgs</code>, or <code>ipa</code></td><td><code>ipa</code></td></tr>
+    </tbody>
+  </table>
+</section>
+
+</div>
+
+<script>
+const TONES = [
+  { num: 1, name: "Mid",    thai: "สามัญ",    hex: "#78716C", cls: "thTone1" },
+  { num: 2, name: "Low",    thai: "เอก",      hex: "#0F766E", cls: "thTone2" },
+  { num: 3, name: "Falling",thai: "โท",       hex: "#B91C1C", cls: "thTone3" },
+  { num: 4, name: "High",   thai: "ตรี",      hex: "#D97706", cls: "thTone4" },
+  { num: 5, name: "Rising", thai: "จัตวา",    hex: "#7C3AED", cls: "thTone5" },
+];
+
+const WORDS = [
+  { thai: "สวัสดี", rtgs: "sà-wàt-dee",   ipa: "sà.wàt.diː", tones: [2,2,1] },
+  { thai: "ครับ",   rtgs: "khráp",        ipa: "kʰráp",      tones: [4] },
+  { thai: "สบาย",   rtgs: "sà-baai",      ipa: "sà.baːj",    tones: [2,1] },
+  { thai: "ไม่",     rtgs: "mâi",          ipa: "mâj",        tones: [3] },
+  { thai: "ดี",      rtgs: "dee",          ipa: "diː",        tones: [1] },
+  { thai: "มาก",     rtgs: "mâak",         ipa: "mâːk",       tones: [3] },
+  { thai: "ใช่",     rtgs: "châi",         ipa: "tɕʰâj",      tones: [3] },
+  { thai: "ไหม",     rtgs: "măi",          ipa: "măj",        tones: [5] },
+  { thai: "หนึ่ง",    rtgs: "nèung",        ipa: "nɯ̂ŋ",       tones: [3] },
+  { thai: "ห้า",      rtgs: "hâa",          ipa: "hâː",        tones: [3] },
+  { thai: "ไป",      rtgs: "bpai",         ipa: "paj",        tones: [1] },
+  { thai: "กิน",      rtgs: "gin",          ipa: "kin",        tones: [1] },
+  { thai: "มา",      rtgs: "maa",          ipa: "maː",        tones: [1] },
+  { thai: "วัน",      rtgs: "wan",          ipa: "wan",        tones: [1] },
+  { thai: "นี้",      rtgs: "née",          ipa: "níː",        tones: [4] },
+  { thai: "เดือน",    rtgs: "deuuan",       ipa: "dɯan",      tones: [1] },
+  { thai: "ปี",       rtgs: "bpii",         ipa: "piː",        tones: [1] },
+  { thai: "ใจ",      rtgs: "jai",          ipa: "tɕaj",       tones: [1] },
+];
+
+function toneSpan(text, toneNum) {
+  if (toneNum >= 1 && toneNum <= 5) {
+    return `<span class="${TONES[toneNum-1].cls}">${text}</span>`;
+  }
+  return text;
+}
+
+function colorizeSyllables(reading, tones) {
+  var syls = reading.split(" ");
+  var out = [];
+  for (var i = 0; i < syls.length; i++) {
+    out.push(toneSpan(syls[i], tones[i] || 0));
+  }
+  return out.join(" ");
+}
+
+function renderThaiDisplay(thaiSentences, rt, displayType) {
+  var html = "";
+  var readingKey = rt === "ipa" ? "ipa" : "rtgs";
+  for (var w of thaiSentences) {
+    var word = w.thai;
+    var reading = w[readingKey];
+    var colored = colorizeSyllables(reading, w.tones);
+    switch (displayType) {
+      case "thai":
+        html += word;
+        break;
+      case "coloredthai":
+        html += colorizeSyllables(word, w.tones);
+        break;
+      case "hover":
+        html += `<ruby class="unhovered-word"><rb>${word}</rb><rt class="pinyin-ruby">${reading}</rt></ruby>`;
+        break;
+      case "coloredhover":
+        html += `<ruby class="unhovered-word"><rb>${colorizeSyllables(word, w.tones)}</rb><rt class="pinyin-ruby">${colored}</rt></ruby>`;
+        break;
+      case "thaithai":
+        html += `<ruby><rb>${word}</rb><rt class="pinyin-ruby">${reading}</rt></ruby>`;
+        break;
+      case "coloredthaithai":
+        html += `<ruby><rb>${colorizeSyllables(word, w.tones)}</rb><rt class="pinyin-ruby">${colored}</rt></ruby>`;
+        break;
+      case "reading":
+        html += reading;
+        break;
+      case "coloredreading":
+        html += colored;
+        break;
+      default:
+        html += word;
+    }
+    html += " ";
+  }
+  return html;
+}
+
+var displayTypes = [
+  { id: "thai",           name: "Thai",           code: "thai",           desc: "Thai text only. No tone coloring, no reading." },
+  { id: "coloredthai",    name: "Colored Thai",   code: "coloredthai",    desc: "Thai text with tone coloring. No reading." },
+  { id: "hover",          name: "Hover",          code: "hover",          desc: "Thai text hidden reading appears on hover. No tone coloring." },
+  { id: "coloredhover",   name: "Colored Hover",  code: "coloredhover",   desc: "Thai text with tone coloring. Reading appears on hover." },
+  { id: "thaithai",       name: "Thai Reading",   code: "thaithai",       desc: "Thai text + reading inline. No tone coloring." },
+  { id: "coloredthaithai",name: "Colored Thai Reading", code: "coloredthaithai", desc: "Thai + reading inline, both with tone coloring." },
+  { id: "reading",        name: "Reading",        code: "reading",        desc: "Only the reading (RTGS/IPA). Falls back to Thai if unavailable." },
+  { id: "coloredreading", name: "Colored Reading", code: "coloredreading", desc: "Only the reading with tone coloring. Falls back to Thai if unavailable." },
+];
+
+var currentRt = "rtgs";
+
+function renderAll() {
+  var grid = document.getElementById("display-grid");
+  grid.innerHTML = "";
+  for (var dt of displayTypes) {
+    var card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <h3>${dt.name}</h3>
+      <span class="tag">${dt.code}</span>
+      <div class="desc">${dt.desc}</div>
+      <div class="sample ${dt.code === "coloredhover" || dt.code === "hover" ? "coloredhover" : ""}">${renderThaiDisplay(WORDS, currentRt, dt.id)}</div>
+    `;
+    grid.appendChild(card);
+  }
+
+  // Tone swatches
+  var tonesEl = document.getElementById("tones-grid");
+  tonesEl.innerHTML = "";
+  for (var t of TONES) {
+    var swatch = document.createElement("div");
+    swatch.className = "tone-swatch";
+    swatch.innerHTML = `
+      <div class="color-box" style="background:${t.hex}"></div>
+      <div class="info">
+        <span class="tone-name">${t.num}. ${t.name}</span>
+        <span class="tone-thai">${t.thai}</span>
+        <span class="tone-hex">${t.hex}</span>
+      </div>
+    `;
+    tonesEl.appendChild(swatch);
+  }
+
+  document.getElementById("rtgs-sample").innerHTML = renderThaiDisplay(WORDS, "rtgs", "reading");
+  document.getElementById("ipa-sample").innerHTML = renderThaiDisplay(WORDS, "ipa", "reading");
+}
+
+document.querySelectorAll(".toggle-btn").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    document.querySelectorAll(".toggle-btn").forEach(function(b) { b.classList.remove("active"); });
+    btn.classList.add("active");
+    currentRt = btn.dataset.rt;
+    renderAll();
+  });
+});
+
+renderAll();
+</script>
+</body>
+</html>

@@ -10,6 +10,12 @@
 - **Segment and lookup**: Greedy-lookahead tokenization for dictionary matching
 - **Exportable configuration**: Supports profiles for different reading workflows
 
+## Visual Reference
+
+A demo page showing all display types, reading types, and tone colours is available in [`demo/index.html`](demo/index.html).
+
+![Display options preview](demo/readings-screenshot.png)
+
 ## Configuration
 
 Access settings via **Tools → Thai Reading Settings** or through Anki's add-on config editor.
