@@ -1,0 +1,10 @@
+meta.json
+build/
+.ruff_cache/
+__pycache__/
+*.pyc
+.venv/
+AGENTS.md
+docs/
+todos.md
+debug.log

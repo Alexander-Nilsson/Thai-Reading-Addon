@@ -1,0 +1,83 @@
+[project]
+name = "thai-reading"
+version = "0.1.0"
+description = "Anki addon for Thai reading generation and card template injection"
+requires-python = ">=3.14"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "ruff>=0.15.0",
+    "pytest>=8.0.0",
+    "thaiphon>=0.6.0",
+    "thaiphon-data-volubilis>=0.2.0",
+]
+integration = [
+    "pytest-anki2[anki-2509,qt6-pypi]>=2.0.0",
+]
+
+[tool.ruff]
+target-version = "py314"
+line-length = 120
+exclude = ["_infra"]
+extend-exclude = ["__pycache__", "*.pyc"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle
+    "F",   # pyflakes
+    "I",   # isort
+    "UP",  # pyupgrade (target >=3.9)
+    "YTT", # flake8-2020
+    "RUF", # ruff-specific
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+"dictdb.py" = ["E722"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+
+[tool.ty]
+
+[tool.ty.environment]
+python-version = "3.14"
+
+[tool.ty.rules]
+unresolved-import = "warn"
+possibly-unresolved-reference = "warn"
+unresolved-attribute = "warn"
+invalid-assignment = "warn"
+invalid-method-override = "warn"
+not-subscriptable = "warn"
+not-iterable = "warn"
+invalid-argument-type = "warn"
+unsupported-operator = "warn"
+no-matching-overload = "warn"
+
+[tool.ty.src]
+exclude = ["_infra/**", "tests/**"]
+
+[tool.ty.analysis]
+allowed-unresolved-imports = [
+    "PyQt6.*",
+    "anki.*",
+    "aqt.*",
+    "urllib3.*",
+    "requests.*",
+    "_infra.*",
+    "reading.*",
+    "config.*",
+    "template.*",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = [".."]
+python_files = ["test_*.py"]
+norecursedirs = ["lib", "build", ".venv", ".ruff_cache"]
+filterwarnings = ["ignore::DeprecationWarning"]
+addopts = "-ra -q"

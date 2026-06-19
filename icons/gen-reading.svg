@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#E60000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <text x="2" y="15" font-size="12" font-family="sans-serif" fill="#E60000" stroke="none" font-weight="bold">ก</text>
+  <path d="M9 12h10"/>
+  <polyline points="15,8 19,12 15,16"/>
+  <text x="11" y="15" font-size="8" font-family="sans-serif" fill="#E60000" stroke="none">ka</text>
+</svg>

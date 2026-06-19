@@ -1,0 +1,9 @@
+{
+  "Profiles": ["all"],
+  "AutoCssJsGeneration": true,
+  "ReadingType": "rtgs",
+  "FontSize": 75,
+  "ThaiTones": ["#E60000", "#E68A00", "#00802B", "#005CE6", "gray"],
+  "ActiveFields": [],
+  "UseFileReferences": false
+}
