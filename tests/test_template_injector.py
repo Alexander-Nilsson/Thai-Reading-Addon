@@ -17,7 +17,7 @@ def injector():
     return TemplateInjector(os.path.join(ROOT, "js"))
 
 
-THAI_TONES = ("#E60000", "#E68A00", "#00802B", "#005CE6", "gray")
+THAI_TONES = ("#78716C", "#0F766E", "#B91C1C", "#D97706", "#7C3AED")
 
 
 # ── CSS ─────────────────────────────────────────────────────────

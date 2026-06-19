@@ -51,7 +51,7 @@ class AddonConfig:
 
     @property
     def thai_tones(self) -> list[str]:
-        return self._raw.get("ThaiTones", ["#E60000", "#E68A00", "#00802B", "#005CE6", "gray"])
+        return self._raw.get("ThaiTones", ["#78716C", "#0F766E", "#B91C1C", "#D97706", "#7C3AED"])
 
     @property
     def use_file_references(self) -> bool:

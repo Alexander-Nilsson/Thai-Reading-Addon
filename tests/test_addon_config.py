@@ -7,7 +7,7 @@ def test_defaults():
     assert cfg.reading_type == "rtgs"
     assert cfg.auto_css_js_generation is True
     assert cfg.font_size == 75
-    assert cfg.thai_tones == ["#E60000", "#E68A00", "#00802B", "#005CE6", "gray"]
+    assert cfg.thai_tones == ["#78716C", "#0F766E", "#B91C1C", "#D97706", "#7C3AED"]
     assert cfg.use_file_references is False
     assert cfg.active_fields == []
 
