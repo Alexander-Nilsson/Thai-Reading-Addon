@@ -12,6 +12,7 @@ from PyQt6.QtWidgets import (
     QCheckBox,
     QColorDialog,
     QComboBox,
+    QGridLayout,
     QGroupBox,
     QHBoxLayout,
     QHeaderView,
@@ -224,25 +225,31 @@ class SettingsGui(QWidget):
             name = "t" + str(idx + 1) + "color"
             widget = getattr(self, name)
             widget.setText(c)
-            widget.setStyleSheet("color:" + c + ";")
+            widget.setStyleSheet(f"color: {c}; background-color: palette(window);")
 
     def getOptionsTab(self):
         self.profileCB = QComboBox()
+        self.profileCB.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToContents)
         self.addRemProfile = QPushButton("Add")
         self.currentProfiles = QLabel("None")
         self.defaultReading = QComboBox()
+        self.defaultReading.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToContents)
 
         self.t1color = QLineEdit()
         self.t2color = QLineEdit()
         self.t3color = QLineEdit()
         self.t4color = QLineEdit()
         self.t5color = QLineEdit()
+        for c in (self.t1color, self.t2color, self.t3color, self.t4color, self.t5color):
+            c.setFixedWidth(80)
 
         self.t1pb = QPushButton("Select Color")
         self.t2pb = QPushButton("Select Color")
         self.t3pb = QPushButton("Select Color")
         self.t4pb = QPushButton("Select Color")
         self.t5pb = QPushButton("Select Color")
+        for b in (self.t1pb, self.t2pb, self.t3pb, self.t4pb, self.t5pb):
+            b.setFixedWidth(75)
 
         self.useFileRefs = QCheckBox()
 
@@ -251,6 +258,7 @@ class SettingsGui(QWidget):
         self.fontSize.setMaximum(200)
 
         self.rtgsToneStyle = QComboBox()
+        self.rtgsToneStyle.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToContents)
         self.rtgsToneStyle.addItem("Marks (sà wàt di)")
         self.rtgsToneStyle.addItem("Numbers (sa2 wat2 di1)")
 
@@ -262,112 +270,76 @@ class SettingsGui(QWidget):
         return scroll
 
     def getOptionsLayout(self):
-        _M = 5
+        _M = 2
         ol = QVBoxLayout()
         ol.setContentsMargins(_M, _M, _M, _M)
-        ol.setSpacing(_M)
+        ol.setSpacing(0)
 
+        # --- Profiles ---
         pgb = QGroupBox("Profiles")
-        pgbv = QVBoxLayout()
-        pgbv.setContentsMargins(_M, _M, _M, _M)
-        pgbv.setSpacing(_M)
-        pgbh = QHBoxLayout()
-        pgbh.setSpacing(_M)
-        pgbh.addWidget(self.profileCB)
-        pgbh.addWidget(self.addRemProfile)
-        pgbh.addWidget(QLabel("Current:"))
-        pgbh.addWidget(self.currentProfiles)
-        pgbh.addStretch()
-        pgbv.addLayout(pgbh)
-        pgb.setLayout(pgbv)
+        pg = QGridLayout()
+        pg.setContentsMargins(_M * 3, _M * 3, _M * 3, _M * 3)
+        pg.setSpacing(_M * 3)
+        pg.addWidget(self.profileCB, 0, 0)
+        pg.addWidget(self.addRemProfile, 0, 1)
+        pg.addWidget(QLabel("Current:"), 0, 2)
+        pg.addWidget(self.currentProfiles, 0, 3)
+        pg.setColumnStretch(3, 1)
+        pgb.setLayout(pg)
         ol.addWidget(pgb)
 
+        # --- Generation ---
         ggb = QGroupBox("Generation")
-        ggbv = QVBoxLayout()
-        ggbv.setContentsMargins(_M, _M, _M, _M)
-        ggbv.setSpacing(_M)
-        ggbh = QHBoxLayout()
-        ggbh.setSpacing(_M)
-        ggbh.addWidget(QLabel("Default Reading Type:"))
-        ggbh.addWidget(self.defaultReading)
-        ggbh.addStretch()
-        ggbv.addLayout(ggbh)
-
-        fsg = QGroupBox("Field Settings")
-        fsv = QVBoxLayout()
-        fsv.setContentsMargins(_M, _M, _M, _M)
-        fsv.setSpacing(_M)
-
-        fsv.addWidget(QLabel("Use File References:"))
-        fsv.addWidget(self.useFileRefs)
-
-        fsg.setLayout(fsv)
-        ggbv.addWidget(fsg)
-        ggb.setLayout(ggbv)
+        gg = QGridLayout()
+        gg.setContentsMargins(_M * 3, _M * 3, _M * 3, _M * 3)
+        gg.setSpacing(_M * 3)
+        gg.addWidget(QLabel("Default Reading Type:"), 0, 0)
+        gg.addWidget(self.defaultReading, 0, 1, 1, 2)
+        gg.addWidget(QLabel("Use File References:"), 1, 0)
+        gg.addWidget(self.useFileRefs, 1, 1)
+        gg.setColumnStretch(2, 1)
+        ggb.setLayout(gg)
         ol.addWidget(ggb)
 
+        # --- Colors / Thai Tones ---
         cgb = QGroupBox("Colors")
-        cgbv = QVBoxLayout()
-        cgbv.setContentsMargins(_M, _M, _M, _M)
-        cgbv.setSpacing(_M)
-
-        def _tone_row(triples):
-            row = QHBoxLayout()
-            row.setSpacing(_M * 2)
-            for label, color, btn in triples:
-                row.addWidget(QLabel(label))
-                row.addWidget(color)
-                btn.setFixedWidth(80)
-                row.addWidget(btn)
-            row.addStretch()
-            return row
+        cg = QVBoxLayout()
+        cg.setContentsMargins(_M * 3, _M * 3, _M * 3, _M * 3)
+        cg.setSpacing(_M * 3)
 
         tgb = QGroupBox("Thai Tones")
-        tv = QVBoxLayout()
-        tv.setSpacing(_M)
-        tv.addLayout(
-            _tone_row(
-                [
-                    ("Mid:", self.t1color, self.t1pb),
-                    ("Low:", self.t2color, self.t2pb),
-                    ("Falling:", self.t3color, self.t3pb),
-                ]
-            )
-        )
-        tv.addLayout(
-            _tone_row(
-                [
-                    ("High:", self.t4color, self.t4pb),
-                    ("Rising:", self.t5color, self.t5pb),
-                ]
-            )
-        )
-        tgb.setLayout(tv)
-
-        cgbv.addWidget(tgb)
-        cgb.setLayout(cgbv)
+        tg = QGridLayout()
+        tg.setSpacing(_M * 3)
+        tone_data = [
+            ("Mid:", self.t1color, self.t1pb),
+            ("Low:", self.t2color, self.t2pb),
+            ("Falling:", self.t3color, self.t3pb),
+            ("High:", self.t4color, self.t4pb),
+            ("Rising:", self.t5color, self.t5pb),
+        ]
+        for idx, (label, color, btn) in enumerate(tone_data):
+            r = idx // 3
+            c = (idx % 3) * 3
+            tg.addWidget(QLabel(label), r, c)
+            tg.addWidget(color, r, c + 1)
+            tg.addWidget(btn, r, c + 2)
+        tgb.setLayout(tg)
+        cg.addWidget(tgb)
+        cgb.setLayout(cg)
         ol.addWidget(cgb)
 
+        # --- Behavior ---
         bgb = QGroupBox("Behavior")
-        bgbv = QVBoxLayout()
-        bgbv.setContentsMargins(_M, _M, _M, _M)
-        bgbv.setSpacing(_M)
-        bgbh = QHBoxLayout()
-        bgbh.setSpacing(_M)
-        bgbh.addWidget(QLabel("Reading Font Size:"))
-        bgbh.addWidget(self.fontSize)
-        bgbh.addWidget(QLabel("%"))
-        bgbh.addStretch()
-        bgbv.addLayout(bgbh)
-
-        tsh = QHBoxLayout()
-        tsh.setSpacing(_M)
-        tsh.addWidget(QLabel("RTGS Tone Style:"))
-        tsh.addWidget(self.rtgsToneStyle)
-        tsh.addStretch()
-        bgbv.addLayout(tsh)
-
-        bgb.setLayout(bgbv)
+        bg = QGridLayout()
+        bg.setContentsMargins(_M * 3, _M * 3, _M * 3, _M * 3)
+        bg.setSpacing(_M * 3)
+        bg.addWidget(QLabel("Reading Font Size:"), 0, 0)
+        bg.addWidget(self.fontSize, 0, 1)
+        bg.addWidget(QLabel("%"), 0, 2)
+        bg.addWidget(QLabel("RTGS Tone Style:"), 1, 0)
+        bg.addWidget(self.rtgsToneStyle, 1, 1, 1, 2)
+        bg.setColumnStretch(3, 1)
+        bgb.setLayout(bg)
         ol.addWidget(bgb)
 
         return ol
@@ -429,7 +401,6 @@ class SettingsGui(QWidget):
         afh1 = QHBoxLayout()
         afh1.addWidget(QLabel("Auto CSS & JS Generation:"))
         afh1.addWidget(self.autoCSSJS)
-        afh1.addStretch()
         afl.addLayout(afh1)
 
         afh2 = QHBoxLayout()
@@ -443,7 +414,6 @@ class SettingsGui(QWidget):
         afl.addLayout(afh2)
 
         afh3 = QHBoxLayout()
-        afh3.addStretch()
         afh3.addWidget(self.addEditAF)
         afl.addLayout(afh3)
 
@@ -955,7 +925,7 @@ class SettingsGui(QWidget):
         color = QColorDialog.getColor()
         if color.isValid():
             lineEdit.setText(color.name())
-            lineEdit.setStyleSheet("color:" + color.name() + ";")
+            lineEdit.setStyleSheet(f"color: {color.name()}; background-color: palette(window);")
 
     def profAltSimpTradChange(self, value, button, vList):
         if value in vList:
