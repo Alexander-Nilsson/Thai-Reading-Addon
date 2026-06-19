@@ -174,85 +174,76 @@ class TestEditorIntegration:
             assert reloaded["Text"] == "你好世界"
 
     @pytest.mark.parametrize("anki_session", [_ANKI_SESSION_PARAMS], indirect=True)
-    def test_add_c_readings_js_generation(self, anki_session: AnkiSession) -> None:
-        """addCReadings generates correct JS for both text-selected and
-        no-text-selected paths. Uses a MagicMock editor so no QWebEngineView
-        is needed."""
+    def test_add_c_readings_updates_note_field(self, anki_session: AnkiSession) -> None:
+        """addCReadings generates readings and updates the note field."""
         from unittest.mock import MagicMock
 
         anki_session.load_addon(ADDON_NAME)
         with anki_session.profile_loaded():
             mw = anki_session.mw
 
-            mock_editor = MagicMock()
-            mock_editor.web.selectedText.return_value = ""
-            captured_js: list[str] = []
-            mock_editor.web.eval = lambda js: captured_js.append(js)
-
-            notetype = mw.col.models.new(NOTETYPE_NAME)
-            mw.col.models.add_field(notetype, mw.col.models.new_field("Text"))
-            tmpl = mw.col.models.new_template("Card 1")
-            tmpl["qfmt"] = "{{Text}}"
-            tmpl["afmt"] = "{{FrontSide}}"
-            mw.col.models.add_template(notetype, tmpl)
-            mw.col.models.save(notetype)
+            notetype = _create_notetype(mw.col)
             note = mw.col.new_note(notetype)
             note["Text"] = "你好世界"
             mw.col.add_note(note, mw.col.decks.current()["id"])
-            note.id = 1611361324806
+            note_id = note.id
 
+            mock_editor = MagicMock()
             mock_editor.note = note
+
             mw._lastFocusedFieldOrdinal = 0
             mw.ChineseReading.addCReadings(mock_editor)
 
-            assert len(captured_js) >= 1
-            last_js = captured_js[-1]
-            assert "window.currentField" in last_js
-            assert "get_field_by_ordinal(0)" in last_js
-            assert str(note.id) in last_js
-            assert "fetchCText" in last_js
+            reloaded = mw.col.get_note(note_id)
+            assert "你好[ni3 hao3]世界[shi4 jie4]" == reloaded["Text"]
+            mock_editor.loadNoteKeepingFocus.assert_called_once()
 
     @pytest.mark.parametrize("anki_session", [_ANKI_SESSION_PARAMS], indirect=True)
     def test_add_c_readings_with_text_selected(self, anki_session: AnkiSession) -> None:
-        """When text IS selected, addCReadings skips currentField set."""
+        """When text IS selected, addCReadings uses field resolution."""
         from unittest.mock import MagicMock
 
         anki_session.load_addon(ADDON_NAME)
         with anki_session.profile_loaded():
             mw = anki_session.mw
 
-            mock_editor = MagicMock()
-            mock_editor.web.selectedText.return_value = "你好世界"
-            captured_js: list[str] = []
-            mock_editor.web.eval = lambda js: captured_js.append(js)
+            notetype = _create_notetype(mw.col)
+            note = mw.col.new_note(notetype)
+            note["Text"] = "你好世界"
+            mw.col.add_note(note, mw.col.decks.current()["id"])
+            note_id = note.id
 
+            mock_editor = MagicMock()
+            mock_editor.note = note
+            mock_editor.web.selectedText.return_value = "你好世界"
+
+            mw._lastFocusedFieldOrdinal = 0
             mw.ChineseReading.addCReadings(mock_editor)
 
-            assert len(captured_js) >= 1
-            last_js = captured_js[-1]
-            assert "fetchCText" in last_js
+            reloaded = mw.col.get_note(note_id)
+            assert "ni3 hao3" in reloaded["Text"]
 
     @pytest.mark.parametrize("anki_session", [_ANKI_SESSION_PARAMS], indirect=True)
     def test_add_c_readings_no_focused_field(self, anki_session: AnkiSession) -> None:
-        """When no field is focused, addCReadings logs warning and calls fetchCText."""
-        from unittest.mock import MagicMock
+        """When no field is focused, addCReadings shows warning and returns."""
+        from unittest.mock import MagicMock, patch
 
         anki_session.load_addon(ADDON_NAME)
         with anki_session.profile_loaded():
             mw = anki_session.mw
 
+            notetype = _create_notetype(mw.col)
+            note = mw.col.new_note(notetype)
+            note["Text"] = "你好世界"
+            mw.col.add_note(note, mw.col.decks.current()["id"])
+
             mock_editor = MagicMock()
-            mock_editor.web.selectedText.return_value = ""
-            captured_js: list[str] = []
-            mock_editor.web.eval = lambda js: captured_js.append(js)
+            mock_editor.note = note
 
             mw._lastFocusedFieldOrdinal = None
-            mw.ChineseReading.addCReadings(mock_editor)
-
-            assert len(captured_js) >= 1
-            last_js = captured_js[-1]
-            assert "No field could be resolved" in last_js
-            assert "fetchCText" in last_js
+            with patch("aqt.utils.showInfo") as mock_show_info:
+                mw.ChineseReading.addCReadings(mock_editor)
+                mock_show_info.assert_called_once_with("Chinese Reading: Please click inside a field and try again.")
 
 
 class TestHookRegistration:
@@ -343,9 +334,11 @@ class TestHookRegistration:
         """browser.setupMenus must have setupMenu registered."""
         anki_session.load_addon(ADDON_NAME)
         with anki_session.profile_loaded():
-            from anki.hooks import findHook
+            from anki import hooks as anki_hooks
 
-            assert findHook("browser.setupMenus", "setupMenu"), "setupMenu not in browser.setupMenus hooks"
+            setup_menus = anki_hooks._hooks.get("browser.setupMenus", [])
+            setup_names = [fn.__name__ for fn in setup_menus]
+            assert "setupMenu" in setup_names, f"setupMenu not in browser.setupMenus hooks. Found: {setup_names}"
 
 
 class TestConfigAndCatalog:
