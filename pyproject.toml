@@ -1,6 +1,6 @@
 [project]
 name = "thai-reading"
-version = "0.1.2"
+version = "0.1.3"
 description = "Anki addon for Thai reading generation and card template injection"
 requires-python = ">=3.14"
 dependencies = []
