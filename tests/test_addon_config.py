@@ -10,6 +10,7 @@ def test_defaults():
     assert cfg.thai_tones == ["#78716C", "#0F766E", "#B91C1C", "#D97706", "#7C3AED"]
     assert cfg.use_file_references is False
     assert cfg.active_fields == []
+    assert cfg.shortcut == "F9"
 
 
 def test_custom_values():

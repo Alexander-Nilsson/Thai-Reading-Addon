@@ -65,6 +65,10 @@ class AddonConfig:
     def active_fields(self) -> list[str]:
         return self._raw.get("ActiveFields", [])
 
+    @property
+    def shortcut(self) -> str:
+        return self._raw.get("ShortcutKey", "F9")
+
     def __getitem__(self, key):
         return self._raw[key]
 

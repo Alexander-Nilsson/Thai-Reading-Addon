@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 
 import aqt.utils
 from PyQt6.QtCore import Qt
@@ -112,6 +113,38 @@ class ThaiHandler:
             self.anki.process_events()
         self.anki.progress_finish()
         self.anki.reset()
+
+    @staticmethod
+    def _has_readings(text: str) -> bool:
+        if "[" not in text:
+            return False
+        audio_pat = re.compile(r"\[sound:[^\]]+\]|\[\d*\]")
+        return "[" in audio_pat.sub("", text)
+
+    def toggleReadings(self, editor):
+        _log.debug("toggleReadings called")
+        note = editor.note
+        if not note:
+            aqt.utils.showInfo("Thai Reading: No note loaded")
+            return
+
+        field_name, _source = self._resolve_field_name(note)
+        if field_name is None:
+            aqt.utils.showInfo("Thai Reading: Please click inside a field and try again.")
+            return
+
+        text = note[field_name]
+        if self._has_readings(text):
+            cleaned = self.removeBrackets(text)
+            if text != cleaned:
+                note[field_name] = cleaned
+                self.anki.col.update_note(note)
+                editor.loadNoteKeepingFocus()
+        else:
+            cleaned = self.removeBrackets(text)
+            self.finalizeReadings(cleaned, field_name, note, editor)
+            self.anki.col.update_note(note)
+            editor.loadNoteKeepingFocus()
 
     def _resolve_field_name(self, note):
         note_type_name = note.model()["name"]

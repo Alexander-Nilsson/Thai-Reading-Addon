@@ -256,13 +256,13 @@ def setupButtons(righttopbtns, editor):
     _log.debug("setupButtons called, checkProfile=%s", checkProfile())
     if not checkProfile():
         return righttopbtns
-    editor._links["removeFormatting"] = lambda editor: mw.ThaiReading.cleanField(editor)
-    duPath = os.path.join(addonPath, "icons", "gen-reading.svg")
-    shanPath = os.path.join(addonPath, "icons", "clean-field.svg")
-
-    righttopbtns.insert(0, editor._addButton(icon=shanPath, cmd="removeFormatting", tip="Hotkey: F10", id="clean"))
-    editor._links["addCReadings"] = lambda editor: mw.ThaiReading.addCReadings(editor)
-    righttopbtns.insert(0, editor._addButton(icon=duPath, cmd="addCReadings", tip="Hotkey: F9", id="read"))
+    editor._links["toggleReadings"] = lambda editor: mw.ThaiReading.toggleReadings(editor)
+    righttopbtns.insert(
+        0,
+        editor._addButton(
+            icon=None, cmd="toggleReadings", tip="Generate Thai reading", label="ก[kɔ̂ɔ]", id="toggle-reading"
+        ),
+    )
     _log.debug("setupButtons completed, editor._links keys: %s", list(editor._links.keys()))
     return righttopbtns
 
@@ -273,8 +273,10 @@ def setupShortcuts(cuts, editor):
     _log.debug("setupShortcuts called, checkProfile=%s", checkProfile())
     if not checkProfile():
         return
-    cuts.append(("F10", lambda: mw.ThaiReading.cleanField(editor)))
-    cuts.append(("F9", lambda: mw.ThaiReading.addCReadings(editor)))
+    key = config.shortcut
+    if key:
+        cuts.append((key, lambda: mw.ThaiReading.toggleReadings(editor)))
+        _log.debug("setupShortcuts: registered key=%s", key)
     _log.debug("setupShortcuts completed, shortcuts count: %d", len(cuts))
 
 
