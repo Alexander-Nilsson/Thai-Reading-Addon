@@ -193,7 +193,7 @@ class ThaiHandler:
             else:
                 rType = self.config.reading_type
                 _log.debug("finalizeReadings: using config.reading_type=%s", rType)
-            if rType not in ["rtgs", "ipa"]:
+            if rType not in ["rtgs", "ipa", "phonetics"]:
                 _log.debug("finalizeReadings: invalid rType=%s, returning", rType)
                 return
         _log.debug("finalizeReadings: generating with rType=%s", rType)
@@ -217,7 +217,7 @@ class ThaiHandler:
                 rType = altType
             else:
                 rType = self.config.reading_type
-        if rType not in ["rtgs", "ipa"]:
+        if rType not in ["rtgs", "ipa", "phonetics"]:
             return text
         newStr = self.reading_generator.generate(text, rType)
         return newStr

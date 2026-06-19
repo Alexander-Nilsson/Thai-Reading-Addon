@@ -18,9 +18,23 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from thaiphon.model.phonological_word import PhonologicalWord
+    from thaiphon.renderers.base import Renderer
     from thaiphon.renderers.mapping import MappingRenderer
 
 THAI_RE = re.compile(r"^[\u0e00-\u0e7f]+$")
+
+_PHONETICS_RENDERER: Renderer | None = None
+
+
+def _get_phonetics_renderer() -> Renderer:
+    from thaiphon import renderers as _  # noqa: F401 — trigger renderer registration
+    from thaiphon.registry import RENDERERS
+
+    global _PHONETICS_RENDERER
+    if _PHONETICS_RENDERER is None:
+        _PHONETICS_RENDERER = RENDERERS.get("paiboon")
+    return _PHONETICS_RENDERER
+
 
 _log = logging.getLogger("populate_dict")
 
@@ -42,17 +56,33 @@ def _open_db(addon_root: str) -> sqlite3.Connection:
     return conn
 
 
+def build_phonetics(word: str, result: PhonologicalWord) -> str:
+    """Build Paiboon-inspired phonetic transcription for a word.
+
+    Uses the ``paiboon`` scheme from thaiphon — tones as combining
+    diacritics (grave, circumflex, acute, caron), vowel length doubled
+    for long vowels, ``ɔ`` distinct from ``o``, syllables separated by
+    hyphens.
+    """
+    from thaiphon.renderers.base import RenderContext
+
+    renderer = _get_phonetics_renderer()
+    ctx = RenderContext(format="text", show_tone=True, show_length=True)
+    return renderer.render_word(result, ctx)
+
+
 def _build_pronunciation(
     word: str,
     result: PhonologicalWord,
     renderer: MappingRenderer,
-) -> tuple[str, str, str]:
-    """Build (reading_with_tones, tone_pattern, reading_ipa) for a word.
+) -> tuple[str, str, str, str]:
+    """Build (reading_with_tones, tone_pattern, reading_ipa, reading_phonetics) for a word.
 
     *reading_with_tones* — space-separated syllables in RTGS, each with a
     trailing tone digit (1-5) — e.g. ``sa2 wat2 di1``.
     *tone_pattern* — space-separated tone digits (e.g. ``2 2 1``).
     *reading_ipa* — IPA phonetic transcription via thaiphon.
+    *reading_phonetics* — Paiboon-inspired phonetic transcription.
     """
     from thaiphon import transcribe
     from thaiphon.model import Tone
@@ -70,7 +100,8 @@ def _build_pronunciation(
     reading = " ".join(syl_parts)
     tone_pattern = " ".join(tones)
     reading_ipa = transcribe(word, scheme="ipa")
-    return reading, tone_pattern, reading_ipa
+    reading_phonetics = build_phonetics(word, result)
+    return reading, tone_pattern, reading_ipa, reading_phonetics
 
 
 def populate_from_volubilis(conn: sqlite3.Connection, batch_size: int = 1000):
@@ -89,7 +120,7 @@ def populate_from_volubilis(conn: sqlite3.Connection, batch_size: int = 1000):
 
     for i in range(0, len(thai_entries), batch_size):
         batch = thai_entries[i : i + batch_size]
-        rows: list[tuple[str, str, str, str]] = []
+        rows: list[tuple[str, str, str, str, str]] = []
 
         for word in batch:
             pw = ENTRIES[word]
@@ -98,14 +129,16 @@ def populate_from_volubilis(conn: sqlite3.Connection, batch_size: int = 1000):
                 continue
 
             try:
-                reading, tone_pattern, ipa = _build_pronunciation(word, pw, renderer)
-                rows.append((word, reading, tone_pattern, ipa))
+                reading, tone_pattern, ipa, phonetics = _build_pronunciation(word, pw, renderer)
+                rows.append((word, reading, tone_pattern, ipa, phonetics))
             except Exception:
                 skipped += 1
                 continue
 
         cursor.executemany(
-            "INSERT OR IGNORE INTO words (word, reading, tone_pattern, reading_ipa) VALUES (?, ?, ?, ?)",
+            "INSERT OR IGNORE INTO words "
+            "(word, reading, tone_pattern, reading_ipa, reading_phonetics) "
+            "VALUES (?, ?, ?, ?, ?)",
             rows,
         )
         inserted += len(rows)
@@ -198,10 +231,12 @@ def populate_fallback(conn: sqlite3.Connection):
         try:
             result = analyze(word)
             pw = result.best
-            reading, tone_pattern, ipa = _build_pronunciation(word, pw, renderer)
+            reading, tone_pattern, ipa, phonetics = _build_pronunciation(word, pw, renderer)
             cursor.execute(
-                "INSERT OR IGNORE INTO words (word, reading, tone_pattern, reading_ipa) VALUES (?, ?, ?, ?)",
-                (word, reading, tone_pattern, ipa),
+                "INSERT OR IGNORE INTO words "
+                "(word, reading, tone_pattern, reading_ipa, reading_phonetics) "
+                "VALUES (?, ?, ?, ?, ?)",
+                (word, reading, tone_pattern, ipa, phonetics),
             )
             if cursor.rowcount > 0:
                 inserted += 1
@@ -245,20 +280,22 @@ def add_from_thaiphon_api(conn: sqlite3.Connection, existing_count: int):
 
     _log.info("Processing %d unique candidates...", len(api_candidates))
     inserted = 0
-    batch: list[tuple[str, str, str, str]] = []
+    batch: list[tuple[str, str, str, str, str]] = []
 
     for word in api_candidates:
         try:
             result = analyze(word)
             pw = result.best
-            reading, tone_pattern, ipa = _build_pronunciation(word, pw, renderer)
-            batch.append((word, reading, tone_pattern, ipa))
+            reading, tone_pattern, ipa, phonetics = _build_pronunciation(word, pw, renderer)
+            batch.append((word, reading, tone_pattern, ipa, phonetics))
         except Exception:
             continue
 
         if len(batch) >= 500:
             cursor.executemany(
-                "INSERT OR IGNORE INTO words VALUES (?, ?, ?, ?)",
+                "INSERT OR IGNORE INTO words "
+                "(word, reading, tone_pattern, reading_ipa, reading_phonetics) "
+                "VALUES (?, ?, ?, ?, ?)",
                 batch,
             )
             inserted += cursor.rowcount
@@ -267,7 +304,9 @@ def add_from_thaiphon_api(conn: sqlite3.Connection, existing_count: int):
 
     if batch:
         cursor.executemany(
-            "INSERT OR IGNORE INTO words VALUES (?, ?, ?, ?)",
+            "INSERT OR IGNORE INTO words "
+            "(word, reading, tone_pattern, reading_ipa, reading_phonetics) "
+            "VALUES (?, ?, ?, ?, ?)",
             batch,
         )
         inserted += cursor.rowcount
@@ -277,10 +316,46 @@ def add_from_thaiphon_api(conn: sqlite3.Connection, existing_count: int):
     return inserted
 
 
+def _ensure_phonetics_column(conn: sqlite3.Connection) -> None:
+    """Add ``reading_phonetics`` column if it does not exist yet (schema migration)."""
+    try:
+        conn.execute("ALTER TABLE words ADD COLUMN reading_phonetics TEXT")
+        _log.info("Added reading_phonetics column to words table")
+    except sqlite3.OperationalError:
+        pass
+
+
+def _backfill_phonetics(conn: sqlite3.Connection) -> int:
+    """Fill missing ``reading_phonetics`` values for rows that already exist."""
+    from thaiphon import analyze
+
+    cursor = conn.cursor()
+    cursor.execute("SELECT word FROM words WHERE reading_phonetics IS NULL OR reading_phonetics = ''")
+    missing = [row[0] for row in cursor.fetchall()]
+    if not missing:
+        return 0
+
+    filled = 0
+    for word in missing:
+        try:
+            result = analyze(word)
+            pw = result.best
+            phon = build_phonetics(word, pw)
+            cursor.execute("UPDATE words SET reading_phonetics = ? WHERE word = ?", (phon, word))
+            filled += 1
+        except Exception:
+            pass
+    conn.commit()
+    _log.info("Backfilled phonetics for %d / %d missing rows", filled, len(missing))
+    return filled
+
+
 def main():
     _setup_logging()
     addon_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     conn = _open_db(addon_root)
+
+    _ensure_phonetics_column(conn)
 
     cursor = conn.cursor()
     cursor.execute("SELECT COUNT(*) FROM words")
@@ -310,6 +385,8 @@ def main():
         total += add_from_thaiphon_api(conn, total - initial)
     else:
         _log.info("DB already populated (%d rows), skipping", initial)
+
+    _backfill_phonetics(conn)
 
     cursor.execute("SELECT COUNT(*) FROM words")
     final = cursor.fetchone()[0]

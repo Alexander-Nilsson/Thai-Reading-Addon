@@ -146,7 +146,10 @@ def db():
 def _create_test_db(path):
     conn = sqlite3.connect(path)
     c = conn.cursor()
-    c.execute("CREATE TABLE words (word TEXT PRIMARY KEY, reading TEXT, tone_pattern TEXT, reading_ipa TEXT)")
+    c.execute(
+        "CREATE TABLE words (word TEXT PRIMARY KEY, reading TEXT, tone_pattern TEXT, "
+        "reading_ipa TEXT, reading_phonetics TEXT)"
+    )
     c.execute("CREATE INDEX iword ON words (word)")
     conn.commit()
     conn.close()
@@ -156,11 +159,11 @@ def _populate_test_db(path):
     conn = sqlite3.connect(path)
     c = conn.cursor()
     c.executemany(
-        "INSERT INTO words (word, reading, tone_pattern, reading_ipa) VALUES (?, ?, ?, ?)",
+        "INSERT INTO words (word, reading, tone_pattern, reading_ipa, reading_phonetics) VALUES (?, ?, ?, ?, ?)",
         [
-            ("สวัสดี", "sa-wat-dii", "2-2-1", "sa.wat.dii"),
-            ("ภาษาไทย", "pha-sa-thai", "1-1-1", "pha.sa.thai"),
-            ("เรียนภาษาไทย", "rian-pha-sa-thai", "1-1-1-1", "rian.pha.sa.thai"),
+            ("สวัสดี", "sa-wat-dii", "2-2-1", "sa.wat.dii", "sà-wàt-dii"),
+            ("ภาษาไทย", "pha-sa-thai", "1-1-1", "pha.sa.thai", "paa-sǎa-thai"),
+            ("เรียนภาษาไทย", "rian-pha-sa-thai", "1-1-1-1", "rian.pha.sa.thai", "rian-paa-sǎa-thai"),
         ],
     )
     conn.commit()

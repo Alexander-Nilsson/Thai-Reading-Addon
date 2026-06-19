@@ -227,6 +227,7 @@
     <label>Compare:</label>
     <button class="toggle-btn active" data-rt="rtgs">RTGS</button>
     <button class="toggle-btn" data-rt="ipa">IPA</button>
+    <button class="toggle-btn" data-rt="phonetics">Paiboon</button>
   </div>
   <div class="reading-bar">
     <label>Tone style:</label>
@@ -241,6 +242,10 @@
     <div class="comparison-box">
       <h3>IPA <span style="font-weight:400;font-size:0.8rem;color:#78716c;">(International Phonetic Alphabet)</span></h3>
       <div class="sample" id="ipa-sample">sà.wàt.diː kʰráp</div>
+    </div>
+    <div class="comparison-box">
+      <h3>Paiboon <span style="font-weight:400;font-size:0.8rem;color:#78716c;">(learner-friendly phonetics)</span></h3>
+      <div class="sample" id="phonetics-sample">sà-wàt-dii khráp</div>
     </div>
   </div>
 </section>
@@ -273,9 +278,9 @@
     <tbody>
       <tr>
         <td><code>ReadingType</code></td>
-        <td><code>"rtgs"</code> | <code>"ipa"</code></td>
+        <td><code>"rtgs"</code> | <code>"ipa"</code> | <code>"phonetics"</code></td>
         <td><code>"rtgs"</code></td>
-        <td>Default reading system for generation</td>
+        <td>Default reading system (RTGS / IPA / Paiboon)</td>
       </tr>
       <tr>
         <td><code>FontSize</code></td>
@@ -343,7 +348,7 @@
       <tr><td><code>card_type</code></td><td>card type name or <code>all</code></td><td><code>Card 1</code></td></tr>
       <tr><td><code>field</code></td><td>field name</td><td><code>Thai</code></td></tr>
       <tr><td><code>side</code></td><td><code>front</code>, <code>back</code>, or <code>both</code></td><td><code>both</code></td></tr>
-      <tr><td><code>reading_type</code></td><td><code>default</code>, <code>rtgs</code>, or <code>ipa</code></td><td><code>ipa</code></td></tr>
+      <tr><td><code>reading_type</code></td><td><code>default</code>, <code>rtgs</code>, <code>ipa</code>, or <code>phonetics</code></td><td><code>ipa</code></td></tr>
     </tbody>
   </table>
 </section>
@@ -367,13 +372,13 @@ var TONES = [
 // IPA is stored with tone letters: "/sa˨˩.wat̚˨˩.diː˧/"
 // The RTGS display on this page converts digit-suffix to conventional tone marks (sà wàt di)
 var WORDS = [
-  { thai: "ฉัน",    rtgs: "chan5",    ipa: "/tɕʰan˩˩˦/",      tones: [5] },
-  { thai: "ชอบ",    rtgs: "chop3",    ipa: "/tɕʰɔːp̚˥˩/",    tones: [3] },
-  { thai: "กิน",    rtgs: "kin1",     ipa: "/kin˧/",           tones: [1] },
-  { thai: "ข้าว",   rtgs: "khao3",    ipa: "/kʰaːw˥˩/",       tones: [3] },
-  { thai: "ผัด",    rtgs: "phat2",    ipa: "/pʰat̚˨˩/",       tones: [2] },
-  { thai: "มาก",    rtgs: "mak3",     ipa: "/maːk̚˥˩/",       tones: [3] },
-  { thai: "ครับ",   rtgs: "khrap4",   ipa: "/kʰrap̚˦˥/",      tones: [4] },
+  { thai: "ฉัน",    rtgs: "chan5",    ipa: "/tɕʰan˩˩˦/",      phonetics: "chǎn",   tones: [5] },
+  { thai: "ชอบ",    rtgs: "chop3",    ipa: "/tɕʰɔːp̚˥˩/",    phonetics: "chɔ̂ɔp", tones: [3] },
+  { thai: "กิน",    rtgs: "kin1",     ipa: "/kin˧/",           phonetics: "gin",    tones: [1] },
+  { thai: "ข้าว",   rtgs: "khao3",    ipa: "/kʰaːw˥˩/",       phonetics: "kâao",   tones: [3] },
+  { thai: "ผัด",    rtgs: "phat2",    ipa: "/pʰat̚˨˩/",       phonetics: "pàt",    tones: [2] },
+  { thai: "มาก",    rtgs: "mak3",     ipa: "/maːk̚˥˩/",       phonetics: "mâak",   tones: [3] },
+  { thai: "ครับ",   rtgs: "khrap4",   ipa: "/kʰrap̚˦˥/",      phonetics: "kráp",   tones: [4] },
 ];
 
 // --- RTGS display conversion ---
@@ -423,6 +428,17 @@ function coloredRTGS(reading) {
   }).join(" ");
 }
 
+// Colored Paiboon display — split by hyphen, map each syllable to its tone
+function coloredPhonetics(reading, tones) {
+  var syls = reading.split("-");
+  return syls.map(function(syl, i) {
+    var t = tones[i] || tones[tones.length - 1];
+    return t >= 1 && t <= 5
+      ? '<span class="' + TONES[t - 1].cls + '">' + syl + '</span>'
+      : syl;
+  }).join("-");
+}
+
 // Colour Thai text by distributing tones across characters
 function colorizeThaiWord(word, tones) {
   var chars = [...word];
@@ -445,12 +461,22 @@ function colorizeThaiWord(word, tones) {
 }
 
 function renderThaiDisplay(thaiSentences, rt, displayType) {
-  var html = "", readingKey = rt === "ipa" ? "ipa" : "rtgs";
+  var html = "", readingKey = rt === "ipa" ? "ipa" : (rt === "phonetics" ? "phonetics" : "rtgs");
   for (var w of thaiSentences) {
     var word = w.thai, reading = w[readingKey];
     var isIpa = readingKey === "ipa";
-    var displayRd = isIpa ? reading : displayRTGS(reading);
-    var coloredRd = isIpa ? reading : coloredRTGS(reading);
+    var isPhonetics = readingKey === "phonetics";
+    var displayRd, coloredRd;
+    if (isIpa) {
+      displayRd = reading;
+      coloredRd = reading;
+    } else if (isPhonetics) {
+      displayRd = reading;
+      coloredRd = coloredPhonetics(reading, w.tones);
+    } else {
+      displayRd = displayRTGS(reading);
+      coloredRd = coloredRTGS(reading);
+    }
     switch (displayType) {
       case "thai":          html += word; break;
       case "coloredthai":   html += colorizeThaiWord(word, w.tones); break;
@@ -515,6 +541,7 @@ function renderAll() {
 
   document.getElementById("rtgs-sample").innerHTML = renderThaiDisplay(WORDS, "rtgs", "reading");
   document.getElementById("ipa-sample").innerHTML = renderThaiDisplay(WORDS, "ipa", "reading");
+  document.getElementById("phonetics-sample").innerHTML = renderThaiDisplay(WORDS, "phonetics", "reading");
 }
 
 document.querySelectorAll(".toggle-btn[data-rt]").forEach(function(btn) {

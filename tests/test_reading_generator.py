@@ -87,3 +87,28 @@ class TestGenerate:
         assert "[" in result
         reading = result.split("[")[1].split("]")[0]
         assert reading == "sa-wat-dii"
+
+
+# ── Phonetics ───────────────────────────────────────────────────
+
+
+class TestPhonetics:
+    def test_generate_phonetics(self, test_generator):
+        result = test_generator.generate("สวัสดี", reading_type="phonetics")
+        assert "[" in result
+        reading = result.split("[")[1].split("]")[0]
+        assert reading == "sà-wàt-dii", f"expected phonetics, got {reading!r}"
+
+    def test_phonetics_multi_word(self, test_generator):
+        result = test_generator.generate("ภาษาไทย", reading_type="phonetics")
+        reading = result.split("[")[1].split("]")[0]
+        assert reading == "paa-sǎa-thai", f"expected phonetics, got {reading!r}"
+
+    def test_phonetics_fallback_to_rtgs(self, test_generator):
+        """When phonetics is missing for a word, falls back to RTGS."""
+        from unittest.mock import MagicMock
+
+        test_generator._db.get_reading_phonetics = MagicMock(return_value=None)
+        result = test_generator.generate("สวัสดี", reading_type="phonetics")
+        reading = result.split("[")[1].split("]")[0]
+        assert reading == "sa-wat-dii"

@@ -11,7 +11,7 @@ _DISPLAY_OPTIONS = [
     "coloredthaithai",
 ]
 
-_READING_OPTIONS = ["rtgs", "ipa"]
+_READING_OPTIONS = ["rtgs", "ipa", "phonetics"]
 
 
 @dataclass(frozen=True)

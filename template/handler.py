@@ -189,10 +189,10 @@ class ThaiCssJsHandler:
 
     def checkReadingType(self):
         rType = self.config.reading_type
-        if rType not in ["rtgs", "ipa"]:
+        if rType not in ["rtgs", "ipa", "phonetics"]:
             show_info(
                 'The "' + rType + '" value in the "ReadingType" configuration is incorrect. '
-                'The value must be "rtgs" or "ipa".',
+                'The value must be "rtgs", "ipa", or "phonetics".',
                 level="err",
             )
             return False

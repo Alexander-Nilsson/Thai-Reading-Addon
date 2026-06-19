@@ -64,6 +64,8 @@ class SettingsGui(QWidget):
         self.readingTypes = {
             "RTGS": "RTGS: The reading will be generated in Royal Thai General System of Transcription.",
             "IPA": "IPA: The reading will be generated in the International Phonetic Alphabet.",
+            "Paiboon": "Paiboon: The reading will be generated in Paiboon phonetic notation "
+            "(tone diacritics, doubled long vowels).",
         }
         self.sides = {
             "Front": "Front: Applies the display type to the front of the card.",
@@ -123,7 +125,7 @@ class SettingsGui(QWidget):
             "reading": "Reading",
             "coloredreading": "Colored Reading",
         }
-        self.rtTranslation = {"rtgs": "RTGS", "ipa": "IPA"}
+        self.rtTranslation = {"rtgs": "RTGS", "ipa": "IPA", "phonetics": "Paiboon"}
         self.mw = mw
         self.sortedProfiles: list = []
         self.sortedNoteTypes: list = []
@@ -475,8 +477,7 @@ class SettingsGui(QWidget):
         )
         self.addRemProfile.setToolTip("Add/Remove a profile.")
         self.defaultReading.setToolTip(
-            "This is the default reading generation that will be used when "
-            "generating in a field that has not been designated as an Active Field."
+            "Default reading system (RTGS / IPA / Paiboon) used for fields not covered by an Active Field entry."
         )
 
         self.t1pb.setToolTip("Select the color for mid tone characters.")
@@ -497,9 +498,10 @@ class SettingsGui(QWidget):
             "When enabled, CSS and JS will be written to collection.media/ as standalone files."
         )
         self.rtgsToneStyle.setToolTip(
-            "Choose how tone is indicated in RTGS transcriptions.\n"
+            "RTGS only: choose how tone is indicated.\n"
             "Marks: sà wàt di (tone marks on vowels, conventional style)\n"
-            "Numbers: sa2 wat2 di1 (digit suffix per syllable)"
+            "Numbers: sa2 wat2 di1 (digit suffix per syllable)\n"
+            "IPA and Paiboon always use their native tone notation."
         )
         self.profileAF.setToolTip("Profile: Select the profile.")
         self.noteTypeAF.setToolTip("Note Type: Select the note type.")
@@ -510,9 +512,8 @@ class SettingsGui(QWidget):
             "Display Type: Select the display type,\nhover over a display type for functionality details."
         )
         self.readingAF.setToolTip(
-            "Reading Type: Select the reading type, "
-            "determines which reading system will be used when generating readings "
-            "for this card type."
+            "Reading Type: Select the reading system (RTGS / IPA / Paiboon) "
+            "used when generating readings for this card type."
         )
 
     def initHandlers(self):
@@ -921,7 +922,7 @@ class SettingsGui(QWidget):
             )
             afList.append(f"{dt};{profile};{nt};{ct};{field};{side};{rt}")
 
-        _rt_rev = {"RTGS": "rtgs", "IPA": "ipa"}
+        _rt_rev = {"RTGS": "rtgs", "IPA": "ipa", "Paiboon": "phonetics"}
         delta = ConfigDelta(
             profiles=profiles,
             reading_type=_rt_rev.get(self.defaultReading.currentText(), "rtgs"),

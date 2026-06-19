@@ -24,7 +24,7 @@ class ReadingGenerator:
 
     def generate(self, text, reading_type=None):
         reading_type = reading_type or self._config.reading_type
-        if reading_type not in ("rtgs", "ipa"):
+        if reading_type not in ("rtgs", "ipa", "phonetics"):
             return text
         return self._segment_and_lookup(text, reading_type)
 
@@ -49,7 +49,14 @@ class ReadingGenerator:
                         count -= 1
                         word = word[:-1]
                 if result:
-                    reading, _tone_pattern = result
+                    if rType == "phonetics":
+                        phon = self._db.get_reading_phonetics(word)
+                        if phon:
+                            reading, _tone_pattern = phon
+                        else:
+                            reading, _tone_pattern = result
+                    else:
+                        reading, _tone_pattern = result
                     newStr += word + "[" + reading + "]"
                 else:
                     newStr += text[count]

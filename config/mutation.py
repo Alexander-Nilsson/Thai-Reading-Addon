@@ -127,7 +127,7 @@ class ConfigMutation(Protocol):
     def validate(self, delta: ConfigDelta) -> list[ValidationError]: ...
 
 
-_VALID_READING_TYPES = frozenset({"rtgs", "ipa"})
+_VALID_READING_TYPES = frozenset({"rtgs", "ipa", "phonetics"})
 _VALID_RTGS_TONE_STYLES = frozenset({"marks", "numbers"})
 
 

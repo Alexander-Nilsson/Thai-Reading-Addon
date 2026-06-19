@@ -1,10 +1,10 @@
 <h2 align="center">Thai Reading Addon</h2>
 
-> An Anki add-on for Thai learners. Generates tone-coloured readings (RTGS/IPA) and injects CSS/JS into card templates.
+> An Anki add-on for Thai learners. Generates tone-coloured readings (RTGS/IPA/Paiboon) and injects CSS/JS into card templates.
 
 ## Features
 
-- **Tone-coloured readings**: RTGS and IPA with 5 configurable Thai tone colours
+- **Tone-coloured readings**: RTGS, IPA, and Paiboon with 5 configurable Thai tone colours
 - **Card template injection**: Auto-injects CSS and JavaScript into card templates for tone colouring
 - **Active Fields system**: Configure which note types, card types, fields, and card sides get processed
 - **Segment and lookup**: Greedy-lookahead tokenization for dictionary matching
@@ -16,7 +16,19 @@ A demo page showing all display types, reading types, and tone colours is availa
 
 ![Display options preview](demo/readings-screenshot.png)
 
-## Tone Display
+## Reading Systems
+
+The addon supports three reading systems for Thai pronunciation:
+
+| System | Example (`ฉันชอบกินข้าวผัดมากครับ`) | Description |
+|--------|------|-------------|
+| **RTGS** | `chan5 chop3 kin1 khao3 phat2 mak3 khrap4` | Royal Thai General System — official Thai romanization. Each syllable carries a trailing tone digit (1-5). |
+| **IPA** | `/tɕʰan˩˩˦ tɕʰɔːp̚˥˩ kin˧ kʰaːw˥˩ pʰat̚˨˩ maːk̚˥˩ kʰrap̚˦˥/` | International Phonetic Alphabet — precise phonetic transcription with tone letters and phonemic detail. |
+| **Paiboon** | `chǎn chɔ̂ɔp gin kâao pàt mâak kráp` | Learner-friendly phonetic notation combining tone diacritics (à/â/á/ǎ) with doubled vowels for length distinction (short `a`, long `aa`). Uses `ɔ` for open-o. |
+
+The default reading system is **RTGS**. The active field configuration lets you choose a different reading type per note/card field.
+
+### RTGS Tone Display
 
 The addon's dictionary stores RTGS readings in a digit-suffix format (`sa2 wat2 di1`), where each digit maps to a Thai tone class (1=mid, 2=low, 3=falling, 4=high, 5=rising). Readings can be displayed in two styles:
 
@@ -25,9 +37,9 @@ The addon's dictionary stores RTGS readings in a digit-suffix format (`sa2 wat2 
 | **Marks** (default) | `chǎn chóp kin khâao phàt mâak khráp` | Digits replaced with conventional tone diacritics on the syllable's vowel |
 | **Numbers** | `chan5 chop3 kin1 khao3 phat2 mak3 khrap4` | Raw digit suffix per syllable, as stored in the dictionary |
 
-The tone colours (configured in settings) always work from the underlying tone number, so coloured readings use the correct colour regardless of which display style is selected.
+The tone colours (configured in settings) always work from the underlying tone number, so coloured readings use the correct colour regardless of which reading system or display style is selected.
 
-Switch between styles via **Tools → Thai Reading Settings → RTGS Tone Style**.
+Switch between RTGS styles via **Tools → Thai Reading Settings → RTGS Tone Style**.
 
 ## Configuration
 

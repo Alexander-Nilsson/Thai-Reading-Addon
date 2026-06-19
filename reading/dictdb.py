@@ -28,6 +28,14 @@ class DictDB:
         return self.c.fetchone() or None
 
     @cache
+    def get_reading_phonetics(self, w):
+        self.c.execute(
+            "select reading_phonetics, tone_pattern from words where word=? limit 1;",
+            (w,),
+        )
+        return self.c.fetchone() or None
+
+    @cache
     def get_reading_batch(self, words):
         if not words:
             return {}

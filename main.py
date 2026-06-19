@@ -66,7 +66,7 @@ autoCssJs: ThaiCssJsHandler
 defaults: dict[str, object] | None = None
 
 
-_VALID_READING_TYPES = frozenset({"rtgs", "ipa"})
+_VALID_READING_TYPES = frozenset({"rtgs", "ipa", "phonetics"})
 
 _DISPLAY_OPTIONS = frozenset(
     {
